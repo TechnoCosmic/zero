@@ -1,0 +1,7 @@
+*.swp
+*.hex
+*.o
+*.elf
+*.gch
+.vscode/
+.vscode/*
