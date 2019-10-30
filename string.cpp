@@ -46,6 +46,16 @@ void* memcpy(uint8_t* dest, const uint8_t* src, const uint16_t count) {
 	return dest;
 }
 
+int strlen(const char* s) {
+	int rc = 0;
+
+	while (*s++) {
+		rc++;
+	}
+
+	return rc;
+}
+
 int strcmppgm(const char* a, char *b) {
 	char charA = pgm_read_byte_near(a);
 

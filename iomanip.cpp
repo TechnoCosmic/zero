@@ -49,6 +49,15 @@ TextPipe& operator<<(TextPipe& out, const setw sw) {
 }
 
 
+// fill
+setfill::setfill(const char c) : _fill(c) { }
+
+TextPipe& operator<<(TextPipe& out, const setfill sf) {
+    out.setFill(sf._fill);
+    return out;
+}
+
+
 // alignment
 setalignment::setalignment(const Alignment alignment) : _alignment(alignment) { }
 

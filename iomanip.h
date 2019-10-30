@@ -34,6 +34,11 @@ namespace zero {
         int8_t _width;
     };
 
+    struct setfill {
+        setfill(const char c);
+        char _fill;
+    };
+
     struct setalignment {
         setalignment(const Alignment alignment);
         Alignment _alignment;
@@ -45,6 +50,7 @@ zero::TextPipe& operator<<(zero::TextPipe&, const zero::settextcolor);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setbackcolor);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setbase);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setw);
+zero::TextPipe& operator<<(zero::TextPipe&, const zero::setfill);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setalignment);
 
 #endif

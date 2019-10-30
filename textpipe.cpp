@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include "textpipe.h"
+#include "string.h"
 
 using namespace zero;
 
@@ -15,6 +16,8 @@ using namespace zero;
 // ctor
 TextPipe::TextPipe(const char* name, uint16_t bufferSize, const bool strictSize) : Pipe(name, bufferSize, strictSize) {
     _base = 10;
+    _width = -1;
+    _fill = ' ';
 }
 
 
@@ -42,9 +45,32 @@ void TextPipe::setBase(const uint8_t base) {
 }
 
 
+// getBase
+uint8_t TextPipe::getBase() {
+    return _base;
+}
+
+
 // setWidth
-void TextPipe::setWidth(const int8_t width) {
+void TextPipe::setWidth(const int16_t width) {
     _width = width;    
+}
+
+// getWidth
+int16_t TextPipe::getWidth() {
+    return _width;
+}
+
+
+// setFill
+void TextPipe::setFill(const char c) {
+    _fill = c;
+}
+
+
+// getFill
+char TextPipe::getFill() {
+    return _fill;
 }
 
 
@@ -53,17 +79,75 @@ void TextPipe::setAlignment(const Alignment alignment) {
     _alignment = alignment;    
 }
 
+
+// getAlignment
+Alignment TextPipe::getAlignment() {
+    return _alignment;
+}
+
+
+// Pushes a number of the filler character to the Pipe
+static void pushFiller(TextPipe* p, const uint16_t count) {
+    const char f = p->getFill();
+
+    for (uint16_t i = 0; i < count; i++) {
+        *p << f;
+    }
+}
+
+
+// Pushes a supplied string into the Pipe, applying any
+// alignment and padding as it does
+static void pushString(const char* s, TextPipe* p) {
+    int16_t width = p->getWidth();
+    uint16_t frontPadding = 0;
+    uint16_t backPadding = 0;
+
+    if (width > 0) {
+        int16_t excess = width - strlen(s);
+
+        if (excess > 0) {
+            switch (p->getAlignment()) {
+                case Alignment::LEFT:
+                    frontPadding = 0;
+                    backPadding = excess;
+                break;
+
+                case Alignment::RIGHT:
+                    frontPadding = excess;
+                    backPadding = 0;
+                break;
+
+                case Alignment::CENTER:
+                    frontPadding = excess / 2;
+                    backPadding = excess - frontPadding;
+                break;
+            }
+        }
+        p->setWidth(-1);
+    }
+
+    pushFiller(p, frontPadding);
+    *((Pipe*) p) << s;
+    pushFiller(p, backPadding);
+}
+
+
 TextPipe& operator<<(TextPipe& out, const char c) {
     *((Pipe*) &out) << c;
 	return out;
 }
 
+
 TextPipe& operator<<(TextPipe& out, const char* s) {
-    *((Pipe*) &out) << s;
+    pushString(s, &out);
 	return out;
 }
 
 TextPipe& operator<<(TextPipe& out, const int v) {
-    *((Pipe*) &out) << v;
+	char buffer[32];
+	int d = v;
+	itoa(d, buffer, out.getBase(), true);
+    pushString(buffer, &out);
 	return out;
 }
