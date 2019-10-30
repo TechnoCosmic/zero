@@ -16,9 +16,8 @@ using namespace zero;
 // text color
 settextcolor::settextcolor(const Color color) : _color(color) { }
 
-Pipe& operator<<(Pipe& out, const settextcolor stc) {
-    TextPipe* tp = (TextPipe*) &out;
-    tp->setTextColor(stc._color);
+TextPipe& operator<<(TextPipe& out, const settextcolor stc) {
+    out.setTextColor(stc._color);
     return out;
 }
 
@@ -26,9 +25,8 @@ Pipe& operator<<(Pipe& out, const settextcolor stc) {
 // back color
 setbackcolor::setbackcolor(const Color color) : _color(color) { }
 
-Pipe& operator<<(Pipe& out, const setbackcolor sbc) {
-    TextPipe* tp = (TextPipe*) &out;
-    tp->setBackColor(sbc._color);
+TextPipe& operator<<(TextPipe& out, const setbackcolor sbc) {
+    out.setBackColor(sbc._color);
     return out;
 }
 
@@ -36,9 +34,8 @@ Pipe& operator<<(Pipe& out, const setbackcolor sbc) {
 // base
 setbase::setbase(const uint8_t base) : _base(base) { }
 
-Pipe& operator<<(Pipe& out, const setbase sb) {
-    TextPipe* tp = (TextPipe*) &out;
-    tp->setBase(sb._base);
+TextPipe& operator<<(TextPipe& out, const setbase sb) {
+    out.setBase(sb._base);
     return out;
 }
 
@@ -46,9 +43,8 @@ Pipe& operator<<(Pipe& out, const setbase sb) {
 // width
 setw::setw(const int8_t width) : _width(width) { }
 
-Pipe& operator<<(Pipe& out, const setw sw) {
-    TextPipe* tp = (TextPipe*) &out;
-    tp->setWidth(sw._width);
+TextPipe& operator<<(TextPipe& out, const setw sw) {
+    out.setWidth(sw._width);
     return out;
 }
 
@@ -56,8 +52,7 @@ Pipe& operator<<(Pipe& out, const setw sw) {
 // alignment
 setalignment::setalignment(const Alignment alignment) : _alignment(alignment) { }
 
-Pipe& operator<<(Pipe& out, const setalignment sa) {
-    TextPipe* tp = (TextPipe*) &out;
-    tp->setAlignment(sa._alignment);
+TextPipe& operator<<(TextPipe& out, const setalignment sa) {
+    out.setAlignment(sa._alignment);
     return out;
 }

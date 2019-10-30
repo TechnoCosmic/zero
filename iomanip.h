@@ -41,10 +41,10 @@ namespace zero {
 
 }
 
-zero::Pipe& operator<<(zero::Pipe&, const zero::settextcolor);
-zero::Pipe& operator<<(zero::Pipe&, const zero::setbackcolor);
-zero::Pipe& operator<<(zero::Pipe&, const zero::setbase);
-zero::Pipe& operator<<(zero::Pipe&, const zero::setw);
-zero::Pipe& operator<<(zero::Pipe&, const zero::setalignment);
+zero::TextPipe& operator<<(zero::TextPipe&, const zero::settextcolor);
+zero::TextPipe& operator<<(zero::TextPipe&, const zero::setbackcolor);
+zero::TextPipe& operator<<(zero::TextPipe&, const zero::setbase);
+zero::TextPipe& operator<<(zero::TextPipe&, const zero::setw);
+zero::TextPipe& operator<<(zero::TextPipe&, const zero::setalignment);
 
 #endif
