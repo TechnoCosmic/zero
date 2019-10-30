@@ -8,16 +8,18 @@
 
 #include "zero_config.h"
 #include "cli.h"
-#include "pipe.h"
 #include "memory.h"
 #include "util.h"
 #include "string.h"
+#include "textpipe.h"
+#include "iomanip.h"
 
 using namespace zero;
 
 const int PAGES_PER_ROW = 32;
 
-clicommand(memmap, (Pipe* rx, Pipe* tx, int argc, char* argv[]) {
+
+clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     const int totalPages = memory::getTotalPages();
     const int rows = ROUND_UP(totalPages / PAGES_PER_ROW, 8);
 
@@ -36,11 +38,11 @@ clicommand(memmap, (Pipe* rx, Pipe* tx, int argc, char* argv[]) {
             }
             
             if (memory::isPageAvailable(pageNumber)) {
-                *tx << '-';
+                *tx << settextcolor(GREEN) << '-';
 
             } else {
                 usedPages++;
-                *tx << RED "X" << GREEN;
+                *tx << settextcolor(RED) << 'X';
             }
         }
         *tx << "\r\n";
@@ -50,7 +52,7 @@ exit:
 
     const uint16_t usedBytes = memory::getPageSize() * usedPages;
 
-    *tx << WHITE "\r\n";
+    *tx << settextcolor(WHITE) << "\r\n";
     *tx << "Total allocatable SRAM: " << (int) ttlRam << "\r\n";
     *tx << "             Used SRAM:   " << (int) usedBytes << "\r\n";
     *tx << "        Available SRAM: " << (int) (ttlRam - usedBytes) << "\r\n";

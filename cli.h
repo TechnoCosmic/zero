@@ -11,16 +11,16 @@
 
 #include <avr/pgmspace.h>
 #include "namedobject.h"
-#include "pipe.h"
+#include "textpipe.h"
 
 namespace zero {
 
-    typedef int (*CliEntryPoint)(Pipe* rx, Pipe* tx, int argc, char* argv[]);
+    typedef int (*CliEntryPoint)(TextPipe* rx, TextPipe* tx, int argc, char* argv[]);
 
     class CliCommand {
     public:
         CliCommand(const char* name, const CliEntryPoint entryPoint);
-        int execute(Pipe* rx, Pipe* tx, int argc, char* argv[]);
+        int execute(TextPipe* rx, TextPipe* tx, int argc, char* argv[]);
         
     private:
 		// NamedObject must be first

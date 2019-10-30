@@ -8,12 +8,12 @@
 
 #include "zero_config.h"
 #include "cli.h"
-#include "pipe.h"
+#include "textpipe.h"
 #include "thread.h"
 
 using namespace zero;
 
-clicommand(ps, (Pipe* rx, Pipe* tx, int argc, char* argv[]) {
+clicommand(ps, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
     NamedObject::iterate(tx, [](void* data, NamedObject* obj) {
         Pipe* out = (Pipe*) data;

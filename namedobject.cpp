@@ -29,7 +29,6 @@ void NamedObject::add(NamedObject* obj) {
 // removes the NamedObject from the _systemObjectsList
 void NamedObject::remove(NamedObject* obj) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		
 		if (_lockedCount == 0) {
 			_systemObjectList.remove(obj);
 		}
@@ -61,6 +60,7 @@ NamedObject* NamedObject::find(const char* name, const ZeroObjectType objType) {
 	if (obj && obj->_objectType == objType) {
 		return obj;
 	}
+
 	return 0UL;
 }
 
@@ -68,6 +68,7 @@ void NamedObject::iterate(void* data, bool (*func)(void* data, NamedObject* obj)
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		_lockedCount++;
 	}
+
 	NamedObject* cur = _systemObjectList.getHead();
 
 	while (cur) {
@@ -76,6 +77,7 @@ void NamedObject::iterate(void* data, bool (*func)(void* data, NamedObject* obj)
 		}
 		cur = cur->_next;
 	}
+
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		_lockedCount--;
 	}

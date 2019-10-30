@@ -14,11 +14,13 @@
 #include <avr/pgmspace.h>
 #include "cli.h"
 #include "thread.h"
-#include "pipe.h"
+#include "textpipe.h"
+#include "iomanip.h"
 #include "usart.h"
 #include "string.h"
 
 using namespace zero;
+
 
 const int BELL = 7;
 const int BACKSPACE = 8;
@@ -27,6 +29,7 @@ const int ESCAPE = 27;
 
 const PROGMEM char _cliRxPipeName[] = "/pipes/cli/rx";
 const PROGMEM char _cliTxPipeName[] = "/pipes/cli/tx";
+
 
 CliCommand::CliCommand(const char* name, const CliEntryPoint entry) {
     _entryPoint = entry;
@@ -39,17 +42,21 @@ CliCommand::CliCommand(const char* name, const CliEntryPoint entry) {
     NamedObject::add((NamedObject*) this);
 }
 
-int CliCommand::execute(Pipe* rx, Pipe* tx, int argc, char* argv[]) {
+
+int CliCommand::execute(TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     return _entryPoint(rx, tx, argc, argv);
 }
 
-void displayPrompt(Pipe* rx, Pipe* tx) {
-    *tx << GREEN "zero" WHITE ": " BLUE "$ " WHITE;
+
+void displayPrompt(TextPipe* rx, TextPipe* tx) {
+    *tx << settextcolor(GREEN) << "zero" << settextcolor(WHITE) << ": " << settextcolor(YELLOW) << "$ " << settextcolor(WHITE);
 }
 
-void displayWelcome(Pipe* rx, Pipe* tx) {
+
+void displayWelcome(TextPipe* rx, TextPipe* tx) {
     *tx << "\fWelcome to zero\r\n";
 }
+
 
 int tokenize(char* s, char* argv[]) {
     int tokenCount = 0;
@@ -82,7 +89,8 @@ int tokenize(char* s, char* argv[]) {
     return tokenCount;
 }
 
-void processCommandLine(Pipe* rx, Pipe* tx, char* commandLine) {
+
+void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
     char* args[CLI_CMD_LINE_MAX_TOKENS];
     int count = tokenize(commandLine, args);
 
@@ -106,9 +114,10 @@ void processCommandLine(Pipe* rx, Pipe* tx, char* commandLine) {
     }
 }
 
+
 thread(cli, CLI_STACK_BYTES, {
-    Pipe rx(_cliRxPipeName, CLI_RX_PIPE_BYTES);
-    Pipe tx(_cliTxPipeName, CLI_TX_PIPE_BYTES);
+    TextPipe rx(_cliRxPipeName, CLI_RX_PIPE_BYTES);
+    TextPipe tx(_cliTxPipeName, CLI_TX_PIPE_BYTES);
     Usart serial(CLI_BAUD, &rx, &tx);
 
     char cmdLine[CLI_CMD_LINE_BUFFER_BYTES];
@@ -121,6 +130,7 @@ thread(cli, CLI_STACK_BYTES, {
         bool echo = true;
         uint8_t input = 0;
 
+        // blocking call to read() to gather keystrokes from the USART
         if (rx.read(&input, true)) {
             switch (input) {
                 case ESCAPE:
@@ -135,6 +145,9 @@ thread(cli, CLI_STACK_BYTES, {
                         cmdLine[cursorPosition] = 0;
 
                         // backspace + clear to end of line
+
+                        // TODO: Make these PROGMEM when iomanip.h
+                        // is written
                         tx << "\010\e[K";
                     } else {
                         tx << (char) BELL;
@@ -155,6 +168,7 @@ thread(cli, CLI_STACK_BYTES, {
                 break;
 
                 default:
+                    // Check for buffer underrun and overflow - safety first, CASE!
                     if (cursorPosition >= 0 && cursorPosition < CLI_CMD_LINE_BUFFER_BYTES) {
                         cmdLine[cursorPosition++] = input;
 
@@ -174,7 +188,8 @@ thread(cli, CLI_STACK_BYTES, {
     return 0;
 });
 
-clicommand(clear, (Pipe* rx, Pipe* tx, int argc, char* argv[]) {
+
+clicommand(clear, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     displayWelcome(rx, tx);
     return 0;
 });

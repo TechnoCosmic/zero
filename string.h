@@ -9,12 +9,6 @@
 #ifndef TCRI_ZERO_STRING_H
 #define TCRI_ZERO_STRING_H
 
-// VT100 color codes
-#define RED "\e[31m"
-#define GREEN "\e[32m"
-#define BLUE "\e[34m"
-#define WHITE "\e[37m"
-
 int islower(const char c);
 int isupper(const char c);
 
