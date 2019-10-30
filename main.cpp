@@ -15,7 +15,7 @@
 using namespace zero;
 
 thread(flashPB4, 64, {
-	DDRB = PORTB = (1 << PINB4);
+	_delay_ms(1000);
 
 	while (1) {
 		PORTB ^= (1 << PINB4);
@@ -27,7 +27,8 @@ thread(flashPB4, 64, {
 
 
 thread(flashPB5, 64, {
-	DDRB = PORTB = (1 << PINB5);
+	DDRB = PORTB = ((1 << PINB4) | (1 << PINB5));
+	_delay_ms(1000);
 
 	while (1) {
 		PORTB ^= (1 << PINB5);
