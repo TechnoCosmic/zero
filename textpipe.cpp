@@ -52,3 +52,18 @@ void TextPipe::setWidth(const int8_t width) {
 void TextPipe::setAlignment(const Alignment alignment) {
     _alignment = alignment;    
 }
+
+TextPipe& operator<<(TextPipe& out, const char c) {
+    *((Pipe*) &out) << c;
+	return out;
+}
+
+TextPipe& operator<<(TextPipe& out, const char* s) {
+    *((Pipe*) &out) << s;
+	return out;
+}
+
+TextPipe& operator<<(TextPipe& out, const int v) {
+    *((Pipe*) &out) << v;
+	return out;
+}

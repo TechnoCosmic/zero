@@ -51,4 +51,8 @@ namespace zero {
 
 }
 
+zero::TextPipe& operator<<(zero::TextPipe& out, const char* s);
+zero::TextPipe& operator<<(zero::TextPipe& out, const char c);
+zero::TextPipe& operator<<(zero::TextPipe& out, const int v);
+
 #endif

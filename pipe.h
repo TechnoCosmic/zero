@@ -54,7 +54,6 @@ namespace zero {
 
 zero::Pipe& operator<<(zero::Pipe& out, const char c);
 zero::Pipe& operator<<(zero::Pipe& out, const char* s);
-
 zero::Pipe& operator<<(zero::Pipe& out, const int v);
 
 #endif
