@@ -13,8 +13,6 @@
 #include "namedobject.h"
 #include "memory.h"
 
-using namespace zero::memory;
-
 namespace zero {
 
     typedef bool (*PipeFilter)(uint8_t* data);
@@ -32,7 +30,7 @@ namespace zero {
 		bool read(uint8_t* data, const bool allowBlock);
 		bool write(const uint8_t data, const bool allowBlock);
 		bool write(const char* s);
-		bool write(const char* s, MemoryType memType);
+		bool write(const char* s, memory::MemoryType memType);
 
         void setReadFilter(const PipeFilter newFilter);
         void setWriteFilter(const PipeFilter newFilter);
@@ -40,6 +38,7 @@ namespace zero {
 	private:
 		uint16_t calcFirstFreeIndex();
 
+		// This must the first field in the class
 		NamedObject _systemData;
 		uint16_t _start;
 		uint16_t _length;

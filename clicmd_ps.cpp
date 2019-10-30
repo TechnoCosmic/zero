@@ -12,6 +12,8 @@
 #include "thread.h"
 
 using namespace zero;
+using namespace zero::memory;
+
 
 clicommand(ps, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 

@@ -66,6 +66,7 @@ Pipe* Usart::getTxPipe() {
 }
 
 ISR(USART0_RX_vect) {
+    // write the incoming byte to the Pipe
     if (!_usart->getRxPipe()->write(UDR0, false)) {
         // TODO: Error - buffer full
     }

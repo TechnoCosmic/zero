@@ -11,6 +11,7 @@
 #include "textpipe.h"
 
 using namespace zero;
+using namespace zero::memory;
 
 clicommand(ls, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
