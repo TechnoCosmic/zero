@@ -37,7 +37,7 @@ namespace zero {
 		uint16_t getTotalBytes();
 		uint16_t getPageSize();
 
-		bool isPageAvailable(const uint8_t pageNumber);
+		bool isPageAvailable(const uint16_t pageNumber);
     }
 
 }

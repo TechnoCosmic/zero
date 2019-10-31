@@ -247,7 +247,7 @@ bool memory::write(const void* address, const uint8_t data, const MemoryType mem
 	}
 }
 
-bool memory::isPageAvailable(const uint8_t pageNumber) {
+bool memory::isPageAvailable(const uint16_t pageNumber) {
 	return IS_PAGE_AVAILABLE(pageNumber);
 }
 
