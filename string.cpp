@@ -101,7 +101,7 @@ void reverse(char* str, int length) {
 	}
 }
 
-char* itoa(int16_t num, char* str, const uint16_t base, const bool positive) {
+char* itoa(int32_t num, char* str, const uint16_t base, const bool positive) {
 	int i = 0;
 	bool isNegative = false;
 
@@ -118,7 +118,7 @@ char* itoa(int16_t num, char* str, const uint16_t base, const bool positive) {
 		isNegative = true;
 		num = -num;
 	}
-	
+
 	// process individual digits
 	while (num != 0) {
 		int rem = num % base;
