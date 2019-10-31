@@ -46,7 +46,7 @@ namespace zero {
     const uint16_t KERNEL_STACK_BYTES = 128;
 
     // How much lower memory is your program using for globals?
-    const uint16_t GLOBALS_BYTES = 512;
+    const uint16_t GLOBALS_BYTES = 384;
 
     // Idle thread stack size
     const uint16_t IDLE_THREAD_STACK_BYTES = 64;
