@@ -334,14 +334,14 @@ A feature of zero is that the CLI is easily extended with custom commands. **The
 
 using namespace zero;
 
-clicommand(mycommand, (Pipe* rx, Pipe* tx, int argc, char* argv[]) {
+clicommand(mycommand, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     *tx << "Hello, World!\r\n";
 
     return 0;
 });
 ```
 
-zero will tokenize the command line for you, and hand you the Pipes attached to the USART that the CLI is using.
+zero will tokenize the command line for you, and hand you the Pipes attached to the USART that the CLI is using. A `TextPipe` is a derived class of `Pipe`, and provides for formatting of strings and numbers, in a similar way to regular `iosteam`. zero also provides its own `iomanip` that can be used with a `TextPipe`.
 
 **NOTE:** If your custom CLI commands use significant stack space, then be sure to adjust `CLI_STACK_BYTES` to account for this.
 
