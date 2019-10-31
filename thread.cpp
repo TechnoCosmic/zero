@@ -419,11 +419,13 @@ int Thread::join() {
 		if (_state != ThreadState::TERMINATED) {
 			block(ThreadState::WAIT_TERM, (uint32_t) this);
 		}
+
 		rc = this->_exitCode;
 		if (!cleanup()) {
 			rc = -1;
 		}
 	}
+	
 	return rc;
 }
 

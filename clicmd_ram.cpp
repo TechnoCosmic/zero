@@ -89,7 +89,7 @@ static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, mem
 	*tx << "\e[0m" << "\r\n";
 	for (uint16_t r = 0; r < 256; r += 16) {
 		*tx << "\e[7m";
-		*tx << setw(4) << hex << right << (int)(offset + r) << "\e[0m ";
+		*tx << setw(4) << hex << right << (uint32_t)(offset + r) << "\e[0m ";
 
 		for (uint8_t c = 0; c < 16; c++) {
 			uint8_t d = memory::read((void*) (r+c+offset), source);

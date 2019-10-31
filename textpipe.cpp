@@ -187,19 +187,7 @@ TextPipe& operator<<(TextPipe& out, const PGM s) {
 TextPipe& operator<<(TextPipe& out, const int16_t v) {
 	char buffer[33];
 	int16_t d = v;
-	itoa(d, buffer, out.getBase(), false);
-
-    if (out.getUppercase()) {
-        char* c = buffer;
-
-        while (*c) {
-            if (islower(*c)) {
-                *c = toupper(*c);
-            }
-            c++;
-        }
-    }
-    
+	itoa(d, buffer, out.getBase(), false, out.getUppercase());
     padString(buffer, memory::MemoryType::SRAM, &out);
 	return out;
 }
@@ -208,7 +196,7 @@ TextPipe& operator<<(TextPipe& out, const int16_t v) {
 TextPipe& operator<<(TextPipe& out, const uint16_t v) {
 	char buffer[33];
 	uint16_t d = v;
-	itoa(d, buffer, out.getBase(), false);
+	itoa(d, buffer, out.getBase(), false, out.getUppercase());
     padString(buffer, memory::MemoryType::SRAM, &out);
 	return out;
 }
@@ -217,7 +205,7 @@ TextPipe& operator<<(TextPipe& out, const uint16_t v) {
 TextPipe& operator<<(TextPipe& out, const int32_t v) {
 	char buffer[33];
 	int32_t d = v;
-	itoa(d, buffer, out.getBase(), false);
+	itoa(d, buffer, out.getBase(), false, out.getUppercase());
     padString(buffer, memory::MemoryType::SRAM, &out);
 	return out;
 }
@@ -226,7 +214,7 @@ TextPipe& operator<<(TextPipe& out, const int32_t v) {
 TextPipe& operator<<(TextPipe& out, const uint32_t v) {
 	char buffer[33];
 	uint32_t d = v;
-	itoa(d, buffer, out.getBase(), false);
+	itoa(d, buffer, out.getBase(), false, out.getUppercase());
     padString(buffer, memory::MemoryType::SRAM, &out);
 	return out;
 }

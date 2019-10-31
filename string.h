@@ -24,6 +24,6 @@ int strlen(const char*);
 int strlenpgm(const char*);
 int strcmppgm(const char*, char*);
 
-char* itoa(int32_t num, char* buffer, const uint16_t base, const bool positive);
+char* itoa(int32_t num, char* buffer, const uint16_t base, const bool positive, const bool ucase);
 
 #endif

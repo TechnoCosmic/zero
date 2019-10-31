@@ -113,7 +113,7 @@ void reverse(char* str, int length) {
 	}
 }
 
-char* itoa(int32_t num, char* str, const uint16_t base, const bool positive) {
+char* itoa(int32_t num, char* str, const uint16_t base, const bool positive, const bool ucase) {
 	int i = 0;
 	bool isNegative = false;
 
@@ -135,7 +135,13 @@ char* itoa(int32_t num, char* str, const uint16_t base, const bool positive) {
 	while (num != 0) {
 		int rem = num % base;
 
-		str[i] = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
+		if (ucase) {
+			str[i] = (rem > 9) ? (rem - 10) + 'A' : rem + '0';
+
+		} else {
+			str[i] = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
+		}
+
 		i++;
 		num /= base;
 	}
