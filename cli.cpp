@@ -49,7 +49,7 @@ int CliCommand::execute(TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
 
 void displayPrompt(TextPipe* rx, TextPipe* tx) {
-    *tx << settextcolor(GREEN) << "zero" << settextcolor(WHITE) << ": " << settextcolor(YELLOW) << "$ " << settextcolor(WHITE);
+    *tx << green << "zero" << white << ": " << yellow << "$ " << white;
 }
 
 

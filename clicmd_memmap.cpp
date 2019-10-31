@@ -38,11 +38,11 @@ clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
             }
             
             if (memory::isPageAvailable(pageNumber)) {
-                *tx << settextcolor(GREEN) << '-';
+                *tx << green << '-';
 
             } else {
                 usedPages++;
-                *tx << settextcolor(RED) << 'X';
+                *tx << red << 'X';
             }
         }
         *tx << "\r\n";
@@ -52,10 +52,11 @@ exit:
 
     const uint16_t usedBytes = memory::getPageSize() * usedPages;
 
-    *tx << settextcolor(WHITE) << "\r\n";
-    *tx << "Total allocatable SRAM: " << (int) ttlRam << "\r\n";
-    *tx << "             Used SRAM:   " << (int) usedBytes << "\r\n";
-    *tx << "        Available SRAM: " << (int) (ttlRam - usedBytes) << "\r\n";
+    *tx << white << dec << setfill(' ') << right << "\r\n";
+    *tx << "Total allocatable SRAM: " << setw(5) << (int) ttlRam << "\r\n";
+    *tx << "             Used SRAM: " << setw(5) << (int) usedBytes << "\r\n";
+    *tx << "        Available SRAM: " << setw(5) << (int) (ttlRam - usedBytes) << "\r\n";
+    *tx << left;
 
     return 0;
 });
