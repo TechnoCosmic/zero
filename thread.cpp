@@ -213,6 +213,8 @@ uint16_t Thread::getStackSize() {
 }
 
 
+#ifdef INSTRUMENTATION
+
 uint16_t Thread::calcCurrentStackBytesUsed() {
 	return (getStackTop() - _sp);
 }
@@ -221,6 +223,8 @@ uint16_t Thread::calcCurrentStackBytesUsed() {
 uint16_t Thread::calcPeakStackBytesUsed() {
 	return (getStackTop() - _lowestSp);
 }
+
+#endif
 
 
 void Thread::setName(const char* newName) {
@@ -464,9 +468,11 @@ ISR(TIMER0_COMPA_vect) {
 	cli();
 	_milliseconds++;
 
+#ifdef INSTRUMENTATION
 	if (_currentThread) {
 		_currentThread->_ticks++;
 	}
+#endif
 
 	// don't have to re-enable ISRs here, because
 	// this *is* an ISR, meaning it will finish with
