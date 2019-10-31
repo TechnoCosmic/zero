@@ -35,7 +35,7 @@ This file is currently the sole documentation for zero. It is very 'alpha' - exp
 
 ## Compatibility
 
-zero is being developed with the ATmega1284 as it's reference MCU. However, it is intended to be compatible with other ATmega architecture MCUs, including the ATmega328, 324, and 644. zero may even work on some ATtiny MCUs, if you turn the appropriate knobs and pull the appropriate levers to get everything to fit. Those knobs and levers are found in `zero_config.h`.
+zero is being developed with the ATmega1284 and ATmega328 as it's reference MCUs. However, it is intended to be compatible with other ATmega architecture MCUs. zero may even work on some ATtiny MCUs, if you turn the appropriate knobs and pull the appropriate levers to get everything to fit. Those knobs and levers are found in `zero_config.h`.
 
 The main requirements for zero to function, at least at the moment, are one 8-bit timer, one 16-bit timer, and SRAM enough for some tiny overhead for the kernel itself (less than 100 bytes currently) and your program. You won't necessarily get a fully functioning interactive CLI over USART, and 14 threads calculating the various meanings of life if your MCU is on the lower-end of the AVR architecture spectrum, of course.
 
@@ -341,7 +341,7 @@ clicommand(mycommand, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 });
 ```
 
-zero will tokenize the command line for you, and hand you the Pipes attached to the USART that the CLI is using. A `TextPipe` is a derived class of `Pipe`, and provides for formatting of strings and numbers, in a similar way to regular `iosteam`. zero also provides its own `iomanip` that can be used with a `TextPipe`.
+zero will tokenize the command line for you, and hand you the Pipes attached to the USART that the CLI is using. A `TextPipe` is a derived class of `Pipe`, and provides for formatting of strings and numbers, in a similar way to regular `iostream`. zero also provides its own `iomanip` that can be used with a `TextPipe`.
 
 **NOTE:** If your custom CLI commands use significant stack space, then be sure to adjust `CLI_STACK_BYTES` to account for this.
 
