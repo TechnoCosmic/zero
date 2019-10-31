@@ -5,8 +5,8 @@
 
 # adjust these to suit your needs
 OUTPUT=zero
-MCU=atmega1284p
-AVRDUDE_PART=m1284p
+MCU=atmega328p
+AVRDUDE_PART=m328p
 AVRDUDE_CFG=pi
 F_CPU=16000000UL
 
