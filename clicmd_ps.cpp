@@ -26,7 +26,7 @@ clicommand(ps, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
             *out << setfill(' ') << setw(24) << PGM(obj->_objectName);
 #ifdef INSTRUMENTATION
-            *out << setfill(' ') << setw(6) << right << dec << (uint16_t) (cur->_ticks);
+            *out << setfill(' ') << setw(9) << right << dec << (int32_t) (cur->_ticks);
 #endif
             *out << "\r\n";
         }
