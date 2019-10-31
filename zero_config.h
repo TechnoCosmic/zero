@@ -29,7 +29,7 @@ namespace zero {
     const uint16_t CLI_RX_PIPE_BYTES = 32;
 
     // CLI TX Pipe buffer bytes
-    const uint16_t CLI_TX_PIPE_BYTES = 128;
+    const uint16_t CLI_TX_PIPE_BYTES = 96;
 
     // CLI stack size
     const uint16_t CLI_STACK_BYTES = 512;
