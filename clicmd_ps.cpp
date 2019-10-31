@@ -89,7 +89,7 @@ void outputThread(Thread* t, TextPipe* tx) {
     uint16_t peakStack = t->calcPeakStackBytesUsed();
     uint32_t ttl = Thread::now();
 
-    *tx << hex;
+    *tx << hex << uppercase;
 
     // stack start address
     *tx << ' ' << setw(4) << setfill('0') << right << (int) t->getStackBottom();
@@ -115,7 +115,11 @@ void outputThread(Thread* t, TextPipe* tx) {
 
     // thread tick count
     displayTime(tx, t->_ticks);					// formatted CPU time
+
+    *tx << nouppercase;
+
 #endif
+
     *tx << "\r\n";
 }
 

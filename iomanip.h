@@ -60,6 +60,14 @@ namespace zero {
     #define left setalignment(Alignment::LEFT)
     #define right setalignment(Alignment::RIGHT)
 
+    struct setuppercase {
+        setuppercase(const bool v);
+        bool _uppercase;
+    };
+
+    #define uppercase setuppercase(true)
+    #define nouppercase setuppercase(false)
+
 }
 
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::settextcolor);
@@ -68,5 +76,6 @@ zero::TextPipe& operator<<(zero::TextPipe&, const zero::setbase);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setw);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setfill);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setalignment);
+zero::TextPipe& operator<<(zero::TextPipe&, const zero::setuppercase);
 
 #endif

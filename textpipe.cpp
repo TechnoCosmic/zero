@@ -90,6 +90,18 @@ Alignment TextPipe::getAlignment() {
 }
 
 
+// setUppercase
+void TextPipe::setUppercase(const bool v) {
+    _uppercase = v;
+}
+
+
+// getUppercase
+bool TextPipe::getUppercase() {
+    return _uppercase;
+}
+
+
 // Pushes a number of the filler character to the Pipe
 static void pushPadding(TextPipe* p, const uint16_t count) {
     const char f = p->getFill();
@@ -176,6 +188,18 @@ TextPipe& operator<<(TextPipe& out, const int16_t v) {
 	char buffer[33];
 	int16_t d = v;
 	itoa(d, buffer, out.getBase(), false);
+
+    if (out.getUppercase()) {
+        char* c = buffer;
+
+        while (*c) {
+            if (islower(*c)) {
+                *c = toupper(*c);
+            }
+            c++;
+        }
+    }
+    
     padString(buffer, memory::MemoryType::SRAM, &out);
 	return out;
 }

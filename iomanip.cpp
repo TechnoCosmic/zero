@@ -65,3 +65,12 @@ TextPipe& operator<<(TextPipe& out, const setalignment sa) {
     out.setAlignment(sa._alignment);
     return out;
 }
+
+
+// uppercase
+setuppercase::setuppercase(const bool v) : _uppercase(v) { }
+
+TextPipe& operator<<(TextPipe& out, const setuppercase su) {
+    out.setUppercase(su._uppercase);
+    return out;
+}

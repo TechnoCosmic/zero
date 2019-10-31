@@ -70,7 +70,7 @@ static void setColorForByte(TextPipe* tx, uint8_t data) {
 
 
 static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, memory::MemoryType source) {
-	// *tx << uppercase;
+	*tx << uppercase;
 	*tx << "\e[7m     " << setfill('0');
 
 	for (uint16_t i = 0; i < 16; i++) {
@@ -120,7 +120,7 @@ static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, mem
 		}
 		*tx << white << "\r\n";
 	}
-	// *tx << nouppercase;
+	*tx << nouppercase;
 }
 
 

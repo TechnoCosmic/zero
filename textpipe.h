@@ -56,6 +56,9 @@ namespace zero {
         void setAlignment(const Alignment alignment);
         Alignment getAlignment();
 
+        void setUppercase(const bool v);
+        bool getUppercase();
+
     private:
         Color _textColor;
         Color _backColor;
@@ -63,6 +66,7 @@ namespace zero {
         int16_t _width;
         Alignment _alignment;
         char _fill;
+        bool _uppercase;
     };
 
 }
