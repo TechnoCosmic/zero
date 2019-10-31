@@ -167,7 +167,7 @@ TextPipe& operator<<(TextPipe& out, const char* s) {
 }
 
 TextPipe& operator<<(TextPipe& out, const PGM s) {
-    padString(s._s, memory::MemoryType::Flash, &out);
+    padString(s._s, memory::MemoryType::FLASH, &out);
 	return out;
 }
 

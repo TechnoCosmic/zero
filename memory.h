@@ -17,7 +17,7 @@ namespace zero {
 
 		enum MemoryType {
 			SRAM = 0,
-			Flash,
+			FLASH,
 			EEPROM
 		};
 

@@ -216,7 +216,7 @@ uint8_t memory::read(const void* address, const MemoryType memType) {
 			rc = *((uint8_t*) address);
 		break;
 
-		case MemoryType::Flash:
+		case MemoryType::FLASH:
 			rc = pgm_read_byte(address);
 		break;
 		
@@ -236,7 +236,7 @@ bool memory::write(const void* address, const uint8_t data, const MemoryType mem
 			return true;
 		break;
 
-		case MemoryType::Flash:
+		case MemoryType::FLASH:
 			return false;
 		break;
 

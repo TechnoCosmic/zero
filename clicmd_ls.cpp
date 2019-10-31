@@ -19,7 +19,7 @@ clicommand(ls, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
         Pipe* out = (Pipe*) data;
 
         if (obj->_objectName) {
-            out->write(obj->_objectName, MemoryType::Flash);
+            out->write(obj->_objectName, MemoryType::FLASH);
             *out << "\r\n";
 
         } else {

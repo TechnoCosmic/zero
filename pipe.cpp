@@ -187,7 +187,7 @@ Pipe& operator<<(Pipe& out, const char* s) {
 
 
 Pipe& operator<<(Pipe& out, const PGM s) {
-	out.write(s._s, memory::MemoryType::Flash);
+	out.write(s._s, memory::MemoryType::FLASH);
 	return out;
 }
 
