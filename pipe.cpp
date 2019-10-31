@@ -192,17 +192,33 @@ Pipe& operator<<(Pipe& out, const PGM s) {
 }
 
 
-Pipe& operator<<(Pipe& out, const int v) {
-	char buffer[32];
-	int d = v;
-	out.write(itoa(d, buffer, 10, true));
+Pipe& operator<<(Pipe& out, const int16_t v) {
+	char buffer[33];
+	int16_t d = v;
+	out.write(itoa(d, buffer, 10, false));
 	return out;
 }
 
 
 Pipe& operator<<(Pipe& out, const uint16_t v) {
-	char buffer[32];
+	char buffer[33];
 	uint16_t d = v;
+	out.write(itoa(d, buffer, 10, false));
+	return out;
+}
+
+
+Pipe& operator<<(Pipe& out, const int32_t v) {
+	char buffer[33];
+	int32_t d = v;
+	out.write(itoa(d, buffer, 10, false));
+	return out;
+}
+
+
+Pipe& operator<<(Pipe& out, const uint32_t v) {
+	char buffer[33];
+	uint32_t d = v;
 	out.write(itoa(d, buffer, 10, false));
 	return out;
 }
