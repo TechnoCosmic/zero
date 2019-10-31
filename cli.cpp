@@ -22,10 +22,10 @@
 using namespace zero;
 
 
-const int BELL = 7;
-const int BACKSPACE = 8;
-const int CR = 13;
-const int ESCAPE = 27;
+const char BELL = 7;
+const char BACKSPACE = 8;
+const char CR = 13;
+const char ESCAPE = 27;
 
 const PROGMEM char _cliRxPipeName[] = "/pipes/cli/rx";
 const PROGMEM char _cliTxPipeName[] = "/pipes/cli/tx";
@@ -49,7 +49,7 @@ int CliCommand::execute(TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
 
 void displayPrompt(TextPipe* rx, TextPipe* tx) {
-    *tx << green << "zero" << white << ": " << yellow << "$ " << white;
+    *tx << green << "zero" << white << ": " << blue << "$ " << white;
 }
 
 

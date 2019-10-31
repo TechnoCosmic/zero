@@ -36,7 +36,7 @@ void TextPipe::setTextColor(const Color color) {
 void TextPipe::setBackColor(const Color color) {
     if (color != _backColor) {
         _backColor = color;
-        
+
         // push the escape codes to the terminal
         *this << "\e[4" << (char) ('0' + _backColor) << 'm';
     }
@@ -102,13 +102,22 @@ static void pushPadding(TextPipe* p, const uint16_t count) {
 
 // Pushes a supplied string into the Pipe, applying any
 // alignment and padding as it does
-static void padString(const char* s, TextPipe* p) {
+static void padString(const char* s, memory::MemoryType source, TextPipe* p) {
     int16_t width = p->getWidth();
     uint16_t leadingPadding = 0;
     uint16_t trailingPadding = 0;
 
     if (width > 0) {
-        int16_t excess = width - strlen(s);
+        uint16_t len = 0;
+        int16_t excess = 0;
+        
+        if (source == memory::MemoryType::SRAM) {
+            len = strlen(s);
+        } else {
+            len = strlenpgm(s);
+        }
+
+        excess = width - len;
 
         if (excess > 0) {
             switch (p->getAlignment()) {
@@ -132,13 +141,14 @@ static void padString(const char* s, TextPipe* p) {
         // reset so that only this string
         // is subject to the padding
         p->setWidth(-1);
+        p->setAlignment(Alignment::LEFT);
     }
 
     // push any leading padding
     pushPadding(p, leadingPadding);
 
     // the string itself
-    *((Pipe*) p) << s;
+    p->write(s, source);
 
     // push any trailing padding
     pushPadding(p, trailingPadding);
@@ -152,7 +162,12 @@ TextPipe& operator<<(TextPipe& out, const char c) {
 
 
 TextPipe& operator<<(TextPipe& out, const char* s) {
-    padString(s, &out);
+    padString(s, memory::MemoryType::SRAM, &out);
+	return out;
+}
+
+TextPipe& operator<<(TextPipe& out, const PGM s) {
+    padString(s._s, memory::MemoryType::Flash, &out);
 	return out;
 }
 
@@ -161,6 +176,15 @@ TextPipe& operator<<(TextPipe& out, const int v) {
 	char buffer[32];
 	int d = v;
 	itoa(d, buffer, out.getBase(), true);
-    padString(buffer, &out);
+    padString(buffer, memory::MemoryType::SRAM, &out);
+	return out;
+}
+
+
+TextPipe& operator<<(TextPipe& out, const uint16_t v) {
+	char buffer[32];
+	uint16_t d = v;
+	itoa(d, buffer, out.getBase(), false);
+    padString(buffer, memory::MemoryType::SRAM, &out);
 	return out;
 }

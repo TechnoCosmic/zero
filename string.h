@@ -18,6 +18,7 @@ void* memset(uint8_t* dest, const uint8_t value, const uint16_t count);
 void* memcpy(uint8_t* dest, const uint8_t* src, const uint16_t count);
 
 int strlen(const char*);
+int strlenpgm(const char*);
 int strcmppgm(const char*, char*);
 
 char* itoa(int16_t num, char* buffer, const int16_t base, const bool positive);

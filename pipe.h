@@ -38,7 +38,7 @@ namespace zero {
 	private:
 		uint16_t calcFirstFreeIndex();
 
-		// This must the first field in the class
+		// This must be the first field in the class
 		NamedObject _systemData;
 		uint16_t _start;
 		uint16_t _length;
@@ -49,10 +49,16 @@ namespace zero {
         PipeFilter _onWrite;
 	};
 
+	struct PGM {
+		PGM(const char* s);
+		const char* _s;
+	};
+
 }
 
 zero::Pipe& operator<<(zero::Pipe& out, const char c);
 zero::Pipe& operator<<(zero::Pipe& out, const char* s);
 zero::Pipe& operator<<(zero::Pipe& out, const int v);
+zero::Pipe& operator<<(zero::Pipe& out, const uint16_t v);
 
 #endif

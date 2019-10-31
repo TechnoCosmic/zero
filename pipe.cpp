@@ -170,19 +170,39 @@ void Pipe::setWriteFilter(const PipeFilter newFilter) {
     _onWrite = newFilter;
 }
 
+
+PGM::PGM(const char* s) : _s(s) { }
+
+
 Pipe& operator<<(Pipe& out, const char c) {
 	out.write(c, true);
 	return out;
 }
+
 
 Pipe& operator<<(Pipe& out, const char* s) {
 	out.write(s);
 	return out;
 }
 
+
+Pipe& operator<<(Pipe& out, const PGM s) {
+	out.write(s._s, memory::MemoryType::Flash);
+	return out;
+}
+
+
 Pipe& operator<<(Pipe& out, const int v) {
 	char buffer[32];
 	int d = v;
 	out.write(itoa(d, buffer, 10, true));
+	return out;
+}
+
+
+Pipe& operator<<(Pipe& out, const uint16_t v) {
+	char buffer[32];
+	uint16_t d = v;
+	out.write(itoa(d, buffer, 10, false));
 	return out;
 }

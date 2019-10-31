@@ -56,6 +56,18 @@ int strlen(const char* s) {
 	return rc;
 }
 
+int strlenpgm(const char* s) {
+	int rc = 0;
+	char charA = pgm_read_byte_near(s);
+
+	while (charA) {
+		rc++;
+		charA = pgm_read_byte_near(++s);
+	}
+
+	return rc;
+}
+
 int strcmppgm(const char* a, char *b) {
 	char charA = pgm_read_byte_near(a);
 

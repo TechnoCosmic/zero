@@ -52,10 +52,10 @@ exit:
 
     const uint16_t usedBytes = memory::getPageSize() * usedPages;
 
-    *tx << white << dec << setfill(' ') << right << "\r\n";
-    *tx << "Total allocatable SRAM: " << setw(5) << (int) ttlRam << "\r\n";
-    *tx << "             Used SRAM: " << setw(5) << (int) usedBytes << "\r\n";
-    *tx << "        Available SRAM: " << setw(5) << (int) (ttlRam - usedBytes) << "\r\n";
+    *tx << white << dec << setfill(' ') << "\r\n";
+    *tx << "Total allocatable SRAM: " << right << setw(5) << (int) ttlRam << "\r\n";
+    *tx << "             Used SRAM: " << right << setw(5) << (int) usedBytes << "\r\n";
+    *tx << "        Available SRAM: " << right << setw(5) << (int) (ttlRam - usedBytes) << "\r\n";
     *tx << left;
 
     return 0;
