@@ -27,6 +27,7 @@ const char BACKSPACE = 8;
 const char CR = 13;
 const char ESCAPE = 27;
 
+
 const PROGMEM char _cliRxPipeName[] = "/pipes/cli/rx";
 const PROGMEM char _cliTxPipeName[] = "/pipes/cli/tx";
 
@@ -53,8 +54,10 @@ void displayPrompt(TextPipe* rx, TextPipe* tx) {
 }
 
 
+const PROGMEM char _welcomeText[] = "\fWelcome to zero\r\n";
+
 void displayWelcome(TextPipe* rx, TextPipe* tx) {
-    *tx << "\fWelcome to zero\r\n";
+    *tx << PGM(_welcomeText);
 }
 
 
@@ -89,6 +92,9 @@ int tokenize(char* s, char* argv[]) {
     return tokenCount;
 }
 
+const PROGMEM char _exitedWithReturnCode[] = "\' exited with return code ";
+const PROGMEM char _isNotCliCommand[] = "': is not a CLI command";
+const PROGMEM char _cmdNotFound[] = "': command not found";
 
 void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
     char* args[CLI_CMD_LINE_MAX_TOKENS];
@@ -99,17 +105,17 @@ void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
 
         if (obj) {
             if (obj->_objectType != ZeroObjectType::CLICOMMAND) {
-                *tx << '\'' << args[0] << "': is not a CLI command\r\n";
+                *tx << '\'' << args[0] << PGM(_isNotCliCommand) << "\r\n";
 
             } else {
                 int returnCode = ((CliCommand*) obj)->execute(rx, tx, count, args);
 
                 if (returnCode) {
-                    *tx << '\'' << args[0] << "\' exited with return code " << '0' + returnCode << "\r\n";
+                    *tx << '\'' << args[0] << PGM(_exitedWithReturnCode) << '0' + returnCode << "\r\n";
                 }
             }
         } else {
-            *tx << '\'' << args[0] << "': command not found\r\n";
+            *tx << '\'' << args[0] << PGM(_cmdNotFound) << "\r\n";
         }
     }
 }
