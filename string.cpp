@@ -16,6 +16,18 @@ int isupper(const char c) {
 	return c >= 'A' && c <= 'Z';
 }
 
+int isdigit(const char c) {
+	return '0' <= c && c <= '9';
+}
+
+int isalpha(const char c) {
+	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+}
+
+int isapnum(const char c) {
+	return isdigit(c) || isalpha(c);
+}
+
 char tolower(const char c) {
 	if (isupper(c)) {
 		return c + 32;

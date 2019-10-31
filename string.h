@@ -11,6 +11,9 @@
 
 int islower(const char c);
 int isupper(const char c);
+int isdigit(const char c);
+int isalpha(const char c);
+int inalnum(const char c);
 
 char tolower(const char c);
 char toupper(const char c);
