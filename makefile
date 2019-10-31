@@ -4,6 +4,10 @@
 #  Catchpole Robotics					Christian Catchpole		christian@catchpole.net
 
 # adjust these to suit your needs
+
+# NOTE: If you adjust the MCU, then be sure you update
+# the fuses section of this makefile - you don't want
+# to brick an MCU because the fuses weren't right!!!
 OUTPUT=zero
 MCU=atmega328p
 AVRDUDE_PART=m328p
@@ -44,6 +48,7 @@ upload: $(OUTPUT).hex
 	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U flash:w:$(OUTPUT).hex
 
 
+# these fuses are verified correct for 328P, 644P, and 1284P
 fuses:
 	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U lfuse:w:0xff:m -U hfuse:w:0xd9:m -U efuse:w:0xff:m
 
