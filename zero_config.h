@@ -26,10 +26,10 @@ namespace zero {
     const uint32_t CLI_BAUD = 57600;
 
     // CLI RX Pipe buffer bytes
-    const uint16_t CLI_RX_PIPE_BYTES = 64;
+    const uint16_t CLI_RX_PIPE_BYTES = 32;
 
     // CLI TX Pipe buffer bytes
-    const uint16_t CLI_TX_PIPE_BYTES = 128;
+    const uint16_t CLI_TX_PIPE_BYTES = 64;
 
     // CLI stack size
     const uint16_t CLI_STACK_BYTES = 512;
@@ -55,7 +55,7 @@ namespace zero {
     // #define IDLE_BLINK
 
     // Memory allocator page size
-    const uint8_t PAGE_BYTES = 64;
+    const uint8_t PAGE_BYTES = 32;
 
 }
 
