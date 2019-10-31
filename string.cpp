@@ -101,45 +101,44 @@ void reverse(char* str, int length) {
 	}
 }
 
-// Implementation of itoa()
-char* itoa(int16_t num, char* buffer, const int16_t base, const bool positive) {
-	uint8_t i = 0;
+char* itoa(int16_t num, char* str, const uint16_t base, const bool positive) {
+	int i = 0;
 	bool isNegative = false;
 
 	// handle 0 explicitely, otherwise empty string is printed for 0
 	if (num == 0) {
-		buffer[i++] = '0';
-		buffer[i] = '\0';
-		return buffer;
+		str[i++] = '0';
+		str[i] = '\0';
+		
+		return str;
 	}
-
 	// in standard itoa(), negative numbers are handled only with
 	// base 10. otherwise numbers are considered unsigned.
 	if (positive && num < 0 && base == 10) {
 		isNegative = true;
 		num = -num;
 	}
-
+	
 	// process individual digits
 	while (num != 0) {
-		int32_t rem = num % base;
+		int rem = num % base;
 
-		buffer[i] = (rem > 9) ? (rem - 10) + 'A' : rem + '0';
+		str[i] = (rem > 9) ? (rem - 10) + 'a' : rem + '0';
 		i++;
 		num /= base;
 	}
-
+	
 	// if number is negative, append '-'
 	if (isNegative) {
-		buffer[i++] = '-';
+		str[i++] = '-';
 	}
-
+	
 	// append null terminator
-	buffer[i] = '\0';
-
+	str[i] = '\0';
+	
 	// reverse the string
-	reverse(buffer, i);
+	reverse(str, i);
 
 	// escape
-	return buffer;
+	return str;
 }

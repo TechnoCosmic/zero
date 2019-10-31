@@ -21,6 +21,6 @@ int strlen(const char*);
 int strlenpgm(const char*);
 int strcmppgm(const char*, char*);
 
-char* itoa(int16_t num, char* buffer, const int16_t base, const bool positive);
+char* itoa(int16_t num, char* buffer, const uint16_t base, const bool positive);
 
 #endif
