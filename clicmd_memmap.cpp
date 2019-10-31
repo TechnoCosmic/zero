@@ -21,38 +21,28 @@ const int PAGES_PER_ROW = 32;
 
 clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     const int totalPages = memory::getTotalPages();
-    const int rows = ROUND_UP(totalPages / PAGES_PER_ROW, 8);
-
     const uint16_t ttlRam = memory::getTotalBytes();
     uint16_t usedPages = 0UL;
 
     *tx << "Allocation table\r\n\n";
 
-    for (int row = 0; row < rows; row++) {
-        for (int col = 0; col < PAGES_PER_ROW; col++) {
-            uint8_t pageNumber = row * PAGES_PER_ROW + col;
+    for (uint16_t curPageNumber = 0; curPageNumber < totalPages; curPageNumber++) {
+        if (memory::isPageAvailable(curPageNumber)) {
+            *tx << green << '-';
 
-            if (pageNumber == totalPages) {
-                *tx << "\r\n";
-                goto exit;
-            }
-            
-            if (memory::isPageAvailable(pageNumber)) {
-                *tx << green << '-';
-
-            } else {
-                usedPages++;
-                *tx << red << 'X';
-            }
+        } else {
+            usedPages++;
+            *tx << red << '*';
         }
-        *tx << "\r\n";
-    }
 
-exit:
+        if ((curPageNumber+1) % 32 == 0) {
+            *tx << "\r\n";
+        }
+    }
 
     const uint16_t usedBytes = memory::getPageSize() * usedPages;
 
-    *tx << white << dec << setfill(' ') << "\r\n";
+    *tx << white << dec << setfill(' ') << "\r\n\n";
     *tx << "Total allocatable SRAM: " << right << setw(5) << (int) ttlRam << "\r\n";
     *tx << "             Used SRAM: " << right << setw(5) << (int) usedBytes << "\r\n";
     *tx << "        Available SRAM: " << right << setw(5) << (int) (ttlRam - usedBytes) << "\r\n";
