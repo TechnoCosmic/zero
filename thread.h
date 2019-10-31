@@ -29,7 +29,6 @@ namespace zero {
 		WAIT_TERM,
 		WAIT_READ,
 		WAIT_WRITE,
-		WAIT_SEMA,
 	};
 
 	// Thread class
@@ -59,6 +58,14 @@ namespace zero {
 		// Housekeeping
 		void setName(const char* name);
 
+		// Properties
+		uint16_t getStackBottom();
+		uint16_t getStackTop();
+		uint16_t getStackSize();
+
+		uint16_t calcCurrentStackBytesUsed();
+		uint16_t calcPeakStackBytesUsed();
+
 		// miscellaneous, but sort of related!
 		static uint32_t now();
 
@@ -80,7 +87,7 @@ namespace zero {
 
 	#ifdef INSTRUMENTATION
 		uint32_t _ticks;
-		uint16_t _peakSp;
+		uint16_t _lowestSp;
 	#endif
 
 	private:

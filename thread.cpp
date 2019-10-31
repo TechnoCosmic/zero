@@ -150,7 +150,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 
 #ifdef INSTRUMENTATION
 	_ticks = 0UL;
-	_peakSp = 0UL;
+	_lowestSp = _sp;
 #endif
 }
 
@@ -197,6 +197,32 @@ Thread* Thread::create(const uint16_t stackSize, const ThreadEntryPoint entryPoi
 	}
 }
 
+
+uint16_t Thread::getStackBottom() {
+	return (uint16_t) _stackBottom;
+}
+
+
+uint16_t Thread::getStackTop() {
+	return ((uint16_t) _stackBottom) + _stackSize - 1;
+}
+
+
+uint16_t Thread::getStackSize() {
+	return _stackSize;
+}
+
+
+uint16_t Thread::calcCurrentStackBytesUsed() {
+	return (getStackTop() - _sp);
+}
+
+
+uint16_t Thread::calcPeakStackBytesUsed() {
+	return (getStackTop() - _lowestSp);
+}
+
+
 void Thread::setName(const char* newName) {
 	this->_systemData._objectName = newName;
 }
@@ -212,9 +238,9 @@ Thread* Thread::createIdleThread() {
 	if (newThread) {
 		newThread->configureThread(_idleThreadName, stackBottom, allocated, []() {
 #ifdef IDLE_BLINK
-			DDRC = PORTC = 0xFF;
+			DDRB = PORTB = (1 << PINB5);
 			while (true) {
-				PORTC = ~PORTC;
+				PORTB ^= (1 << PINB5);
 				_delay_ms(1000);
 			}
 #else
@@ -222,8 +248,10 @@ Thread* Thread::createIdleThread() {
 #endif
 			return 0;
 		});
+		
 		newThread->_state = ThreadState::READY;
 	}
+	
 	return newThread;
 }
 
@@ -236,6 +264,8 @@ bool Thread::setParameter(const int parameterNumber, const uint16_t value) {
 	}
 }
 
+#define SCALE(x) ((F_CPU * (x)) / 16000000UL)
+
 // initializes and starts the pre-emptive scheduler
 void Thread::init() {
 	// 8-bit Timer/Counter0
@@ -243,7 +273,7 @@ void Thread::init() {
 	TCNT0 = 0;											// reset counter to 0
 	TCCR0A = (1 << WGM01);								// CTC
 	TCCR0B = (1 << CS01) | (1 << CS00);					// /64 prescalar
-	OCR0A = 249;										// 1ms
+	OCR0A = SCALE(250)-1;								// 1ms
 	TIMSK0 |= (1 << OCIE0A);							// enable ISR
 
 	// 16-bit Timer/Counter1
@@ -251,7 +281,7 @@ void Thread::init() {
 	TCNT1 = 0;											// reset counter to 0
 	TCCR1A = 0;											// CTC
 	TCCR1B = (1 << WGM12) | (1 << CS11) | (1 << CS10);	// /64 prescalar
-	OCR1A = (250UL * TIMESLICE_MS) - 1;					// switching counter
+	OCR1A = (SCALE(250UL) * TIMESLICE_MS) - 1;			// switching counter
 
 	// set up the idle Thread
 	_idleThread = Thread::createIdleThread();
@@ -284,12 +314,11 @@ static inline void saveCurrentContext() {
 		_currentThread->_rampz = RAMPZ;
 #endif
 
-	// switch to the 'kernel' stack
-	SP = _originalSp;
+		// switch to the 'kernel' stack
+		SP = _originalSp;
 
 #ifdef INSTRUMENTATION
-	_currentThread->_ticks += (OCR1A + 1) / 250;
-	_currentThread->_peakSp = MIN(_currentThread->_peakSp, _currentThread->_sp);
+		_currentThread->_lowestSp = MIN(_currentThread->_lowestSp, _currentThread->_sp);
 #endif
 	}
 
@@ -434,6 +463,10 @@ volatile uint32_t _milliseconds = 0UL;
 ISR(TIMER0_COMPA_vect) {
 	cli();
 	_milliseconds++;
+
+	if (_currentThread) {
+		_currentThread->_ticks++;
+	}
 
 	// don't have to re-enable ISRs here, because
 	// this *is* an ISR, meaning it will finish with
