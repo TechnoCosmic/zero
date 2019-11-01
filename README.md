@@ -2,6 +2,8 @@
 
 zero is a pre-emptive multi-tasking kernel/OS for AVR architecture MCUs, proudly designed and developed in Australia.
 
+![zero CLI](http://www.tcri.com.au/github/zero_ps.png)
+
 Main features include...
 
 - [x] Fully pre-emptive scheduler
