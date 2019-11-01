@@ -42,7 +42,10 @@ namespace zero {
 		TextPipe(const char* name, uint16_t bufferSize, const bool strictSize = false);
 
         void setTextColor(const Color color);
+        Color getTextColor();
+
         void setBackColor(const Color color);
+        Color getBackColor(void);
 
         void setBase(const uint8_t base);
         uint8_t getBase();

@@ -21,7 +21,7 @@ TextPipe::TextPipe(const char* name, uint16_t bufferSize, const bool strictSize)
 }
 
 
-// setTextColor()
+// setTextColor
 void TextPipe::setTextColor(const Color color) {
     if (color != _textColor) {
         _textColor = color;
@@ -29,6 +29,12 @@ void TextPipe::setTextColor(const Color color) {
         // push the escape codes to the terminal
         *this << "\e[3" << (char) ('0' + _textColor) << 'm';
     }
+}
+
+
+// getTextColor
+Color TextPipe::getTextColor() {
+    return _textColor;
 }
 
 
@@ -40,6 +46,12 @@ void TextPipe::setBackColor(const Color color) {
         // push the escape codes to the terminal
         *this << "\e[4" << (char) ('0' + _backColor) << 'm';
     }
+}
+
+
+// getBackColor
+Color TextPipe::getBackColor() {
+    return _backColor;
 }
 
 
@@ -59,6 +71,7 @@ uint8_t TextPipe::getBase() {
 void TextPipe::setWidth(const int16_t width) {
     _width = width;    
 }
+
 
 // getWidth
 int16_t TextPipe::getWidth() {
