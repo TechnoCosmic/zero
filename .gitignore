@@ -3,6 +3,5 @@
 *.o
 *.elf
 *.gch
-.vscode/
 .vscode/*
 !.vscode/zero.*

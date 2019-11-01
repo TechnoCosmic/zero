@@ -1,0 +1,105 @@
+{
+	"Atomic Block": {
+		"prefix": [ "atomic", "atomic-block" ],
+		"body": [
+			"ATOMIC_BLOCK(${1|ATOMIC_RESTORESTATE,ATOMIC_FORCEON|}) {",
+			"\t$0",
+			"}",
+		],
+	},
+
+	"zero Atomic Block": {
+		"prefix": [ "zero-atomic", "zero-atomic-block" ],
+		"body": [
+			"ZERO_ATOMIC_BLOCK(${1|ZERO_ATOMIC_RESTORESTATE,ZERO_ATOMIC_FORCEON|}) {",
+			"\t$0",
+			"}",
+		],
+	},
+
+	"zero Thread": {
+		"prefix": [ "thread", "zero-thread"],
+		"body": [
+			"thread(${1:name}, ${2:stackBytes}, {",
+			"\t$0",
+			"\treturn 0;",
+			"});",
+			""
+		],
+		"description": "Statically declared zero Thread"
+	},
+
+	"Async function call": {
+		"prefix": ["async", "afc" ],
+		"body": [
+			"Thread* ${1:name} = Thread::create(${2:stackBytes}, [](){",
+			"\t${3:// async code}",
+			"\treturn 0;",
+			"});",
+			"",
+			"// start it running, will join later",
+			"${1:name}->run(true);",
+			"",
+			"// do other stuff",
+			"$0",
+			"",
+			"// wait for async code to finish",
+			"int ${4:returnCode} = ${1:name}->join();",
+		]
+	},
+
+	"Source file beginning": {
+		"prefix": "begin",
+		"body": [
+			"/*",
+			" * zero - pre-emptive multitasking kernel for AVR",
+			" *",
+			" *  Techno Cosmic Research Institute\tDirk Mahoney\t\t\tdirk@tcri.com.au",
+			" *  Catchpole Robotics\t\t\t\t\tChristian Catchpole\t\tchristian@catchpole.net",
+			" * ",
+			" */",
+			"",
+			"$0",
+		]
+	},
+
+	"Header file #defines": {
+		"prefix": [ "hdr", "header", "header-defines" ],
+		"body": [
+			"#ifndef ${2:TCRI_ZERO}_${1:${TM_FILENAME_BASE/(.*)/${1:/upcase}/}}_H",
+			"#define ${2:TCRI_ZERO}_${1:${TM_FILENAME_BASE/(.*)/${1:/upcase}/}}_H",
+			"",
+			"$0",
+			"",
+			"#endif"
+		]
+	},
+
+	"PROGMEM string": {
+		"prefix": "pgm",
+		"body": "const PROGMEM char _${1:variable}[] = \"${2:text}\";",
+	},
+
+	"CLI Command": {
+		"prefix": [ "clicmd", "cli-command"],
+		"body": [
+			"clicommand(${1:name}, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {",
+			"\t$0",
+			"\treturn 0;",
+			"});",
+		],
+	},
+
+	"NamedObject iteration": {
+		"prefix": "noit",
+		"body": [
+			"NamedObject::iterate(${1:handInObject}, [](void* data, NamedObject* obj) {",
+			"\t${2:handInType}* ${3:handInName} = (${2:handInType}*) data;",
+			"",
+			"\t$0",
+			"",
+			"\treturn true;",
+			"});",
+		],
+	},
+}
