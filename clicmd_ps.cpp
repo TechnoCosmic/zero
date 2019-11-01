@@ -92,29 +92,29 @@ void outputThread(Thread* t, TextPipe* tx) {
     *tx << hex << uppercase;
 
     // stack start address
-    *tx << ' ' << setw(4) << setfill('0') << right << (int) t->getStackBottom();
+    *tx << ' ' << setw(4) << setfill('0') << right << (int32_t) t->getStackBottom();
 
     // stack end address
-    *tx << '-' << setw(4) << setfill('0') << right << (int) t->getStackTop();
+    *tx << '-' << setw(4) << setfill('0') << right << (int32_t) t->getStackTop();
 
     // stack usage
     *tx << " (" << dec << setfill(' ');
 
     // stack current
-    *tx << setw(5) << right << (int) curStack << '/';
+    *tx << setw(5) << right << (int32_t) curStack << '/';
 
     // stack peak
-    *tx << setw(5) << right << (int) peakStack << '/';
+    *tx << setw(5) << right << (int32_t) peakStack << '/';
 
     // stack total available
-    *tx << setw(5) << right << (int) t->getStackSize() << ')';
+    *tx << setw(5) << right << (int32_t) t->getStackSize() << ')';
 
     // CPU%
-    int pc = (t->_ticks * 1000UL) / ttl;
-    *tx << "  " << setw(3) << right << (int) (pc / 10) << '.' << pc % 10  <<  "%   ";
+    int32_t pc = (t->_ticks * 1000UL) / ttl;
+    *tx << "  " << setw(3) << right << (int32_t) (pc / 10) << '.' << pc % 10  <<  "%   ";
 
     // thread tick count
-    displayTime(tx, t->_ticks);					// formatted CPU time
+    displayTime(tx, t->_ticks);
 
     *tx << nouppercase;
 
