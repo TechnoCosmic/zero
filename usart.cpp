@@ -72,6 +72,8 @@ Pipe* Usart::getTxPipe() {
 }
 
 ISR(USART_RX_vect) {
+    cli();
+
     // write the incoming byte to the Pipe
     if (!_usart->getRxPipe()->write(UDR0, false)) {
         // TODO: Error - buffer full
@@ -79,6 +81,8 @@ ISR(USART_RX_vect) {
 }
 
 ISR(USART_UDRE_vect) {
+    cli();
+
     Pipe* tx = _usart->getTxPipe();
 
     if (tx->isEmpty()) {
