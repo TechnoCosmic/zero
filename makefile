@@ -26,7 +26,7 @@ FLAGS +=-DF_CPU=$(F_CPU)
 OBJ:=$(patsubst %.cpp,%.o,$(wildcard *.cpp))
 
 
-.PHONY: push fuses upload clean
+.PHONY: push fuses upload clean gettools
 
 
 %.o: %.cpp
@@ -64,3 +64,7 @@ clean:
 	@echo -n "Cleaning up..."
 	@rm -f *.o *.elf *.hex *.gch
 	@echo " done"
+
+
+gettools:
+	@sudo apt-get -y install gcc-avr binutils-avr gdb-avr avr-libc avrdude
