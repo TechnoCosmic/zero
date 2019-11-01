@@ -88,6 +88,8 @@ static void globalThreadEntry(Thread* t) {
 		Thread::unblock(ThreadState::WAIT_TERM, (uint32_t) t);
 	}
 	
+	_currentThread = 0UL;
+
 	yield_internal();
 }
 
@@ -235,7 +237,7 @@ Thread* Thread::createIdleThread() {
 				_delay_ms(1000);
 			}
 #else
-			while (true);				;
+			while (true);
 #endif
 			return 0;
 		});
@@ -406,6 +408,7 @@ int Thread::join() {
 		}
 
 		rc = this->_exitCode;
+
 		if (!cleanup()) {
 			rc = -1;
 		}

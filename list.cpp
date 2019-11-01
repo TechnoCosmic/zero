@@ -56,6 +56,9 @@ bool List<T>::prepend(T* item) {
 
 template <class T>
 bool List<T>::remove(T* item) {
+    const bool newHead = (item == getHead());
+    const bool newTail = (item == getTail());
+
     if (!canModify()) {
         return false;
     }
@@ -72,6 +75,14 @@ bool List<T>::remove(T* item) {
 
     if (next) {
         next->_prev = prev;
+    }
+
+    if (newHead) {
+        _head = next;
+    }
+
+    if (newTail) {
+        _tail = prev;
     }
 
     return true;
