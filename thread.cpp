@@ -25,19 +25,15 @@ using namespace zero;
 const int REGISTER_COUNT = 32;
 const int PC_COUNT = 2;
 
-static inline void swapReadyLists() __attribute__((always_inline));
 static inline void saveCurrentContext() __attribute__((always_inline));
 static inline void restoreNewContext(Thread* t) __attribute__((always_inline));
 static inline Thread* selectNextThread() __attribute__((always_inline));
 static inline void yield_internal() __attribute__((always_inline));
 
-static const char PROGMEM DEFAULT_NAME[] = "/threads/noname";
+static const PROGMEM char DEFAULT_NAME[] = "/threads/noname";
 
 static uint16_t _originalSp;
-static int _activeList = 0;
-static int _inactiveList = 1;
-static List<Thread> _readyList[2];
-static List<Thread> _blockedList;
+static List<Thread> _readyList;
 static Thread* _currentThread = 0UL;
 static Thread* _idleThread = 0UL;
 
@@ -49,7 +45,7 @@ bool Thread::remove() {
 			return false;
 		}
 
-		_readyList[_activeList].remove(this);
+		_readyList.remove(this);
 
 		return true;
 	}
@@ -167,7 +163,7 @@ Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoin
 			NamedObject::add((NamedObject*) this);
 
 			// and to the thread list
-			_readyList[_activeList].append(this);
+			_readyList.append(this);
 		}
 	}
 }
@@ -189,7 +185,7 @@ Thread* Thread::create(const uint16_t stackSize, const ThreadEntryPoint entryPoi
 				NamedObject::add((NamedObject*) newThread);
 
 				// and to the thread list
-				_readyList[_activeList].append(newThread);
+				_readyList.append(newThread);
 			}
 		}
 
@@ -298,16 +294,6 @@ void Thread::init() {
 	_originalSp = SP;
 }
 
-static inline void swapReadyLists() {
-	if (_activeList == 0) {
-		_activeList = 1;
-		_inactiveList = 0;
-	} else {
-		_activeList = 0;
-		_inactiveList = 1;
-	}
-}
-
 // Saves the current state of the MCU to _currentThread
 static inline void saveCurrentContext() {
 	SAVE_REGS;
@@ -372,7 +358,7 @@ static inline Thread* getNextThread(Thread* firstToCheck) {
 		cur = cur->_next;
 
 		if (!cur) {
-			cur = _readyList[_activeList].getHead();
+			cur = _readyList.getHead();
 		}
 
 		// if we've come full circle, escape
@@ -387,7 +373,7 @@ static inline Thread* selectNextThread() {
 	Thread* firstToCheck = _currentThread->_next;
 
 	if (!firstToCheck || firstToCheck == _idleThread) {
-		firstToCheck = _readyList[_activeList].getHead();
+		firstToCheck = _readyList.getHead();
 	}
 
 	return getNextThread(firstToCheck);
@@ -440,7 +426,7 @@ void Thread::block(const ThreadState newState, uint32_t blockInfo) {
 // Unblock any/all Threads matching a given state and blockInfo
 void Thread::unblock(const ThreadState state, const uint32_t blockInfo) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		Thread* cur = _readyList[_activeList].getHead();
+		Thread* cur = _readyList.getHead();
 
 		while (cur) {
 			Thread* next = cur->_next;
