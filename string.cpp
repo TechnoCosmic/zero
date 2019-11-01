@@ -83,7 +83,7 @@ int strlenpgm(const char* s) {
 int strcmppgm(const char* a, char *b) {
 	char charA = pgm_read_byte_near(a);
 
-	while (charA) {
+	while (charA && *b) {
 		if (charA != *b) {
 			return charA - *b;
 		}
@@ -91,7 +91,7 @@ int strcmppgm(const char* a, char *b) {
 		charA = pgm_read_byte_near(a);
 		b++;
 	}
-	return 0;
+	return charA - *b;
 }
 
 // swap two characters around
