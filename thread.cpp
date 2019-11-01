@@ -68,68 +68,59 @@ bool Thread::cleanup() {
 	}
 }
 
-volatile int _trc;
 
-void terminate() {
-	// grab the 16-bit int return code from the thread
-	asm volatile (
-		"		cli					\n"
-		"		sts	_trc, r24		\n"
-		"		sts	_trc+1, r25		\n"
-	);
-	_currentThread->_exitCode = _trc;
+// all threads start in here, so we can clean up after them easily
+static void globalThreadEntry(Thread* t) {
+	// run the thread, and capture it's return code
+	t->_exitCode = t->_entryPoint();
 
-	// mark as terminated
-	_currentThread->_state = ThreadState::TERMINATED;
+	// mark it as terminated
+	t->_state = ThreadState::TERMINATED;
 
-	// delink from threads list
-	_currentThread->remove();
+	// remove from the list of running threads
+	t->remove();
 
-	// unblock anyone waiting for that Thread to terminate
-	Thread::unblock(ThreadState::WAIT_TERM, (uint32_t) _currentThread);
+	if (!t->_willJoin) {
+		t->cleanup();
 
-	// full cleanup if this thread won't be join()ed
-	if (!_currentThread->_willJoin) {
-		if (_currentThread->cleanup()) {
-			// clear this so that the scheduler won't attempt to
-			// save any context for us, since we're terminating
-			_currentThread = 0UL;
-
-		} else {
-			// TODO: logging code to explain the cleanup error
-		}
+	} else {
+		// unblock anyone waiting to join()
+		Thread::unblock(ThreadState::WAIT_TERM, (uint32_t) t);
 	}
-
-	// yield so as to immediately cease execution of this Thread
+	
 	yield_internal();
 }
 
+
 // Configure a chunk of memory so it can be used as a stack for a Thread
-uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
+uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize) {
 	uint8_t* stackEnd = &stack[stackSize-1];
 
 	// clear the stack space in case it's recycled memory
 	memset(stack, 0, stackSize);
 
-	// the exit handler for when the Thread terminates
-	stackEnd[ 0] = ((uint16_t) terminate) & 0xFF;
-	stackEnd[-1] = ((uint16_t) terminate) >> 8;
-
 	// the entry point for the Thread
-	stackEnd[-2] = ((uint16_t) entryPoint) & 0xFF;
-	stackEnd[-3] = ((uint16_t) entryPoint) >> 8;
+	stackEnd[ 0] = ((uint16_t) globalThreadEntry) & 0xFF;
+	stackEnd[-1] = ((uint16_t) globalThreadEntry) >> 8;
 
-	return (uint16_t) &stackEnd[-(REGISTER_COUNT + (PC_COUNT * 2))];
+
+
+	return (uint16_t) &stackEnd[-(REGISTER_COUNT + (PC_COUNT * 1))];
 }
 
 // configure the Thread object ready for the execution of a new Thread
 void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
 	// prepare the stack and register
-	_sp = Thread::prepareStack(stack, stackSize, entryPoint);
+	_sp = Thread::prepareStack(stack, stackSize);
 	_sreg = 0;
 #ifdef RAMPZ
 	_rampz = 0;
 #endif
+
+	_entryPoint = entryPoint;
+
+	// pass ourselves in as a parameter to the launch function
+	setParameter(0, (uint16_t) this);
 
 	// stack details
 	_stackBottom = stack;
@@ -255,14 +246,22 @@ Thread* Thread::createIdleThread() {
 	return newThread;
 }
 
-bool Thread::setParameter(const int parameterNumber, const uint16_t value) {
+
+#define REG_FOR_PARAM(p) (24-((p)*2))
+#define OFFSET_FOR_REG(r) ((r)+1)
+
+bool Thread::setParameter(const uint8_t parameterNumber, const uint16_t v) {
 	if (parameterNumber >= 0 && parameterNumber <= 8) {
-		const int reg = 24 - (parameterNumber * 2);
-		const int absRamIndex = _sp + (reg + 1);
-		((uint16_t*) 0)[absRamIndex + 1] = value >> 8;
-		((uint16_t*) 0)[absRamIndex + 0] = value;
+		const int8_t offset = OFFSET_FOR_REG(REG_FOR_PARAM(parameterNumber));
+		((uint8_t*)0)[_sp+offset+0] = v & 0xFF;
+		((uint8_t*)0)[_sp+offset+1] = v >> 8;
+
+		return true;
 	}
+
+	return false;
 }
+
 
 #define SCALE(x) ((F_CPU * (x)) / 16000000UL)
 

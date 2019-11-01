@@ -47,7 +47,7 @@ namespace zero {
 		// Thread creation
 		Thread(const char*, const uint16_t stackSize, const ThreadEntryPoint entryPoint);
 		static Thread* create(const uint16_t stackSize, const ThreadEntryPoint entryPoint);
-		bool setParameter(const int parameterNumber, const uint16_t value);
+		bool setParameter(const uint8_t parameterNumber, const uint16_t value);
 
 		// Thread management
 		bool run(bool willJoin);
@@ -83,6 +83,7 @@ namespace zero {
 
 		bool _willJoin;
 		ThreadState _state;
+		int (*_entryPoint)();
 		int _exitCode;
 
 	#ifdef INSTRUMENTATION
@@ -92,7 +93,7 @@ namespace zero {
 
 	private:
 		void configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint);
-		static uint16_t prepareStack(uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint);
+		static uint16_t prepareStack(uint8_t* stack, const uint16_t stackSize);
 		static Thread* createIdleThread();
 
 		uint32_t _blockInfo;
