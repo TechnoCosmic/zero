@@ -85,6 +85,7 @@ void outputThread(Thread* t, TextPipe* tx) {
     *tx << setw(13) << (PGM) stateString[t->_state];
 
 #ifdef INSTRUMENTATION
+
     uint16_t curStack = t->calcCurrentStackBytesUsed();
     uint16_t peakStack = t->calcPeakStackBytesUsed();
     uint32_t ttl = Thread::now();
@@ -107,7 +108,7 @@ void outputThread(Thread* t, TextPipe* tx) {
     *tx << setw(5) << right << (int32_t) peakStack << '/';
 
     // stack total available
-    *tx << setw(5) << right << (int32_t) t->getStackSize() << ')';
+    *tx << setw(5) << right << (int32_t) t->getStackSizeBytes() << ')';
 
     // CPU%
     int32_t pc = (t->_ticks * 1000UL) / ttl;
