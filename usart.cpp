@@ -8,12 +8,15 @@
 
 #include <stdint.h>
 #include <avr/io.h>
+#include <avr/power.h>
 #include <avr/interrupt.h>
 #include "usart.h"
 #include "pipe.h"
 #include "thread.h"
 
+
 using namespace zero;
+
 
 static Usart* _usart = 0UL;
 
@@ -28,6 +31,9 @@ Usart::Usart(const uint32_t baud, Pipe* rx, Pipe* tx) {
     // set up the USART hardware
     const uint16_t pre = (F_CPU / (16UL * baud)) - 1;
 
+
+    power_usart0_enable();
+
     _rx = rx;
     _tx = tx;
 
@@ -40,9 +46,8 @@ Usart::Usart(const uint32_t baud, Pipe* rx, Pipe* tx) {
             // setup for transmitting data
             UCSR0B |= (1 << TXEN0) | (1 << UDRIE0);
     
-            // hook into the transmit Pipe's write() filter
-            // so we can enable and disable the USART TX
-            // ISR when needed
+            // hook into the transmit Pipe's write() filter so we
+            // can enable and disable the USART TX ISR when needed
             _tx->setWriteFilter(writeFilter);
         }
     
@@ -53,6 +58,7 @@ Usart::Usart(const uint32_t baud, Pipe* rx, Pipe* tx) {
         UBRR0H = (uint8_t) pre >> 8;
         UBRR0L = (uint8_t) pre;
     
+        // remember who we are for the ISRs
         _usart = this;
     }
 }

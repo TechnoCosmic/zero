@@ -170,7 +170,8 @@ Thread* Thread::create(const uint16_t stackSize, const ThreadEntryPoint entryPoi
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
 		uint16_t allocated = 0UL;
-		uint8_t* stackBottom = memory::allocate(MAX(stackSize, THREAD_MIN_STACK_BYTES), &allocated, memory::AllocationSearchDirection::TopDown);
+		uint16_t requestedStackBytes = MAX(stackSize, THREAD_MIN_STACK_BYTES);
+		uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, memory::AllocationSearchDirection::TopDown);
 		Thread* newThread = (Thread*) stackBottom;
 
 		if (newThread) {
@@ -191,47 +192,65 @@ Thread* Thread::create(const uint16_t stackSize, const ThreadEntryPoint entryPoi
 }
 
 
+// returns the address of the bottom of the Thread's stack
 uint16_t Thread::getStackBottom() {
 	return (uint16_t) _stackBottom;
 }
 
 
+// returns the address of the top of the Thread's stack
 uint16_t Thread::getStackTop() {
 	return ((uint16_t) _stackBottom) + _stackSize - 1;
 }
 
 
-uint16_t Thread::getStackSize() {
+// returns the size of the Thread's stack, in bytes
+uint16_t Thread::getStackSizeBytes() {
 	return _stackSize;
 }
 
 
 #ifdef INSTRUMENTATION
 
+
+// returns true if the Thread was created dyanmically, false if it was globally declared
+bool Thread::isDynamic() {
+	return ((uint16_t) this) == getStackBottom();
+}
+
+
+// returns the number of bytes of stack used at the last context switch
 uint16_t Thread::calcCurrentStackBytesUsed() {
-	int extra = (((uint16_t) this) == getStackBottom()) ? sizeof(Thread) : 0;
+	int extra = isDynamic() ? sizeof(Thread) : 0;
 	return (getStackTop() - _sp) + extra;
 }
 
 
+// returns the most number of bytes of stack used at any context switch
 uint16_t Thread::calcPeakStackBytesUsed() {
-	int extra = (((uint16_t) this) == getStackBottom()) ? sizeof(Thread) : 0;
+	int extra = isDynamic() ? sizeof(Thread) : 0;
 	return (getStackTop() - _lowestSp) + extra;
 }
+
 
 #endif
 
 
+// sets the name of the Thread
+// NOTE: newName is expected to be a pointer into Flash/PROGMEM
 void Thread::setName(const char* newName) {
 	this->_systemData._objectName = newName;
 }
 
+
 const PROGMEM char _idleThreadName[] = "/threads/idle";
+
 
 // creates the idle thread, for running when nothing else wants to
 Thread* Thread::createIdleThread() {
 	uint16_t allocated = 0UL;
-	uint8_t* stackBottom = memory::allocate(MAX(IDLE_THREAD_STACK_BYTES, THREAD_MIN_STACK_BYTES), &allocated, memory::AllocationSearchDirection::TopDown);
+	uint16_t requestedStackBytes = MAX(IDLE_THREAD_STACK_BYTES, THREAD_MIN_STACK_BYTES);
+	uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, memory::AllocationSearchDirection::TopDown);
 	Thread* newThread = (Thread*) stackBottom;
 
 	if (newThread) {
@@ -280,6 +299,7 @@ void Thread::init() {
 	TCNT0 = 0;											// reset counter to 0
 	TCCR0A = (1 << WGM01);								// CTC
 	TCCR0B = (1 << CS01) | (1 << CS00);					// /64 prescalar
+	// BUG: TODO: This doesn't actually scale up because 8-bit, only scales down
 	OCR0A = SCALE(250)-1;								// 1ms
 	TIMSK0 |= (1 << OCIE0A);							// enable ISR
 
@@ -350,31 +370,42 @@ static inline void yield_internal() {
 	restoreNewContext(t);
 }
 
+
+// main decision maker for the round-robin scheduler
 static inline Thread* getNextThread(Thread* firstToCheck) {
 	Thread* rc = 0UL;
 	Thread* cur = firstToCheck;
 	Thread* startedAt = firstToCheck;
 
-	// otherwise, find something to run
+	// while we have something to check...
 	while (cur) {
+		// if it's ready to run, we're done!
 		if (cur->_state == ThreadState::READY) {
 			rc = cur;
 			break;
 		}
 
+		// otherwise get the next Thread
 		cur = cur->_next;
 
+		// if we got to the end of the list,
+		// start again at the head
 		if (!cur) {
 			cur = _readyList.getHead();
 		}
 
-		// if we've come full circle, escape
+		// if we've come full circle, escape,
+		// we didn't find anything to run
 		if (cur == startedAt) {
 			break;
 		}
 	}
+
+	// return either the Thread we found,
+	// or the idle thread if nothing was found
 	return TOT(rc, _idleThread);
 }
+
 
 static inline Thread* selectNextThread() {
 	Thread* firstToCheck = _currentThread->_next;
@@ -385,6 +416,7 @@ static inline Thread* selectNextThread() {
 
 	return getNextThread(firstToCheck);
 }
+
 
 // Starts a PAUSED Thread executing by allowing it to be scheduled.
 // Returns false if the Thread was not PAUSED at the time of the call.
@@ -401,6 +433,7 @@ bool Thread::run(bool willJoin) {
 		return true;
 	}
 }
+
 
 // Blocks the *calling* Thread until *this* Thread terminates.
 // NOTE: willJoin against *this* Thread must be set to true prior
@@ -423,6 +456,7 @@ int Thread::join() {
 	return rc;
 }
 
+
 // Blocks the calling Thread, setting a new state and blockInfo
 void Thread::block(const ThreadState newState, uint32_t blockInfo) {
 	cli();
@@ -430,6 +464,7 @@ void Thread::block(const ThreadState newState, uint32_t blockInfo) {
 	_currentThread->_blockInfo = blockInfo;
 	yield_internal();
 }
+
 
 // Unblock any/all Threads matching a given state and blockInfo
 void Thread::unblock(const ThreadState state, const uint32_t blockInfo) {
@@ -448,15 +483,20 @@ void Thread::unblock(const ThreadState state, const uint32_t blockInfo) {
 	}
 }
 
+
+// Who am I?
 Thread* Thread::me() {
 	return _currentThread;
 }
+
 
 // context switch ISR
 ISR(TIMER1_COMPA_vect, ISR_NAKED) {
 	yield_internal();
 }
 
+
+// millisecond couonter for things and stuff
 volatile uint32_t _milliseconds = 0UL;
 
 // millisecond timer ISR
@@ -470,10 +510,11 @@ ISR(TIMER0_COMPA_vect) {
 	}
 #endif
 
-	// don't have to re-enable ISRs here, because
+	// we don't have to re-enable ISRs here, because
 	// this *is* an ISR, meaning it will finish with
 	// 'reti', which will re-enable ISRs for us
 }
+
 
 // returns the number of milliseconds uptime since the scheduler started
 uint32_t Thread::now() {
@@ -482,9 +523,20 @@ uint32_t Thread::now() {
 	}
 }
 
+
 // normal main() to start the system off
 int main() {
+	// disable all modules, and let the
+	// appropriate init routines power
+	// up only things are they get used
+	power_all_disable();
+
+	// prep the scheduler and the ms timer
 	Thread::init();
+
+	// enable global interrupts
 	sei();
+
+	// and hang around. This won't actually run for long at all.
 	while(1);
 }

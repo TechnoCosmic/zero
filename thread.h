@@ -61,10 +61,15 @@ namespace zero {
 		// Properties
 		uint16_t getStackBottom();
 		uint16_t getStackTop();
-		uint16_t getStackSize();
+		uint16_t getStackSizeBytes();
 
+#ifdef INSTRUMENTATION
+
+		bool isDynamic();
 		uint16_t calcCurrentStackBytesUsed();
 		uint16_t calcPeakStackBytesUsed();
+
+#endif
 
 		// miscellaneous, but sort of related!
 		static uint32_t now();
