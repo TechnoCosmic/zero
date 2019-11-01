@@ -51,15 +51,16 @@ clicommand(uptime, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 });
 
 
-const PROGMEM char STATE_RUNNING[] = "running";
-const PROGMEM char STATE_READY[] = "ready";
-const PROGMEM char STATE_PAUSED[] = "paused";
-const PROGMEM char STATE_TERMINATED[] = "terminated";
-const PROGMEM char STATE_WAITTERM[] = "wait term";
-const PROGMEM char STATE_WAITRD[] = "wait read";
-const PROGMEM char STATE_WAITWR[] = "wait write";
+static const PROGMEM char STATE_RUNNING[] = "running";
+static const PROGMEM char STATE_READY[] = "ready";
+static const PROGMEM char STATE_PAUSED[] = "paused";
+static const PROGMEM char STATE_TERMINATED[] = "terminated";
+static const PROGMEM char STATE_WAITTERM[] = "wait term";
+static const PROGMEM char STATE_WAITRD[] = "wait read";
+static const PROGMEM char STATE_WAITWR[] = "wait write";
 
-const char* stateString[] = {
+
+static const char* _stateString[] = {
 	STATE_RUNNING,
 	STATE_READY,
     STATE_PAUSED,
@@ -69,11 +70,24 @@ const char* stateString[] = {
 	STATE_WAITWR,
 };
 
+
+static const Color _stateColor[] = {
+    Color::GREEN,
+    Color::YELLOW,
+    Color::YELLOW,
+    Color::RED,
+    Color::YELLOW,
+    Color::CYAN,
+    Color::MAGENTA,
+};
+
+
 #ifdef INSTRUMENTATION
-    const char PROGMEM threadList_Header[] = "\e[7m NAME               STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    \e[0m";
+    const PROGMEM char threadList_Header[] = "\e[7m NAME               STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    \e[0m";
 #else
-    const char PROGMEM threadList_Header[] = "\e[7m NAME               STATE         \e[0m";
+    const PROGMEM char threadList_Header[] = "\e[7m NAME               STATE         \e[0m";
 #endif
+
 
 void outputThread(Thread* t, TextPipe* tx) {
     *tx << setfill(' ');
@@ -82,7 +96,8 @@ void outputThread(Thread* t, TextPipe* tx) {
     *tx << setw(20) << PGM(t->_systemData._objectName);
 
     // state
-    *tx << setw(13) << (PGM) stateString[t->_state];
+    tx->setTextColor(_stateColor[t->_state]);
+    *tx << setw(13) << (PGM) _stateString[t->_state] << white;
 
 #ifdef INSTRUMENTATION
 
