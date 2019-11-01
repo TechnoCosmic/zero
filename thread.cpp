@@ -314,7 +314,7 @@ void Thread::init() {
 	_idleThread = Thread::createIdleThread();
 	NamedObject::add((NamedObject*) _idleThread);
 
-	// enable switching at the Timer level
+	// enable ISR switching at the Timer level
 	TIMSK1 |= (1 << OCIE1A);							// enable context switching
 
 	// preserve our SP for context switch use
