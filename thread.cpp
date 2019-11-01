@@ -24,6 +24,7 @@ using namespace zero;
 
 const int REGISTER_COUNT = 32;
 const int PC_COUNT = 2;
+const uint8_t THREAD_MIN_STACK_BYTES = 96;
 
 static inline void saveCurrentContext() __attribute__((always_inline));
 static inline void restoreNewContext(Thread* t) __attribute__((always_inline));
@@ -36,6 +37,7 @@ static uint16_t _originalSp;
 static List<Thread> _readyList;
 static Thread* _currentThread = 0UL;
 static Thread* _idleThread = 0UL;
+
 
 // Removes the Thread from the scheduler. This does NOT
 // remove the Thread from the list of system objects.
@@ -50,6 +52,7 @@ bool Thread::remove() {
 		return true;
 	}
 }
+
 
 // Frees the Thread's memory and removes it from the system objects list
 bool Thread::cleanup() {
@@ -105,10 +108,9 @@ uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize) {
 	stackEnd[ 0] = ((uint16_t) globalThreadEntry) & 0xFF;
 	stackEnd[-1] = ((uint16_t) globalThreadEntry) >> 8;
 
-
-
 	return (uint16_t) &stackEnd[-(REGISTER_COUNT + (PC_COUNT * 1))];
 }
+
 
 // configure the Thread object ready for the execution of a new Thread
 void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
@@ -143,10 +145,11 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 #endif
 }
 
+
 // ctor
 Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
 	uint16_t allocated = 0UL;
-	uint8_t* stack = memory::allocate(stackSize, &allocated, memory::AllocationSearchDirection::TopDown);
+	uint8_t* stack = memory::allocate(MAX(stackSize, THREAD_MIN_STACK_BYTES), &allocated, memory::AllocationSearchDirection::TopDown);
 
 	if (stack) {
 		configureThread(name, stack, allocated, entryPoint);
@@ -161,12 +164,13 @@ Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoin
 	}
 }
 
+
 // creates a new Thread, with stack and TCB allocated dynamically
 Thread* Thread::create(const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
 		uint16_t allocated = 0UL;
-		uint8_t* stackBottom = memory::allocate(stackSize, &allocated, memory::AllocationSearchDirection::TopDown);
+		uint8_t* stackBottom = memory::allocate(MAX(stackSize, THREAD_MIN_STACK_BYTES), &allocated, memory::AllocationSearchDirection::TopDown);
 		Thread* newThread = (Thread*) stackBottom;
 
 		if (newThread) {
@@ -205,12 +209,14 @@ uint16_t Thread::getStackSize() {
 #ifdef INSTRUMENTATION
 
 uint16_t Thread::calcCurrentStackBytesUsed() {
-	return (getStackTop() - _sp);
+	int extra = (((uint16_t) this) == getStackBottom()) ? sizeof(Thread) : 0;
+	return (getStackTop() - _sp) + extra;
 }
 
 
 uint16_t Thread::calcPeakStackBytesUsed() {
-	return (getStackTop() - _lowestSp);
+	int extra = (((uint16_t) this) == getStackBottom()) ? sizeof(Thread) : 0;
+	return (getStackTop() - _lowestSp) + extra;
 }
 
 #endif
@@ -220,12 +226,12 @@ void Thread::setName(const char* newName) {
 	this->_systemData._objectName = newName;
 }
 
-const char PROGMEM _idleThreadName[] = "/threads/idle";
+const PROGMEM char _idleThreadName[] = "/threads/idle";
 
 // creates the idle thread, for running when nothing else wants to
 Thread* Thread::createIdleThread() {
 	uint16_t allocated = 0UL;
-	uint8_t* stackBottom = memory::allocate(IDLE_THREAD_STACK_BYTES, &allocated, memory::AllocationSearchDirection::TopDown);
+	uint8_t* stackBottom = memory::allocate(MAX(IDLE_THREAD_STACK_BYTES, THREAD_MIN_STACK_BYTES), &allocated, memory::AllocationSearchDirection::TopDown);
 	Thread* newThread = (Thread*) stackBottom;
 
 	if (newThread) {
