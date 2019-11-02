@@ -40,6 +40,22 @@ namespace zero {
     // Maximum number of tokens on a CLI command line
     const uint16_t CLI_CMD_LINE_MAX_TOKENS = 16;
 
+    // Built-in CLI commands can be easily enabled/disabled
+    // individually here so that you don't need to mess
+    // around with source files and such.
+    
+    // Process Status and Uptime commands - ps/uptime
+    #define CLICMD_PS
+
+    // Memory map command - memmap
+    #define CLICMD_MEMMAP
+
+    // Memory dump commands - ram/flash/eeprom
+    #define CLICMD_MEMDUMP
+
+    // List command - ls
+    #define CLICMD_LS
+
 #endif
 
     // Kernel (context switcher) stack size
@@ -51,7 +67,7 @@ namespace zero {
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum
     // stack size required (found at the top of thread.cpp)
-    const uint16_t IDLE_THREAD_STACK_BYTES = 32;
+    const uint16_t IDLE_THREAD_STACK_BYTES = 64;
 
     // Flashes an LED on any pin on PORTC when the idle thread is running
     // #define IDLE_BLINK

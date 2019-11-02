@@ -7,6 +7,11 @@
  */
 
 #include "zero_config.h"
+
+
+#ifdef CLICMD_MEMMAP
+
+
 #include "cli.h"
 #include "memory.h"
 #include "util.h"
@@ -55,3 +60,6 @@ clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
     return 0;
 });
+
+
+#endif // #ifdef CLICMD_MEMMAP

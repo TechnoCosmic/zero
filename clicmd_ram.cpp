@@ -6,9 +6,14 @@
  * 
  */
 
+#include "zero_config.h"
+
+
+#ifdef CLICMD_MEMDUMP
+
+
 #include <stdint.h>
 #include <avr/pgmspace.h>
-#include "zero_config.h"
 #include "cli.h"
 #include "textpipe.h"
 #include "iomanip.h"
@@ -167,3 +172,6 @@ clicommand(eeprom, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
     return 0;
 });
+
+
+#endif // #ifdef CLICMD_MEMDUMP

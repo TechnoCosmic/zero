@@ -7,27 +7,40 @@
  */
 
 #include "zero_config.h"
+
+
+#ifdef CLICMD_LS
+
+
+#include <util/delay.h>
 #include "cli.h"
 #include "textpipe.h"
+#include "thread.h"
+
 
 using namespace zero;
 using namespace zero::memory;
 
+
+const PROGMEM char _unnamedDefault[] = "*** UNNAMED ***";
+
 clicommand(ls, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
     NamedObject::iterate(tx, [](void* data, NamedObject* obj) {
-        Pipe* out = (Pipe*) data;
+        TextPipe* out = (TextPipe*) data;
 
         if (obj->_objectName) {
-            out->write(obj->_objectName, MemoryType::FLASH);
-            *out << "\r\n";
+            *out << PGM(obj->_objectName) << "\r\n";
 
         } else {
-            out->write("*** UNNAMED ***\r\n", MemoryType::SRAM);
-        }        
+            *out << PGM(_unnamedDefault) << "\r\n";
+        }
+
         return true;
     });
 
     return 0;
 });
 
+
+#endif // #ifdef CLICMD_LS
