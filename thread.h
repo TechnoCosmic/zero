@@ -59,6 +59,7 @@ namespace zero {
 		void setName(const char* name);
 
 		// Properties
+		uint16_t getThreadId();
 		uint16_t getStackBottom();
 		uint16_t getStackTop();
 		uint16_t getStackSizeBytes();
@@ -86,9 +87,10 @@ namespace zero {
 		uint8_t _rampz;
 	#endif
 
-		bool _willJoin;
+		uint16_t _tid;
 		ThreadState _state;
 		int (*_entryPoint)();
+		bool _willJoin;
 		int _exitCode;
 
 	#ifdef INSTRUMENTATION

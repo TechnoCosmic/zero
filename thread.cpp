@@ -37,6 +37,7 @@ static uint16_t _originalSp;
 static List<Thread> _readyList;
 static Thread* _currentThread = 0UL;
 static Thread* _idleThread = 0UL;
+static uint16_t _nextTid = 1;
 
 
 // Removes the Thread from the scheduler. This does NOT
@@ -121,6 +122,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 	_rampz = 0;
 #endif
 
+	// so that the globalThreadEntry knows what to call
 	_entryPoint = entryPoint;
 
 	// pass ourselves in as a parameter to the launch function
@@ -131,6 +133,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 	_stackSize = stackSize;
 
 	// set up system data
+	_tid = _nextTid++;
 	_systemData._objectType = THREAD;
 	_systemData._objectName = name;
 
@@ -189,6 +192,12 @@ Thread* Thread::create(const uint16_t stackSize, const ThreadEntryPoint entryPoi
 
 		return newThread;
 	}
+}
+
+
+// returns the unique ID of the Thread
+uint16_t Thread::getThreadId() {
+	return _tid;
 }
 
 

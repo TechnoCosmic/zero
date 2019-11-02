@@ -7,10 +7,16 @@
  */
 
 #include "zero_config.h"
+
+
+#ifdef CLICMD_PS
+
+
 #include "cli.h"
 #include "textpipe.h"
 #include "iomanip.h"
 #include "thread.h"
+
 
 using namespace zero;
 using namespace zero::memory;
@@ -83,17 +89,20 @@ static const Color _stateColor[] = {
 
 
 #ifdef INSTRUMENTATION
-    const PROGMEM char threadList_Header[] = "\e[7m NAME               STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    \e[0m";
+    const PROGMEM char threadList_Header[] = "\e[7m   TID   NAME                   STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    \e[0m";
 #else
-    const PROGMEM char threadList_Header[] = "\e[7m NAME               STATE         \e[0m";
+    const PROGMEM char threadList_Header[] = "\e[7m   TID   NAME                   STATE         \e[0m";
 #endif
 
 
 void outputThread(Thread* t, TextPipe* tx) {
     *tx << setfill(' ');
 
+    // Thread ID
+    *tx << setw(6) << right << (int32_t) t->getThreadId() << "  ";
+
     // name
-    *tx << setw(20) << PGM(t->_systemData._objectName);
+    *tx << setw(24) << PGM(t->_systemData._objectName);
 
     // state
     tx->setTextColor(_stateColor[t->_state]);
@@ -157,3 +166,6 @@ clicommand(ps, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
     return 0;
 });
+
+
+#endif // #ifdef CLICMD_PS
