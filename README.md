@@ -357,7 +357,7 @@ The very first thing on troubleshooting - if it looks weird and unexplainable, p
 
 ### Garbage with text on USART with CLI
 
-If you're not using a VT100 terminal emulator to connect to your AVR's newly acquired CLI, then you're probably seeing a bunch of VT100 escape codes that looks like rubbish, mixed in with regular text. In `zero_config.h`, you can comment out the `#define CLI_VT100` line to fix this. You won't get all the pretty colours though.
+If you're not using a VT100 terminal emulator to connect to your AVR's newly acquired CLI, then you're probably seeing a bunch of VT100 escape codes that look like rubbish, mixed in with regular text. In `zero_config.h`, you can comment out the `#define CLI_VT100` line to fix this. You won't get all the pretty colours though.
 
 ### Garbage without text on USART
 
