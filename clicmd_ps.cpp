@@ -91,7 +91,7 @@ static const Color _stateColor[] = {
 #ifdef INSTRUMENTATION
     const PROGMEM char threadList_Header[] = "\e[7m   TID   NAME                   STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    \e[0m";
 #else
-    const PROGMEM char threadList_Header[] = "\e[7m   TID   NAME                   STATE         \e[0m";
+    const PROGMEM char threadList_Header[] = "\e[7m   TID   NAME                   STATE         STCK RNGE    CUR TOTAL \e[0m";
 #endif
 
 
@@ -108,12 +108,7 @@ void outputThread(Thread* t, TextPipe* tx) {
     tx->setTextColor(_stateColor[t->_state]);
     *tx << setw(13) << (PGM) _stateString[t->_state] << white;
 
-#ifdef INSTRUMENTATION
-
-    uint16_t curStack = t->calcCurrentStackBytesUsed();
-    uint16_t peakStack = t->calcPeakStackBytesUsed();
-    uint32_t ttl = Thread::now();
-
+    // stack stuff
     *tx << hex << uppercase;
 
     // stack start address
@@ -126,13 +121,23 @@ void outputThread(Thread* t, TextPipe* tx) {
     *tx << " (" << dec << setfill(' ');
 
     // stack current
+    uint16_t curStack = t->calcCurrentStackBytesUsed();
     *tx << setw(5) << right << (int32_t) curStack << '/';
+
+#ifdef INSTRUMENTATION
+
+    uint16_t peakStack = t->calcPeakStackBytesUsed();
+    uint32_t ttl = Thread::now();
 
     // stack peak
     *tx << setw(5) << right << (int32_t) peakStack << '/';
 
+#endif
+
     // stack total available
     *tx << setw(5) << right << (int32_t) t->getStackSizeBytes() << ')';
+
+#ifdef INSTRUMENTATION
 
     // CPU%
     int32_t pc = (t->_ticks * 1000UL) / ttl;
@@ -141,10 +146,9 @@ void outputThread(Thread* t, TextPipe* tx) {
     // thread tick count
     displayTime(tx, t->_ticks);
 
-    *tx << nouppercase;
-
 #endif
 
+    *tx << nouppercase;
     *tx << "\r\n";
 }
 

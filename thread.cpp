@@ -219,9 +219,6 @@ uint16_t Thread::getStackSizeBytes() {
 }
 
 
-#ifdef INSTRUMENTATION
-
-
 // returns true if the Thread was created dyanmically, false if it was globally declared
 bool Thread::isDynamic() {
 	return ((uint16_t) this) == getStackBottom();
@@ -233,6 +230,9 @@ uint16_t Thread::calcCurrentStackBytesUsed() {
 	int extra = isDynamic() ? sizeof(Thread) : 0;
 	return (getStackTop() - _sp) + extra;
 }
+
+
+#ifdef INSTRUMENTATION
 
 
 // returns the most number of bytes of stack used at any context switch

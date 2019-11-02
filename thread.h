@@ -59,17 +59,15 @@ namespace zero {
 		void setName(const char* name);
 
 		// Properties
+		bool isDynamic();
 		uint16_t getThreadId();
 		uint16_t getStackBottom();
 		uint16_t getStackTop();
 		uint16_t getStackSizeBytes();
+		uint16_t calcCurrentStackBytesUsed();
 
 #ifdef INSTRUMENTATION
-
-		bool isDynamic();
-		uint16_t calcCurrentStackBytesUsed();
 		uint16_t calcPeakStackBytesUsed();
-
 #endif
 
 		// miscellaneous, but sort of related!
@@ -108,10 +106,12 @@ namespace zero {
 		uint16_t _stackSize;
 	};
 
+
 // helper macro for easier Thread creation
 #define thread(v,sz,fn)											\
 	const PROGMEM char _threadName_##v[] = "/threads/" #v;		\
 	zero::Thread v(_threadName_##v,sz,[]()fn)
+
 
 // Funky little ATOMIC_BLOCK macro clones for context switching
 static __inline__ uint8_t __iPermitRetVal() {
@@ -119,15 +119,19 @@ static __inline__ uint8_t __iPermitRetVal() {
 	return 1;
 }
 
+
 static __inline__ void __iZeroRestore(const uint8_t* __tmr_save) {
 	TIMSK1 |= *__tmr_save;
 }
+
 
 static __inline__ void __iZeroForceOn(const uint8_t* __tmr_save) {
 	TIMSK1 |= (1 << OCIE1A);
 }
 
+
 extern uint8_t __iPermitRetVal();
+
 
 #define ZERO_ATOMIC_BLOCK(t) for ( t, __ToDo = __iPermitRetVal(); __ToDo ; __ToDo = 0 )
 #define ZERO_ATOMIC_RESTORESTATE uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t)(TIMSK1 & (1 << OCIE1A))
