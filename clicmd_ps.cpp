@@ -159,8 +159,9 @@ void outputThread(Thread* t, TextPipe* tx) {
 clicommand(ps, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
     *tx << setbackcolor(Color::WHITE) << settextcolor(Color::BLACK);
-    *tx << PGM(threadList_Header) << "\r\n";
+    *tx << PGM(threadList_Header);
     *tx << setbackcolor(Color::BLACK) << settextcolor(Color::WHITE);
+    *tx << "\r\n";
 
     NamedObject::iterate(tx, [](void* data, NamedObject* obj) {
 
