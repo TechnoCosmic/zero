@@ -348,3 +348,7 @@ zero will tokenize the command line for you, and hand you the Pipes attached to 
 **NOTE:** If your custom CLI commands use significant stack space, then be sure to adjust `CLI_STACK_BYTES` to account for this.
 
 The intention behind the extensible CLI is so that you have a ready-made infrastructure for adding control and debugging features specific to your program's needs.
+
+## Troubleshooting
+
+The very first thing on troubleshooting - if it looks weird and unexplainable, perhaps even supernatural, then check you've given EVERYTHING plenty of memory - stacks, pipes, allowances for globals and so forth (all found in `zero_config.h`). A great portion of the time code that used to work and now suddenly doesn't (especially code you'd swear up and down was unrelated) is usually the result of too small a stack, or not enough allowance given for global variables at the start of SRAM space (`GLOBALS_BYTES` in the zero config header).

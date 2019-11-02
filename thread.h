@@ -27,6 +27,7 @@ namespace zero {
 		PAUSED,
 		TERMINATED,
 		WAIT_TERM,
+		WAIT_ATOMIC_WRITE,
 		WAIT_READ,
 		WAIT_WRITE,
 	};

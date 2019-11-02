@@ -13,12 +13,9 @@
 #include "thread.h"
 #include "string.h"
 
+
 using namespace zero;
 
-// find a Pipe by it's name
-static Pipe* find(const char* name) {
-	return (Pipe*) NamedObject::find(name, ZeroObjectType::PIPE);
-}
 
 // ctor
 Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
@@ -40,6 +37,7 @@ Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
 	NamedObject::add((NamedObject*) this);
 }
 
+
 // dtor
 Pipe::~Pipe() {
 	NamedObject::remove((NamedObject*) this);
@@ -47,15 +45,18 @@ Pipe::~Pipe() {
 	_buffer = 0UL;
 }
 
+
 // Returns true if the Pipe contains no data, false otherwise
 bool Pipe::isEmpty() {
 	return _length == 0;
 }
 
+
 // Returns true if the Pipe is full, false otherwise
 bool Pipe::isFull() {
 	return _length == _bufferLength;
 }
+
 
 // Calculates the index of the first free spot in the Pipe
 uint16_t Pipe::calcFirstFreeIndex() {
@@ -67,6 +68,7 @@ uint16_t Pipe::calcFirstFreeIndex() {
 	return rc;
 }
 
+
 // Writes a byte of data to the Pipe. If the Pipe is full and allowBlock
 // is true, the calling Thread will block until room becomes available
 // in the Pipe. Return true if the data was successfully written to the
@@ -75,9 +77,11 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 	if (!allowBlock && isFull()) {
 		return false;
 	}
+	
 	while (allowBlock && isFull()) {
 		Thread::block(ThreadState::WAIT_WRITE, (uint32_t) this);
 	}
+	
 	// NOTE: There is potentially a race condition here if multiple
 	// threads are trying to write to the same full Pipe. So don't
 	// do that. If you need to multiplex, work out a proper method
@@ -94,6 +98,7 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 		if (_onWrite) {
 			doIt = _onWrite(&dataToWrite);
 		}
+	
 		if (doIt) {
 			_buffer[calcFirstFreeIndex()] = dataToWrite;
 			_length++;
@@ -102,14 +107,17 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 			Thread::unblock(ThreadState::WAIT_READ, (uint32_t) this);
 		}
 	}
+	
 	return true;
 }
+
 
 // Outputs an SRAM-based string to the Pipe. Returns true if the write
 // was successful, false otherwise.
 bool Pipe::write(const char* s) {
 	return write(s, memory::MemoryType::SRAM);
 }
+
 
 // Outputs a string to the Pipe. Returns true if the write
 // was successful, false otherwise.
@@ -123,21 +131,24 @@ bool Pipe::write(const char* s, memory::MemoryType source) {
 	return true;
 }
 
+
 // Reads a byte of data from the Pipe. 
 bool Pipe::read(uint8_t* data, const bool allowBlock) {
 	if (!allowBlock && isEmpty()) {
 		return false;
 	}
+	
 	while (allowBlock && isEmpty()) {
 		Thread::block(ThreadState::WAIT_READ, (uint32_t) this);
 	}
+
 	// NOTE: There is potentially a race condition here if multiple
 	// threads are trying to read from the same empty Pipe. To fix this,
 	// perhaps I need to consider a proper queue for multiple reader/
 	// writer Threads, though I am wondering at the logic behind
 	// multiple Threads reading from the same Pipe, in a non-deterministic
 	// order. A queue wouldn't solve this, unless the order within the
-	// queue could change based on.. protocol? That's beyond the scope of
+	// queue could change based on... protocol? That's beyond the scope of
 	// a simple Pipe class to solve.
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		bool doIt = true;
@@ -147,6 +158,7 @@ bool Pipe::read(uint8_t* data, const bool allowBlock) {
 		if (_onRead) {
 			doIt = _onRead(data);
 		}
+	
 		if (doIt) {
 			_start++;
 			_length--;
@@ -159,12 +171,15 @@ bool Pipe::read(uint8_t* data, const bool allowBlock) {
 			return true;
 		}
 	}
+
 	return false;
 }
+
 
 void Pipe::setReadFilter(const PipeFilter newFilter) {
     _onRead = newFilter;
 }
+
 
 void Pipe::setWriteFilter(const PipeFilter newFilter) {
     _onWrite = newFilter;

@@ -9,9 +9,11 @@
 #ifndef TCRI_ZERO_PIPE_H
 #define TCRI_ZERO_PIPE_H
 
+
 #include <stdint.h>
 #include "namedobject.h"
 #include "memory.h"
+
 
 namespace zero {
 
@@ -44,6 +46,7 @@ namespace zero {
 		uint16_t _length;
 		uint8_t* _buffer;
 		uint16_t _bufferLength;
+		uint16_t _owningThreadId;
 
         PipeFilter _onRead;
         PipeFilter _onWrite;
@@ -62,5 +65,6 @@ zero::Pipe& operator<<(zero::Pipe& out, const int16_t v);
 zero::Pipe& operator<<(zero::Pipe& out, const uint16_t v);
 zero::Pipe& operator<<(zero::Pipe& out, const int32_t v);
 zero::Pipe& operator<<(zero::Pipe& out, const uint32_t v);
+
 
 #endif

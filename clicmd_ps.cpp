@@ -62,6 +62,7 @@ static const PROGMEM char STATE_READY[] = "ready";
 static const PROGMEM char STATE_PAUSED[] = "paused";
 static const PROGMEM char STATE_TERMINATED[] = "terminated";
 static const PROGMEM char STATE_WAITTERM[] = "wait term";
+static const PROGMEM char STATE_WAITATOMICWR[] = "wait lock";
 static const PROGMEM char STATE_WAITRD[] = "wait read";
 static const PROGMEM char STATE_WAITWR[] = "wait write";
 
@@ -72,6 +73,7 @@ static const char* _stateString[] = {
     STATE_PAUSED,
 	STATE_TERMINATED,
     STATE_WAITTERM,
+    STATE_WAITATOMICWR,
 	STATE_WAITRD,
 	STATE_WAITWR,
 };
@@ -82,6 +84,7 @@ static const Color _stateColor[] = {
     Color::YELLOW,
     Color::YELLOW,
     Color::RED,
+    Color::YELLOW,
     Color::YELLOW,
     Color::CYAN,
     Color::MAGENTA,

@@ -84,12 +84,12 @@ static void globalThreadEntry(Thread* t) {
 	// remove from the list of running threads
 	t->remove();
 
-	if (!t->_willJoin) {
-		t->cleanup();
-
-	} else {
+	if (t->_willJoin) {
 		// unblock anyone waiting to join()
 		Thread::unblock(ThreadState::WAIT_TERM, (uint32_t) t);
+
+	} else {
+		t->cleanup();
 	}
 	
 	_currentThread = 0UL;
