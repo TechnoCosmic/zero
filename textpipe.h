@@ -37,6 +37,11 @@ namespace zero {
         WHITE,
     };
 
+    enum OutputType {
+        TEXT_ONLY = 0,
+        VT100,
+    };
+
     class TextPipe : public Pipe {
     public:
 		TextPipe(const char* name, uint16_t bufferSize, const bool strictSize = false);
@@ -62,6 +67,9 @@ namespace zero {
         void setUppercase(const bool v);
         bool getUppercase();
 
+        void setOutputType(const OutputType ot);
+        OutputType getOutputType();
+
     private:
         Color _textColor;
         Color _backColor;
@@ -70,6 +78,7 @@ namespace zero {
         Alignment _alignment;
         char _fill;
         bool _uppercase;
+        OutputType _outputType;
     };
 
 }

@@ -92,9 +92,9 @@ static const Color _stateColor[] = {
 
 
 #ifdef INSTRUMENTATION
-    const PROGMEM char threadList_Header[] = "\e[7m   TID   NAME                   STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    \e[0m";
+    const PROGMEM char threadList_Header[] = "   TID   NAME                   STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    ";
 #else
-    const PROGMEM char threadList_Header[] = "\e[7m   TID   NAME                   STATE         STCK RNGE    CUR TOTAL \e[0m";
+    const PROGMEM char threadList_Header[] = "   TID   NAME                   STATE         STCK RNGE    CUR TOTAL ";
 #endif
 
 
@@ -158,7 +158,9 @@ void outputThread(Thread* t, TextPipe* tx) {
 
 clicommand(ps, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
+    *tx << setbackcolor(Color::WHITE) << settextcolor(Color::BLACK);
     *tx << PGM(threadList_Header) << "\r\n";
+    *tx << setbackcolor(Color::BLACK) << settextcolor(Color::WHITE);
 
     NamedObject::iterate(tx, [](void* data, NamedObject* obj) {
 

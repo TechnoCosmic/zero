@@ -76,7 +76,9 @@ static void setColorForByte(TextPipe* tx, uint8_t data) {
 
 static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, memory::MemoryType source) {
 	*tx << uppercase;
-	*tx << "\e[7m     " << setfill('0');
+
+	*tx << setbackcolor(Color::WHITE) << settextcolor(Color::BLACK);	
+	*tx << "     " << setfill('0');
 
 	for (uint16_t i = 0; i < 16; i++) {
 		*tx << setw(2) << hex << right << (int)((offset + i) & 0xF) << ' ';
@@ -91,10 +93,14 @@ static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, mem
 			*tx << ' ';
 		}
 	}
-	*tx << "\e[0m" << "\r\n";
+	*tx << setbackcolor(Color::BLACK) << settextcolor(Color::WHITE);	
+	*tx << "\r\n";
 	for (uint16_t r = 0; r < 256; r += 16) {
-		*tx << "\e[7m";
-		*tx << setw(4) << hex << right << (uint32_t)(offset + r) << "\e[0m ";
+		*tx << setbackcolor(Color::WHITE) << settextcolor(Color::BLACK);	
+
+		*tx << setw(4) << hex << right << (uint32_t)(offset + r);
+		*tx << setbackcolor(Color::BLACK) << settextcolor(Color::WHITE);	
+		*tx << ' ';
 
 		for (uint8_t c = 0; c < 16; c++) {
 			uint8_t d = memory::read((void*) (r+c+offset), source);

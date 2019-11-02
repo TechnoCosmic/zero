@@ -351,4 +351,14 @@ The intention behind the extensible CLI is so that you have a ready-made infrast
 
 ## Troubleshooting
 
-The very first thing on troubleshooting - if it looks weird and unexplainable, perhaps even supernatural, then check you've given EVERYTHING plenty of memory - stacks, pipes, allowances for globals and so forth (all found in `zero_config.h`). A great portion of the time code that used to work and now suddenly doesn't (especially code you'd swear up and down was unrelated) is usually the result of too small a stack, or not enough allowance given for global variables at the start of SRAM space (`GLOBALS_BYTES` in the zero config header).
+### Gremlins
+
+The very first thing on troubleshooting - if it looks weird and unexplainable, perhaps even supernatural, then check you've given EVERYTHING plenty of memory - stacks, pipes, allowances for globals and so forth (all found in `zero_config.h`). A great portion of the time, code that used to work and now suddenly doesn't (especially code you'd swear up and down was unrelated) is usually the result of too small a stack, or not enough allowance given for global variables at the start of SRAM space (`GLOBALS_BYTES` in the zero config header).
+
+### Garbage with text on USART with CLI
+
+If you're not using a VT100 terminal emulator to connect to your AVR's newly acquired CLI, then you're probably seeing a bunch of VT100 escape codes that looks like rubbish, mixed in with regular text. In `zero_config.h`, you can comment out the `#define CLI_VT100` line to fix this. You won't get all the pretty colours though.
+
+### Garbage without text on USART
+
+Check the `zero_config.h` file to make sure you've got the `CLI_BAUD` set to match the rate in your serial monitor or terminal emulator. You also need 8 data bits, 1 stop bit, no parity bits.

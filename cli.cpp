@@ -129,6 +129,10 @@ thread(cli, CLI_STACK_BYTES, {
     char cmdLine[CLI_CMD_LINE_BUFFER_BYTES];
     int16_t cursorPosition = 0L;
 
+#ifndef CLI_VT100
+    tx.setOutputType(OutputType::TEXT_ONLY);
+#endif
+
     displayWelcome(&rx, &tx);
     displayPrompt(&rx, &tx);
 

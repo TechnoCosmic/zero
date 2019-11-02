@@ -18,6 +18,7 @@ TextPipe::TextPipe(const char* name, uint16_t bufferSize, const bool strictSize)
     _base = 10;
     _width = -1;
     _fill = ' ';
+    _outputType = OutputType::VT100;
 }
 
 
@@ -26,8 +27,10 @@ void TextPipe::setTextColor(const Color color) {
     if (color != _textColor) {
         _textColor = color;
 
-        // push the escape codes to the terminal
-        *this << "\e[3" << (char) ('0' + _textColor) << 'm';
+        if (_outputType == OutputType::VT100) {
+            // push the escape codes to the terminal
+            *this << "\e[3" << (char) ('0' + _textColor) << 'm';
+        }
     }
 }
 
@@ -43,8 +46,10 @@ void TextPipe::setBackColor(const Color color) {
     if (color != _backColor) {
         _backColor = color;
 
-        // push the escape codes to the terminal
-        *this << "\e[4" << (char) ('0' + _backColor) << 'm';
+        if (_outputType == OutputType::VT100) {
+            // push the escape codes to the terminal
+            *this << "\e[4" << (char) ('0' + _backColor) << 'm';
+        }
     }
 }
 
@@ -112,6 +117,18 @@ void TextPipe::setUppercase(const bool v) {
 // getUppercase
 bool TextPipe::getUppercase() {
     return _uppercase;
+}
+
+
+// setOutputType
+void TextPipe::setOutputType(const OutputType ot) {
+    _outputType = ot;
+}
+
+
+// getOutputType
+OutputType TextPipe::getOutputType() {
+    return _outputType;
 }
 
 

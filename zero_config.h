@@ -25,6 +25,9 @@ namespace zero {
     // CLI USART speed
     const uint32_t CLI_BAUD = 57600;
 
+    // CLI Terminal Type
+    #define CLI_VT100
+
     // CLI RX Pipe buffer bytes
     const uint16_t CLI_RX_PIPE_BYTES = 32;
 
@@ -59,10 +62,10 @@ namespace zero {
 #endif
 
     // Kernel (context switcher) stack size
-    const uint16_t KERNEL_STACK_BYTES = 128;
+    const uint16_t KERNEL_STACK_BYTES = 96;
 
     // How much lower memory is your program using for globals?
-    const uint16_t GLOBALS_BYTES = 384;
+    const uint16_t GLOBALS_BYTES = 512;
 
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum
@@ -73,8 +76,11 @@ namespace zero {
     // #define IDLE_BLINK
 
     // Memory allocator page size
-    const uint8_t PAGE_BYTES = 32;
-
+    #if RAMEND >= 8192
+        const uint8_t PAGE_BYTES = 32;
+    #else
+        const uint8_t PAGE_BYTES = 16;
+    #endif
 }
 
 #endif
