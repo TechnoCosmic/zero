@@ -35,7 +35,7 @@ static void displayTime(TextPipe* tx, uint32_t ms) {
 }
 
 
-const char PROGMEM uptime_Header[] = "Uptime: ";
+const PROGMEM char uptime_Header[] = "Uptime: ";
 
 
 void displayUptime(TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {

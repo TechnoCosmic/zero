@@ -362,12 +362,12 @@ static inline void restoreNewContext(Thread* t) {
 	RESTORE_REGS;
 }
 
+
+// halts the calling thread and transfers MCU control
+// over to another Thread of the scheduler's choosing
 static inline void yield_internal() {
 	saveCurrentContext();
-
-	Thread* t = selectNextThread();
-
-	restoreNewContext(t);
+	restoreNewContext(selectNextThread());
 }
 
 
