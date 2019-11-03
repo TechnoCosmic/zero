@@ -94,7 +94,7 @@ static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, mem
 		}
 	}
 	*tx << setbackcolor(Color::BLACK) << settextcolor(Color::WHITE);	
-	*tx << "\r\n";
+	*tx << endl;
 	for (uint16_t r = 0; r < 256; r += 16) {
 		*tx << setbackcolor(Color::WHITE) << settextcolor(Color::BLACK);	
 
@@ -129,7 +129,7 @@ static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, mem
 				*tx << ' ';
 			}
 		}
-		*tx << white << "\r\n";
+		*tx << white << endl;
 	}
 	*tx << nouppercase << dec;
 }
@@ -139,7 +139,7 @@ clicommand(ram, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 	uint16_t offset = 0;
 
 	if (argc != 2 || strlen(argv[1]) != 4) {
-		*tx << PGM(ram_Usage) << argv[0] << PGM(ram_Usage2) << "\r\n";
+		*tx << PGM(ram_Usage) << argv[0] << PGM(ram_Usage2) << endl;
 		return 0;
 	}
 
@@ -154,7 +154,7 @@ clicommand(flash, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 	uint16_t offset = 0;
 
 	if (argc != 2 || strlen(argv[1]) != 4) {
-		*tx << PGM(ram_Usage) << argv[0] << PGM(ram_Usage2) << "\r\n";
+		*tx << PGM(ram_Usage) << argv[0] << PGM(ram_Usage2) << endl;
 		return 0;
 	}
 
@@ -169,7 +169,7 @@ clicommand(eeprom, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 	uint16_t offset = 0;
 
 	if (argc != 2 || strlen(argv[1]) != 4) {
-		*tx << PGM(ram_Usage) << argv[0] << PGM(ram_Usage2) << "\r\n";
+		*tx << PGM(ram_Usage) << argv[0] << PGM(ram_Usage2) << endl;
 		return 0;
 	}
 

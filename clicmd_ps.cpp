@@ -47,7 +47,7 @@ const PROGMEM char uptime_Header[] = "Uptime: ";
 void displayUptime(TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 	*tx << PGM(uptime_Header);
 	displayTime(tx, Thread::now());
-	*tx << "\r\n";
+	*tx << endl;
 }
 
 
@@ -152,7 +152,7 @@ void outputThread(Thread* t, TextPipe* tx) {
 #endif
 
     *tx << nouppercase;
-    *tx << "\r\n";
+    *tx << endl;
 }
 
 
@@ -161,7 +161,7 @@ clicommand(ps, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     *tx << setbackcolor(Color::WHITE) << settextcolor(Color::BLACK);
     *tx << PGM(threadList_Header);
     *tx << setbackcolor(Color::BLACK) << settextcolor(Color::WHITE);
-    *tx << "\r\n";
+    *tx << endl;
 
     NamedObject::iterate(tx, [](void* data, NamedObject* obj) {
 

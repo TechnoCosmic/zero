@@ -7,11 +7,13 @@
  */
 
 #include <stdint.h>
+#include <avr/pgmspace.h>
 #include "iomanip.h"
 #include "textpipe.h"
 
 using namespace zero;
 
+const PROGMEM char __endl[] = "\r\n";
 
 // text color
 settextcolor::settextcolor(const Color color) : _color(color) { }

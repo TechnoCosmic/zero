@@ -68,7 +68,11 @@ namespace zero {
     #define uppercase setuppercase(true)
     #define nouppercase setuppercase(false)
 
+    #define endl PGM(__endl)
+
 }
+
+extern const char __endl[];
 
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::settextcolor);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setbackcolor);

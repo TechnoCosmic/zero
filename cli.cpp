@@ -54,16 +54,16 @@ void displayPrompt(TextPipe* rx, TextPipe* tx) {
 }
 
 
-static const PROGMEM char _welcomeText[] = "\fWelcome to zero\r\n";
+static const PROGMEM char _welcomeText[] = "\fWelcome to zero";
 static const PROGMEM char _cliOnUsart[] = "CLI on USART0 @ ";
-static const PROGMEM char _speed[] = "MHz system\r\n";
-static const PROGMEM char _bps[] = "bps\r\n";
+static const PROGMEM char _bps[] = "bps";
+static const PROGMEM char _speed[] = "MHz system";
 
 
 void displayWelcome(TextPipe* rx, TextPipe* tx) {
-    *tx << dec << PGM(_welcomeText);
-    *tx << PGM(_cliOnUsart) << (int32_t) CLI_BAUD << PGM(_bps);
-    *tx << (int) (F_CPU / 1000000UL) << PGM(_speed);
+    *tx << dec << PGM(_welcomeText) << zero::endl;
+    *tx << PGM(_cliOnUsart) << (int32_t) CLI_BAUD << PGM(_bps) << zero::endl;
+    *tx << (int) (F_CPU / 1000000UL) << PGM(_speed) << zero::endl;
 }
 
 
@@ -112,17 +112,17 @@ void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
 
         if (obj) {
             if (obj->_objectType != ZeroObjectType::CLICOMMAND) {
-                *tx << '\'' << args[0] << PGM(_isNotCliCommand) << "\r\n";
+                *tx << '\'' << args[0] << PGM(_isNotCliCommand) << endl;
 
             } else {
                 int returnCode = ((CliCommand*) obj)->execute(rx, tx, count, args);
 
                 if (returnCode) {
-                    *tx << '\'' << args[0] << PGM(_exitedWithReturnCode) << (int) returnCode << "\r\n";
+                    *tx << '\'' << args[0] << PGM(_exitedWithReturnCode) << (int) returnCode << endl;
                 }
             }
         } else {
-            *tx << '\'' << args[0] << PGM(_cmdNotFound) << "\r\n";
+            *tx << '\'' << args[0] << PGM(_cmdNotFound) << endl;
         }
     }
 }
@@ -173,7 +173,7 @@ thread(cli, CLI_STACK_BYTES, {
 
                 case CR:
                     echo = false;
-                    tx << "\r\n";
+                    tx << endl;
 
                     // send the command line off for processing
                     processCommandLine(&rx, &tx, cmdLine);

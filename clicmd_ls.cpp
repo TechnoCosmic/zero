@@ -15,6 +15,7 @@
 #include <util/delay.h>
 #include "cli.h"
 #include "textpipe.h"
+#include "iomanip.h"
 #include "thread.h"
 
 
@@ -30,10 +31,10 @@ clicommand(ls, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
         TextPipe* out = (TextPipe*) data;
 
         if (obj->_objectName) {
-            *out << PGM(obj->_objectName) << "\r\n";
+            *out << PGM(obj->_objectName) << endl;
 
         } else {
-            *out << PGM(_unnamedDefault) << "\r\n";
+            *out << PGM(_unnamedDefault) << endl;
         }
 
         return true;

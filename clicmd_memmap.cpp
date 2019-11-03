@@ -24,7 +24,7 @@ using namespace zero;
 const int PAGES_PER_ROW = 32;
 
 
-static const PROGMEM char _allocationTable[] = "Allocation table\r\n\n";
+static const PROGMEM char _allocationTable[] = "Allocation table";
 static const PROGMEM char _totalAllocatableSram[] = "Total allocatable SRAM: ";
 static const PROGMEM char _usedSram[] = "             Used SRAM: ";
 static const PROGMEM char _availableSram[] = "        Available SRAM: ";
@@ -34,7 +34,7 @@ clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     const uint16_t ttlRam = memory::getTotalBytes();
     uint16_t usedPages = 0UL;
 
-    *tx << PGM(_allocationTable);
+    *tx << PGM(_allocationTable) << endl << endl;
 
     for (uint16_t curPageNumber = 0; curPageNumber < totalPages; curPageNumber++) {
         if (memory::isPageAvailable(curPageNumber)) {
@@ -46,16 +46,16 @@ clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
         }
 
         if ((curPageNumber+1) % 32 == 0) {
-            *tx << "\r\n";
+            *tx << endl;
         }
     }
 
     const uint16_t usedBytes = memory::getPageSize() * usedPages;
 
-    *tx << white << dec << setfill(' ') << "\r\n\n";
-    *tx << PGM(_totalAllocatableSram) << right << setw(5) << (int) ttlRam << "\r\n";
-    *tx << PGM(_usedSram) << right << setw(5) << (int) usedBytes << "\r\n";
-    *tx << PGM(_availableSram) << right << setw(5) << (int) (ttlRam - usedBytes) << "\r\n";
+    *tx << white << dec << setfill(' ') << endl << endl;
+    *tx << PGM(_totalAllocatableSram) << right << setw(5) << (int) ttlRam << endl;
+    *tx << PGM(_usedSram) << right << setw(5) << (int) usedBytes << endl;
+    *tx << PGM(_availableSram) << right << setw(5) << (int) (ttlRam - usedBytes) << endl;
     *tx << left;
 
     return 0;

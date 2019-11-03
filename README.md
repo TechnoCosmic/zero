@@ -54,7 +54,6 @@ There is no single entry point in zero. Instead, declare a new thread...
 
 using namespace zero;
 
-
 thread(name, stackBytes, {
     // Your awesome code goes here
 
@@ -87,12 +86,10 @@ Here's a simple example...
 
 using namespace zero;
 
-
 // most strings that zero uses are expected to be in Flash
 // memory because we like to use our SRAM for *real* data
 
 const char PROGMEM ipcPipeName[] = "ipcPipe";
-
 
 // declare a thread to send some data to the other thread
 
@@ -174,7 +171,6 @@ thread(simpleUsartExample, 128, {
     Pipe rx(0UL, 128);
     Pipe tx(0UL, 128);
 
-
     // Now create a USART object and supply
     // those two Pipes to the constructor.
     // The first parameter is the baud. Pass in a
@@ -183,11 +179,10 @@ thread(simpleUsartExample, 128, {
 
     Usart serial(9600, &rx, &tx);
 
-
     // now send stuff, or receive it, or both!
 
     while (true) {
-        tx << "Hello, World!\r\n";
+        tx << "Hello, World!" << endl;
     }
 
     return 0;
@@ -337,7 +332,7 @@ A feature of zero is that the CLI is easily extended with custom commands. **The
 using namespace zero;
 
 clicommand(mycommand, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
-    *tx << "Hello, World!\r\n";
+    *tx << "Hello, World!" << endl;
 
     return 0;
 });
