@@ -68,7 +68,7 @@ namespace zero {
 	const int TIMESLICE_MS = 15;
 
     // Kernel (context switcher) stack size
-    const uint16_t KERNEL_STACK_BYTES = 96;
+    const uint16_t KERNEL_STACK_BYTES = 128;
 
     // How much lower memory is your program using for globals?
     const uint16_t GLOBALS_BYTES = 512;
