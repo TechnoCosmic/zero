@@ -131,7 +131,7 @@ static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, mem
 		}
 		*tx << white << "\r\n";
 	}
-	*tx << nouppercase;
+	*tx << nouppercase << dec;
 }
 
 
