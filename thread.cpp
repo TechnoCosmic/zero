@@ -294,6 +294,7 @@ Thread* Thread::createIdleThread() {
 #define REG_FOR_PARAM(p) (24-((p)*2))
 #define OFFSET_FOR_REG(r) ((r)+1)
 
+
 bool Thread::setParameter(const uint8_t parameterNumber, const uint16_t v) {
 	if (parameterNumber >= 0 && parameterNumber <= 8) {
 		const int8_t offset = OFFSET_FOR_REG(REG_FOR_PARAM(parameterNumber));
@@ -335,16 +336,19 @@ void Thread::init() {
 static bool _ctxEnabled = false;
 
 
+// Prevents context switching
 void Thread::forbid() {
 	_ctxEnabled = false;
 }
 
 
+// Enables context switching
 void Thread::permit() {
 	_ctxEnabled = true;
 }
 
 
+// Determines if context switching is on
 bool Thread::isSwitchingEnabled() {
 	return _ctxEnabled;
 }
@@ -520,10 +524,11 @@ Thread* Thread::me() {
 }
 
 
-// millisecond couonter for things and stuff
+// millisecond counter for things and stuff
 volatile uint32_t _milliseconds = 0UL;
 
 
+// triggers Timer2 COMPB ISR, which will do the switch
 static void triggerContextSwitch() {
 	if (Thread::isSwitchingEnabled()) {
 		TIMSK2 |= (1 << OCIE2B);

@@ -64,6 +64,9 @@ namespace zero {
 
 #endif
 
+    // Default quantum, in milliseconds
+	const int TIMESLICE_MS = 15;
+
     // Kernel (context switcher) stack size
     const uint16_t KERNEL_STACK_BYTES = 96;
 

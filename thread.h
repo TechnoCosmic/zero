@@ -9,6 +9,7 @@
 #ifndef TCRI_ZERO_THREAD_H
 #define TCRI_ZERO_THREAD_H
 
+
 #include "zero_config.h"
 
 #include <stdint.h>
@@ -16,8 +17,6 @@
 #include "namedobject.h"
 
 namespace zero {
-
-	const int TIMESLICE_MS = 30;
 
 	typedef int (*ThreadEntryPoint)();
 
