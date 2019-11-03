@@ -99,7 +99,7 @@ thread(sender, 128, {
 
     while (true) {
         // the << operator will block if the Pipe becomes full
-        ipcPipe << "This is a test";
+        ipcPipe << "This is a test" << endl;
 
         // wait a little bit before sending it again
         _delay_ms(1000);
@@ -220,7 +220,7 @@ So what's happening there is the program wants no less than 114 bytes of memory.
 
 To clarify this a little... zero allocates memory in whole pages, so unless your program asks for an even multiple of the current page size, the caller is going to gain access to a little more memory than it asked for. In some cases, knowing that you have access to a little more than you asked for can be useful, such as in variable length buffers.
 
-The Pipe class does this. If you specify a buffer size in the Pipe's constructor that isn't a multiple of the page size, the Pipe will still make full use of all memory that the allocator gives it. There is also an option for the Pipe to be strict about using the size you gave it, in case your program requires that, by supplying a third parameter to the constructor. When this third parameter, `strictSize`, is `true` the memory allocator will still provide the Pipe will an integer number of pages (that never changes), it's just that the Pipe won't use any extra bytes beyond what it asked for.
+The Pipe class does this. If you specify a buffer size in the Pipe's constructor that isn't a multiple of the page size, the Pipe will still make full use of all memory that the allocator gives it. There is also an option for the Pipe to be strict about using the size you gave it, in case your program requires that, by supplying a third parameter to the constructor. When this parameter, `strictSize`, is `true` the memory allocator will still provide the Pipe will an integer number of pages (that never changes), it's just that the Pipe won't use any extra bytes beyond what it asked for.
 
 If you don't want to know how much you were given, supply a null for the `allocated` parameter.
 

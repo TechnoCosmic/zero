@@ -33,7 +33,7 @@ namespace zero {
 		bool write(const uint8_t data, const bool allowBlock);
 		bool write(const char* s);
 		bool write(const char* s, memory::MemoryType memType);
-
+		
         void setReadFilter(const PipeFilter newFilter);
         void setWriteFilter(const PipeFilter newFilter);
 
@@ -46,7 +46,6 @@ namespace zero {
 		uint16_t _length;
 		uint8_t* _buffer;
 		uint16_t _bufferLength;
-		uint16_t _owningThreadId;
 
         PipeFilter _onRead;
         PipeFilter _onWrite;

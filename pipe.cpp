@@ -21,7 +21,7 @@ using namespace zero;
 Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
 	uint16_t allocated = 0UL;
 
-	_buffer = memory::allocate(bufferSize, &allocated, memory::AllocationSearchDirection::BottomUp);
+	_buffer = memory::allocate(bufferSize, &allocated, memory::AllocationSearchDirection::TopDown);
 
 	if (strictSize) {
 		_bufferLength = bufferSize;
@@ -81,7 +81,7 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 	while (allowBlock && isFull()) {
 		Thread::block(ThreadState::WAIT_WRITE, (uint32_t) this);
 	}
-	
+
 	// NOTE: There is potentially a race condition here if multiple
 	// threads are trying to write to the same full Pipe. So don't
 	// do that. If you need to multiplex, work out a proper method

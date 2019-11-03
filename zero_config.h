@@ -76,7 +76,7 @@ namespace zero {
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum
     // stack size required (found at the top of thread.cpp)
-    const uint16_t IDLE_THREAD_STACK_BYTES = 64;
+    const uint16_t IDLE_THREAD_STACK_BYTES = 96;
 
     // Flashes an LED on any pin on PORTC when the idle thread is running
     // #define IDLE_BLINK
