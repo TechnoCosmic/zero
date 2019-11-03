@@ -17,7 +17,7 @@
 
 namespace zero {
 
-	const int TIMESLICE_MS = 35;
+	const int TIMESLICE_MS = 30;
 
 	typedef int (*ThreadEntryPoint)();
 

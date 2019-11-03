@@ -309,16 +309,16 @@ bool Thread::setParameter(const uint8_t parameterNumber, const uint16_t v) {
 
 #define SCALE(x) ((F_CPU * (x)) / 16000000UL)
 
+
 // initializes and starts the pre-emptive scheduler
 void Thread::init() {
-	// 8-bit Timer/Counter0
-	power_timer0_enable();
-	TCNT0 = 0;											// reset counter to 0
-	TCCR0A = (1 << WGM01);								// CTC
-	TCCR0B = (1 << CS01) | (1 << CS00);					// /64 prescalar
-	// BUG: TODO: This doesn't actually scale up because 8-bit, only scales down
-	OCR0A = SCALE(250)-1;								// 1ms
-	TIMSK0 |= (1 << OCIE0A);							// enable ISR
+	// 8-bit Timer/Counter2
+	power_timer2_enable();
+	TCNT2 = 0;											// reset counter to 0
+	TCCR2A = (1 << WGM21);								// CTC
+	TCCR2B = (1 << CS22) | (1 << CS20);					// /128 prescalar
+	OCR2A = SCALE(125UL)-1;								// 1ms
+	TIMSK2 |= (1 << OCIE2A);							// enable ISR
 
 	// set up the idle Thread
 	_idleThread = Thread::createIdleThread();
@@ -383,8 +383,6 @@ static inline void restoreNewContext(Thread* t) {
 	_currentThread->_remainingTicks = TIMESLICE_MS;
 	_currentThread->_state = ThreadState::RUNNING;
 
-	// reset the timer so that it gets a full quantum
-	TCNT1 = 0;
 #ifdef RAMPZ
 	RAMPZ = _currentThread->_rampz;
 #endif
@@ -398,7 +396,7 @@ static inline void restoreNewContext(Thread* t) {
 // over to another Thread of the scheduler's choosing
 static inline void yield_internal() {
 	saveCurrentContext();
-	TIMSK0 &= ~(1 << OCIE0B);
+	TIMSK2 &= ~(1 << OCIE2B);
 	restoreNewContext(selectNextThread());
 }
 
@@ -526,31 +524,37 @@ Thread* Thread::me() {
 volatile uint32_t _milliseconds = 0UL;
 
 
+static void triggerContextSwitch() {
+	if (Thread::isSwitchingEnabled()) {
+		TIMSK2 |= (1 << OCIE2B);
+		OCR2B = TCNT2;
+	}
+}
+
+
 // millisecond timer ISR
-ISR(TIMER0_COMPA_vect) {
+ISR(TIMER2_COMPA_vect) {
 	cli();
 	_milliseconds++;
 
-	if (_currentThread) {
+	if (!_currentThread) {
+		triggerContextSwitch();
+		return;
+	}
+	
 #ifdef INSTRUMENTATION
-		_currentThread->_ticks++;
+	_currentThread->_ticks++;
 #endif
 
 	if (Thread::isSwitchingEnabled()) {
+		// subtract from the time remaining in the quantum
 		if (_currentThread->_remainingTicks > 0) {
 			_currentThread->_remainingTicks--;
 		}
-		if (_currentThread->_remainingTicks == 0) {
-			// trigger a context switch via software ISR
-				TIMSK0 |= (1 << OCIE0B);
-				OCR0B = TCNT0;
-			}
-		}
 
-	} else {
-		if (Thread::isSwitchingEnabled()) {
-			TIMSK0 |= (1 << OCIE0B);
-			OCR0B = TCNT0;
+		// if the Thread is OUTATIME...
+		if (_currentThread->_remainingTicks == 0) {
+			triggerContextSwitch();
 		}
 	}
 
@@ -561,7 +565,7 @@ ISR(TIMER0_COMPA_vect) {
 
 
 // context switch ISR
-ISR(TIMER0_COMPB_vect, ISR_NAKED) {
+ISR(TIMER2_COMPB_vect, ISR_NAKED) {
 	yield_internal();
 }
 
