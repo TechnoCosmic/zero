@@ -39,7 +39,7 @@ This file is currently the sole documentation for zero. It is very 'alpha' - exp
 
 zero is being developed with the ATmega1284 and ATmega328 as it's reference MCUs. However, it is intended to be compatible with other ATmega architecture MCUs. zero may even work on some ATtiny MCUs, if you turn the appropriate knobs and pull the appropriate levers to get everything to fit. Those knobs and levers are found in `zero_config.h`.
 
-The main requirements for zero to function, at least at the moment, are one 8-bit timer, one 16-bit timer, and SRAM enough for some tiny overhead for the kernel itself (back down to less than 100 bytes currently) and your program. You won't necessarily get a fully functioning interactive CLI over USART, and 14 threads calculating the various meanings of life if your MCU is on the lower-end of the AVR architecture spectrum, of course.
+The main requirements for zero to function are one 8-bit timer and SRAM enough for some tiny overhead for the kernel itself (back down to less than 100 bytes currently) and your program. You won't necessarily get a fully functioning interactive CLI over USART, and 14 threads calculating the various meanings of life if your MCU is on the lower-end of the AVR architecture spectrum, of course.
 
 You'll find easy access to the MCU settings at the beginning of the `makefile`.
 
