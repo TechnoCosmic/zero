@@ -73,6 +73,14 @@ bool Thread::cleanup() {
 }
 
 
+// Sets a new state for the Thread
+void Thread::setState(const ThreadState s) {
+	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+		_state = s;
+	}
+}
+
+
 // all threads start in here, so we can clean up after them easily
 static void globalThreadEntry(Thread* t) {
 	// run the thread, and capture it's return code
@@ -138,8 +146,8 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 	_systemData._objectName = name;
 
 	// initial housekeeping data
-	_willJoin = false;					// fire-and-forget by default
 	_state = ThreadState::READY;
+	_willJoin = false;					// fire-and-forget by default
 	_blockInfo = 0UL;
 
 #ifdef INSTRUMENTATION
@@ -312,23 +320,35 @@ void Thread::init() {
 	OCR0A = SCALE(250)-1;								// 1ms
 	TIMSK0 |= (1 << OCIE0A);							// enable ISR
 
-	// 16-bit Timer/Counter1
-	power_timer1_enable();
-	TCNT1 = 0;											// reset counter to 0
-	TCCR1A = 0;											// CTC
-	TCCR1B = (1 << WGM12) | (1 << CS11) | (1 << CS10);	// /64 prescalar
-	OCR1A = (SCALE(250UL) * TIMESLICE_MS) - 1;			// switching counter
-
 	// set up the idle Thread
 	_idleThread = Thread::createIdleThread();
 	NamedObject::add((NamedObject*) _idleThread);
 
 	// enable ISR switching at the Timer level
-	TIMSK1 |= (1 << OCIE1A);							// enable context switching
+	Thread::permit();									// enable context switching
 
 	// preserve our SP for context switch use
 	_originalSp = SP;
 }
+
+
+static bool _ctxEnabled = false;
+
+
+void Thread::forbid() {
+	_ctxEnabled = false;
+}
+
+
+void Thread::permit() {
+	_ctxEnabled = true;
+}
+
+
+bool Thread::isSwitchingEnabled() {
+	return _ctxEnabled;
+}
+
 
 // Saves the current state of the MCU to _currentThread
 static inline void saveCurrentContext() {
@@ -356,9 +376,11 @@ static inline void saveCurrentContext() {
 	}
 }
 
+
 // Restores the context of the supplied Thread and resumes it's execution
 static inline void restoreNewContext(Thread* t) {
 	_currentThread = t;
+	_currentThread->_remainingTicks = TIMESLICE_MS;
 	_currentThread->_state = ThreadState::RUNNING;
 
 	// reset the timer so that it gets a full quantum
@@ -376,6 +398,7 @@ static inline void restoreNewContext(Thread* t) {
 // over to another Thread of the scheduler's choosing
 static inline void yield_internal() {
 	saveCurrentContext();
+	TIMSK0 &= ~(1 << OCIE0B);
 	restoreNewContext(selectNextThread());
 }
 
@@ -499,29 +522,47 @@ Thread* Thread::me() {
 }
 
 
-// context switch ISR
-ISR(TIMER1_COMPA_vect, ISR_NAKED) {
-	yield_internal();
-}
-
-
 // millisecond couonter for things and stuff
 volatile uint32_t _milliseconds = 0UL;
+
 
 // millisecond timer ISR
 ISR(TIMER0_COMPA_vect) {
 	cli();
 	_milliseconds++;
 
-#ifdef INSTRUMENTATION
 	if (_currentThread) {
+#ifdef INSTRUMENTATION
 		_currentThread->_ticks++;
-	}
 #endif
+
+	if (Thread::isSwitchingEnabled()) {
+		if (_currentThread->_remainingTicks > 0) {
+			_currentThread->_remainingTicks--;
+		}
+		if (_currentThread->_remainingTicks == 0) {
+			// trigger a context switch via software ISR
+				TIMSK0 |= (1 << OCIE0B);
+				OCR0B = TCNT0;
+			}
+		}
+
+	} else {
+		if (Thread::isSwitchingEnabled()) {
+			TIMSK0 |= (1 << OCIE0B);
+			OCR0B = TCNT0;
+		}
+	}
 
 	// we don't have to re-enable ISRs here, because
 	// this *is* an ISR, meaning it will finish with
 	// 'reti', which will re-enable ISRs for us
+}
+
+
+// context switch ISR
+ISR(TIMER0_COMPB_vect, ISR_NAKED) {
+	yield_internal();
 }
 
 
@@ -537,8 +578,9 @@ uint32_t Thread::now() {
 int main() {
 	// disable all modules, and let the
 	// appropriate init routines power
-	// up only things are they get used
-	power_all_disable();
+	// up things as they get used
+
+	// power_all_disable();
 
 	// prep the scheduler and the ms timer
 	Thread::init();

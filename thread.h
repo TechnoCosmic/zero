@@ -51,10 +51,15 @@ namespace zero {
 		bool setParameter(const uint8_t parameterNumber, const uint16_t value);
 
 		// Thread management
+		static void forbid();
+		static void permit();
+		static bool isSwitchingEnabled();
+
 		bool run(bool willJoin);
 		int join();
 		bool remove();
 		bool cleanup();
+		void setState(const ThreadState s);
 
 		// Housekeeping
 		void setName(const char* name);
@@ -88,6 +93,7 @@ namespace zero {
 
 		uint16_t _tid;
 		ThreadState _state;
+		uint8_t _remainingTicks;
 		int (*_entryPoint)();
 		bool _willJoin;
 		int _exitCode;
@@ -115,28 +121,25 @@ namespace zero {
 
 
 // Funky little ATOMIC_BLOCK macro clones for context switching
-static __inline__ uint8_t __iPermitRetVal() {
-	TIMSK1 &= ~(1 << OCIE1A);
+static __inline__ uint8_t __iForbidRetVal() {
+	Thread::forbid();
 	return 1;
 }
 
 
 static __inline__ void __iZeroRestore(const uint8_t* __tmr_save) {
-	TIMSK1 |= *__tmr_save;
+	if (*__tmr_save) {
+		Thread::permit();
+	}
 }
 
 
-static __inline__ void __iZeroForceOn(const uint8_t* __tmr_save) {
-	TIMSK1 |= (1 << OCIE1A);
-}
+extern uint8_t __iForbidRetVal();
 
 
-extern uint8_t __iPermitRetVal();
-
-
-#define ZERO_ATOMIC_BLOCK(t) for ( t, __ToDo = __iPermitRetVal(); __ToDo ; __ToDo = 0 )
-#define ZERO_ATOMIC_RESTORESTATE uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t)(TIMSK1 & (1 << OCIE1A))
-#define ZERO_ATOMIC_FORCEON uint8_t tmr_save __attribute__((__cleanup__(__iZeroForceOn))) = (uint8_t)(TIMSK1 & (1 << OCIE1A))
+#define ZERO_ATOMIC_BLOCK(t) for ( t, __ToDo = __iForbidRetVal(); __ToDo ; __ToDo = 0 )
+#define ZERO_ATOMIC_RESTORESTATE uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t)(Thread::isSwitchingEnabled())
+#define ZERO_ATOMIC_FORCEON uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t) 1)
 
 }
 

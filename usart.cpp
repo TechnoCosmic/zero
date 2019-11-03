@@ -17,6 +17,13 @@
 
 using namespace zero;
 
+#ifndef USART_RX_vect
+#define USART_RX_vect USART0_RX_vect
+#endif
+
+#ifndef USART_UDRE_vect
+#define USART_UDRE_vect USART0_UDRE_vect
+#endif
 
 static Usart* _usart = 0UL;
 

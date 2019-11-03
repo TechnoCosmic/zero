@@ -59,6 +59,9 @@ namespace zero {
     // List command - ls
     #define CLICMD_LS
 
+    // Thread control commands - pause/play
+    #define CLICMD_THREAD_CTRL
+
 #endif
 
     // Kernel (context switcher) stack size
