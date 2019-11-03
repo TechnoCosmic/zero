@@ -54,10 +54,16 @@ void displayPrompt(TextPipe* rx, TextPipe* tx) {
 }
 
 
-const PROGMEM char _welcomeText[] = "\fWelcome to zero\r\n";
+static const PROGMEM char _welcomeText[] = "\fWelcome to zero\r\n";
+static const PROGMEM char _cliOnUsart[] = "CLI on USART0 @ ";
+static const PROGMEM char _speed[] = "MHz system\r\n";
+static const PROGMEM char _bps[] = "bps\r\n";
+
 
 void displayWelcome(TextPipe* rx, TextPipe* tx) {
-    *tx << PGM(_welcomeText);
+    *tx << dec << PGM(_welcomeText);
+    *tx << PGM(_cliOnUsart) << (int32_t) CLI_BAUD << PGM(_bps);
+    *tx << (int) (F_CPU / 1000000UL) << PGM(_speed);
 }
 
 
@@ -92,6 +98,7 @@ int tokenize(char* s, char* argv[]) {
     return tokenCount;
 }
 
+
 const PROGMEM char _exitedWithReturnCode[] = "\' exited with return code ";
 const PROGMEM char _isNotCliCommand[] = "': is not a CLI command";
 const PROGMEM char _cmdNotFound[] = "': command not found";
@@ -111,7 +118,7 @@ void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
                 int returnCode = ((CliCommand*) obj)->execute(rx, tx, count, args);
 
                 if (returnCode) {
-                    *tx << '\'' << args[0] << PGM(_exitedWithReturnCode) << '0' + returnCode << "\r\n";
+                    *tx << '\'' << args[0] << PGM(_exitedWithReturnCode) << (int) returnCode << "\r\n";
                 }
             }
         } else {
