@@ -38,6 +38,9 @@ namespace zero {
 		uint16_t getPageSize();
 
 		bool isPageAvailable(const uint16_t pageNumber);
+		uint16_t getAddressForPage(const uint16_t pageNumber);
+		uint16_t getPageForAddress(const uint16_t address);
+
     }
 
 }

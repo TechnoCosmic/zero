@@ -21,7 +21,7 @@ using namespace zero::memory;
 
 // So that the allocator has access to as
 // much SRAM as possible on the target MCU
-const uint16_t DYNAMIC_BYTES = (RAMEND - (256 + KERNEL_STACK_BYTES + GLOBALS_BYTES));
+const uint16_t DYNAMIC_BYTES = (RAMEND - (256 + KERNEL_MIN_STACK_BYTES + GLOBALS_BYTES));
 
 // Don't round this one up. If there's only enough
 // RAM for a partial page, we can't use the page.
@@ -51,11 +51,11 @@ uint8_t _memoryMap[BYTES_FOR_BITMAP];
 #define MARK_AS_AVAILABLE(b) (BF_CLR(_memoryMap,b))
 
 // Returns the address for the start of a given page
-static constexpr uint16_t getAddressForPage(const uint16_t pageNumber) {
+uint16_t memory::getAddressForPage(const uint16_t pageNumber) {
     return ((uint16_t) _memoryArea) + (pageNumber * PAGE_BYTES);
 }
 
-static constexpr uint16_t getPageForAddress(const uint16_t address) {
+uint16_t memory::getPageForAddress(const uint16_t address) {
     return ((address) - ((uint16_t) _memoryArea)) / PAGE_BYTES;
 }
 
