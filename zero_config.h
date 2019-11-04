@@ -10,6 +10,7 @@
 #define TCRI_ZERO_CONFIG_H
 
 #include <stdint.h>
+#include <avr/io.h>
 
 namespace zero {
 
@@ -67,11 +68,13 @@ namespace zero {
     // Default quantum, in milliseconds
 	const int TIMESLICE_MS = 15;
 
-    // Kernel (context switcher) stack size
-    const uint16_t KERNEL_MIN_STACK_BYTES = 128;
-
-    // How much lower memory is your program using for globals?
-    const uint16_t GLOBALS_BYTES = 512;
+    // So that the allocator scales with SRAM
+    // NOTE: Change this to a simple fixed size if you prefer
+    #if (RAMEND-255) >= 4096
+        const uint16_t DYNAMIC_BYTES = (3UL * (RAMEND-255UL)) / 4UL;
+    #else
+        const uint16_t DYNAMIC_BYTES = (RAMEND-255) / 2;
+    #endif
 
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum

@@ -19,10 +19,6 @@ using namespace zero;
 using namespace zero::memory;
 
 
-// So that the allocator has access to as
-// much SRAM as possible on the target MCU
-const uint16_t DYNAMIC_BYTES = (RAMEND - (256 + KERNEL_MIN_STACK_BYTES + GLOBALS_BYTES));
-
 // Don't round this one up. If there's only enough
 // RAM for a partial page, we can't use the page.
 const uint16_t TOTAL_AVAILABLE_PAGES = DYNAMIC_BYTES / PAGE_BYTES;
@@ -30,11 +26,12 @@ const uint16_t TOTAL_AVAILABLE_PAGES = DYNAMIC_BYTES / PAGE_BYTES;
 // We use this to let the compiler reserve the SRAM for us.
 // This helps avoid accidental memory corruption towards the
 // lower addresses where globals are held.
-uint8_t __attribute__((__aligned__(PAGE_BYTES))) _memoryArea[DYNAMIC_BYTES];
+uint8_t __attribute__((__aligned__(256))) _memoryArea[DYNAMIC_BYTES];
 
 // round the pages to a multiple of 8 and then divide by 8
 const uint16_t BYTES_FOR_BITMAP = ROUND_UP(TOTAL_AVAILABLE_PAGES, 8) / 8;
 
+// this is the SRAM page allocation table/memory map
 uint8_t _memoryMap[BYTES_FOR_BITMAP];
 
 // bit-field manipulation macros
@@ -55,6 +52,7 @@ uint16_t memory::getAddressForPage(const uint16_t pageNumber) {
     return ((uint16_t) _memoryArea) + (pageNumber * PAGE_BYTES);
 }
 
+// Return the page number for the given SRAM memory address
 uint16_t memory::getPageForAddress(const uint16_t address) {
     return ((address) - ((uint16_t) _memoryArea)) / PAGE_BYTES;
 }

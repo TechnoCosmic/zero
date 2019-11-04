@@ -32,7 +32,6 @@ static const char SYMBOL_ZEROPAGE = 'Z';
 static const char SYMBOL_GLOBAL = 'G';
 static const char SYMBOL_USED = '*';
 static const char SYMBOL_AVAIL = '-';
-static const char SYMBOL_KERNEL_STACK = 'K';
 
 
 static Color getColorForSymbol(const char s) {
@@ -51,10 +50,6 @@ static Color getColorForSymbol(const char s) {
 
         case SYMBOL_AVAIL:
             return Color::GREEN;
-            break;
-
-        case SYMBOL_KERNEL_STACK:
-            return Color::CYAN;
             break;
     }
     return Color::WHITE;
@@ -80,11 +75,7 @@ static char getSymbolForAddress(const uint16_t address) {
         }
     }
 
-    if (address < (RAMEND - KERNEL_MIN_STACK_BYTES + 1)) {
-        return SYMBOL_GLOBAL;
-    }
-
-    return SYMBOL_KERNEL_STACK;
+    return SYMBOL_GLOBAL;
 }
 
 clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
@@ -122,7 +113,6 @@ clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     *tx << settextcolor(getColorForSymbol(SYMBOL_GLOBAL)) << SYMBOL_GLOBAL << white << ": Globals" << endl;    
     *tx << settextcolor(getColorForSymbol(SYMBOL_USED)) << SYMBOL_USED << white << ": Allocated\t\t";    
     *tx << settextcolor(getColorForSymbol(SYMBOL_AVAIL)) << SYMBOL_AVAIL << white << ": Available" << endl;    
-    *tx << settextcolor(getColorForSymbol(SYMBOL_KERNEL_STACK)) << SYMBOL_KERNEL_STACK << white << ": Kernel stack" << endl;    
 
     return 0;
 });
