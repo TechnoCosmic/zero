@@ -24,39 +24,105 @@ using namespace zero;
 const int PAGES_PER_ROW = 32;
 
 
-static const PROGMEM char _allocationTable[] = "Allocation table";
-static const PROGMEM char _totalAllocatableSram[] = "Total allocatable SRAM: ";
-static const PROGMEM char _usedSram[] = "             Used SRAM: ";
-static const PROGMEM char _availableSram[] = "        Available SRAM: ";
+static const PROGMEM char _totalAllocatableSram[] = "Total: ";
+static const PROGMEM char _usedSram[] = " Used: ";
+static const PROGMEM char _availableSram[] = "Avail: ";
+
+static const char SYMBOL_ZEROPAGE = 'Z';
+static const char SYMBOL_GLOBAL = 'G';
+static const char SYMBOL_USED = '*';
+static const char SYMBOL_AVAIL = '-';
+static const char SYMBOL_KERNEL_STACK = 'K';
+
+
+static Color getColorForSymbol(const char s) {
+    switch (s) {
+        case SYMBOL_ZEROPAGE:
+            return Color::WHITE;
+            break;
+
+        case SYMBOL_GLOBAL:
+            return Color::YELLOW;
+            break;
+
+        case SYMBOL_USED:
+            return Color::RED;
+            break;
+
+        case SYMBOL_AVAIL:
+            return Color::GREEN;
+            break;
+
+        case SYMBOL_KERNEL_STACK:
+            return Color::CYAN;
+            break;
+    }
+    return Color::WHITE;
+}
+
+
+static char getSymbolForAddress(const uint16_t address) {
+    if (address >= 0 && address < 256) {
+        return SYMBOL_ZEROPAGE;
+    }
+
+    if (address < memory::getAddressForPage(0)) {
+        return SYMBOL_GLOBAL;
+    }
+
+    if (address < memory::getAddressForPage(memory::getTotalPages())) {
+        const uint16_t curPage = memory::getPageForAddress(address);
+
+        if (memory::isPageAvailable(curPage)) {
+            return SYMBOL_AVAIL;
+        } else {
+            return SYMBOL_USED;
+        }
+    }
+
+    if (address < (RAMEND - KERNEL_MIN_STACK_BYTES + 1)) {
+        return SYMBOL_GLOBAL;
+    }
+
+    return SYMBOL_KERNEL_STACK;
+}
 
 clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     const int totalPages = memory::getTotalPages();
     const uint16_t ttlRam = memory::getTotalBytes();
     uint16_t usedPages = 0UL;
 
-    *tx << PGM(_allocationTable) << endl << endl;
 
-    for (uint16_t curPageNumber = 0; curPageNumber < totalPages; curPageNumber++) {
-        if (memory::isPageAvailable(curPageNumber)) {
-            *tx << green << '-';
+    for (uint16_t curAddress = 0; curAddress < RAMEND; curAddress += memory::getPageSize()) {
+        const char symbol = getSymbolForAddress(curAddress);
+        const Color col = getColorForSymbol(symbol);
 
-        } else {
-            usedPages++;
-            *tx << red << '*';
+        if (curAddress % (memory::getPageSize() * 32) == 0) {
+            *tx << setreverse(true);
+            *tx << white << right << uppercase << hex << setfill('0') << setw(4) << (int32_t) curAddress;
+            *tx << setreverse(false);
         }
 
-        if ((curPageNumber+1) % 32 == 0) {
+        if (curAddress % (memory::getPageSize() * 16) == 0) {
+            *tx << ' ';
+        }
+
+        *tx << settextcolor(col) << (char) symbol;
+
+        if ((curAddress + memory::getPageSize()) % (memory::getPageSize() * 32) == 0) {
             *tx << endl;
         }
     }
+    
+    *tx << left << dec << endl;
 
-    const uint16_t usedBytes = memory::getPageSize() * usedPages;
-
-    *tx << white << dec << setfill(' ') << endl << endl;
-    *tx << PGM(_totalAllocatableSram) << right << setw(5) << (int) ttlRam << endl;
-    *tx << PGM(_usedSram) << right << setw(5) << (int) usedBytes << endl;
-    *tx << PGM(_availableSram) << right << setw(5) << (int) (ttlRam - usedBytes) << endl;
-    *tx << left;
+    // legend
+    *tx << endl;
+    *tx << settextcolor(getColorForSymbol(SYMBOL_ZEROPAGE)) << SYMBOL_ZEROPAGE << white << ": Zero page (I/O)\t";    
+    *tx << settextcolor(getColorForSymbol(SYMBOL_GLOBAL)) << SYMBOL_GLOBAL << white << ": Globals" << endl;    
+    *tx << settextcolor(getColorForSymbol(SYMBOL_USED)) << SYMBOL_USED << white << ": Allocated\t\t";    
+    *tx << settextcolor(getColorForSymbol(SYMBOL_AVAIL)) << SYMBOL_AVAIL << white << ": Available" << endl;    
+    *tx << settextcolor(getColorForSymbol(SYMBOL_KERNEL_STACK)) << SYMBOL_KERNEL_STACK << white << ": Kernel stack" << endl;    
 
     return 0;
 });
