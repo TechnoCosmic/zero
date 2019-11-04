@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include "namedobject.h"
 #include "memory.h"
+#include "util.h"
 
 
 namespace zero {
@@ -22,6 +23,8 @@ namespace zero {
 	class Pipe {
 	public:
 		static Pipe* find(const char* name);
+		static Pipe* create(const char* name, const uint16_t size);
+		void cleanup();
 
 		Pipe(const char* name, uint16_t bufferSize, const bool strictSize = false);
 		~Pipe();
@@ -38,6 +41,7 @@ namespace zero {
         void setWriteFilter(const PipeFilter newFilter);
 
 	private:
+		void init(const char* name, uint8_t* buffer, const uint16_t bufferLength);
 		uint16_t calcFirstFreeIndex();
 
 		// This must be the first field in the class
