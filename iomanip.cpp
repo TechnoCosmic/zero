@@ -76,3 +76,14 @@ TextPipe& operator<<(TextPipe& out, const setuppercase su) {
     out.setUppercase(su._uppercase);
     return out;
 }
+
+
+// charrepeater
+repeat::repeat(const char v, const uint16_t c) : _v(v), _c(c) { }
+
+TextPipe& operator<<(TextPipe& out, const repeat cr) {
+    for (uint16_t i = 0; i < cr._c; i++) {
+        out << (char) cr._v;
+    }
+    return out;
+}

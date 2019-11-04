@@ -68,6 +68,12 @@ namespace zero {
     #define uppercase setuppercase(true)
     #define nouppercase setuppercase(false)
 
+    struct repeat {
+        repeat(const char v, const uint16_t c);
+        char _v;
+        uint16_t _c;
+    };
+
     #define endl PGM(__endl)
 
 }
@@ -81,5 +87,6 @@ zero::TextPipe& operator<<(zero::TextPipe&, const zero::setw);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setfill);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setalignment);
 zero::TextPipe& operator<<(zero::TextPipe&, const zero::setuppercase);
+zero::TextPipe& operator<<(zero::TextPipe&, const zero::repeat);
 
 #endif
