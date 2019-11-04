@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include "textpipe.h"
 #include "string.h"
+#include "iomanip.h"
 
 using namespace zero;
 
@@ -132,16 +133,6 @@ OutputType TextPipe::getOutputType() {
 }
 
 
-// Pushes a number of the filler character to the Pipe
-static void pushPadding(TextPipe* p, const uint16_t count) {
-    const char f = p->getFill();
-
-    for (uint16_t i = 0; i < count; i++) {
-        *p << f;
-    }
-}
-
-
 // Pushes a supplied string into the Pipe, applying any
 // alignment and padding as it does
 static void padString(const char* s, memory::MemoryType source, TextPipe* p) {
@@ -187,13 +178,13 @@ static void padString(const char* s, memory::MemoryType source, TextPipe* p) {
     }
 
     // push any leading padding
-    pushPadding(p, leadingPadding);
+    *p << repeat(p->getFill(), leadingPadding);
 
     // the string itself
     p->write(s, source);
 
     // push any trailing padding
-    pushPadding(p, trailingPadding);
+    *p << repeat(p->getFill(), trailingPadding);
 }
 
 
