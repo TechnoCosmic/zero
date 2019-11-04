@@ -9,9 +9,9 @@
 # the fuses section of this makefile - you don't want
 # to brick an MCU because the fuses weren't right!!!
 OUTPUT=zero
-MCU=atmega328p
-AVRDUDE_PART=m328p
 AVRDUDE_CFG=pi
+AVRDUDE_PART=m328p
+MCU=atmega328p
 F_CPU=16000000UL
 
 # probably don't adjust these so much :)
