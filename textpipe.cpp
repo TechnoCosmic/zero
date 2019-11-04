@@ -121,6 +121,29 @@ bool TextPipe::getUppercase() {
 }
 
 
+// setReverse
+void TextPipe::setReverse(const bool v) {
+    if (_reverse != v) {
+        _reverse = v;
+
+        if (_outputType == OutputType::VT100) {
+            // push the escape codes to the terminal
+            if (_reverse) {
+                *this << "\e[7m";
+            } else {
+                *this << "\e[0m";
+            }
+        }
+    }
+}
+
+
+// getReverse
+bool TextPipe::getReverse() {
+    return _reverse;
+}
+
+
 // setOutputType
 void TextPipe::setOutputType(const OutputType ot) {
     _outputType = ot;

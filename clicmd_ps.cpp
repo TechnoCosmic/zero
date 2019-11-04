@@ -92,12 +92,13 @@ static const Color _stateColor[] = {
 
 
 #ifdef INSTRUMENTATION
-    const PROGMEM char threadList_Header[] = "   TID   NAME                   STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    ";
+    const PROGMEM char threadList_Header[] = "   TID  NAME                    STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    ";
 #else
-    const PROGMEM char threadList_Header[] = "   TID   NAME                   STATE         STCK RNGE    CUR TOTAL ";
+    const PROGMEM char threadList_Header[] = "   TID  NAME                    STATE         STCK RNGE    CUR TOTAL ";
 #endif
 
 
+// Sends a single Thread's details to the TextPipe
 void outputThread(Thread* t, TextPipe* tx) {
     *tx << setfill(' ');
 
@@ -158,9 +159,9 @@ void outputThread(Thread* t, TextPipe* tx) {
 
 clicommand(ps, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
-    *tx << setbackcolor(Color::WHITE) << settextcolor(Color::BLACK);
+    *tx << setreverse(true);
     *tx << PGM(threadList_Header);
-    *tx << setbackcolor(Color::BLACK) << settextcolor(Color::WHITE);
+    *tx << setreverse(false);
     *tx << endl;
 
     NamedObject::iterate(tx, [](void* data, NamedObject* obj) {

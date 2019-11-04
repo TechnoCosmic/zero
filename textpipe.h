@@ -67,6 +67,9 @@ namespace zero {
         void setUppercase(const bool v);
         bool getUppercase();
 
+        void setReverse(const bool v);
+        bool getReverse();
+
         void setOutputType(const OutputType ot);
         OutputType getOutputType();
 
@@ -78,6 +81,7 @@ namespace zero {
         Alignment _alignment;
         char _fill;
         bool _uppercase;
+        bool _reverse;
         OutputType _outputType;
     };
 

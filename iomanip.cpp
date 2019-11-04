@@ -78,6 +78,15 @@ TextPipe& operator<<(TextPipe& out, const setuppercase su) {
 }
 
 
+// reverse
+setreverse::setreverse(const bool v) : _reverse(v) { }
+
+TextPipe& operator<<(TextPipe& out, const setreverse sr) {
+    out.setReverse(sr._reverse);
+    return out;
+}
+
+
 // charrepeater
 repeat::repeat(const char v, const uint16_t c) : _v(v), _c(c) { }
 
