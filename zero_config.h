@@ -68,7 +68,7 @@ namespace zero {
 	const int TIMESLICE_MS = 15;
 
     // Kernel (context switcher) stack size
-    const uint16_t KERNEL_STACK_BYTES = 128;
+    const uint16_t KERNEL_MIN_STACK_BYTES = 128;
 
     // How much lower memory is your program using for globals?
     const uint16_t GLOBALS_BYTES = 512;
@@ -77,9 +77,6 @@ namespace zero {
     // NOTE: This may be bumped up if it is below the minimum
     // stack size required (found at the top of thread.cpp)
     const uint16_t IDLE_THREAD_STACK_BYTES = 96;
-
-    // Flashes an LED on any pin on PORTC when the idle thread is running
-    // #define IDLE_BLINK
 
     // Memory allocator page size
     #if RAMEND >= 8192
