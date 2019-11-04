@@ -87,6 +87,10 @@ namespace zero {
     #else
         const uint8_t PAGE_BYTES = 16;
     #endif
+
+    // Minimum size of a Pipe buffer, in bytes
+    const uint16_t MINIMUM_PIPE_BYTES = PAGE_BYTES;
+
 }
 
 #endif
