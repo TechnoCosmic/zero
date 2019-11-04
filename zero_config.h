@@ -68,6 +68,9 @@ namespace zero {
     // Default quantum, in milliseconds
 	const int TIMESLICE_MS = 15;
 
+    // Allocator search strategy for Threads and Stacks
+    #define THREAD_MEMORY_SEARCH_DIRECTION memory::AllocationSearchDirection::TopDown
+    
     // So that the allocator scales with SRAM
     // NOTE: Change this to a simple fixed size if you prefer
     #if (RAMEND-255) >= 4096

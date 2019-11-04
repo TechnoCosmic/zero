@@ -159,7 +159,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 // ctor
 Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
 	uint16_t allocated = 0UL;
-	uint8_t* stack = memory::allocate(MAX(stackSize, THREAD_MIN_STACK_BYTES), &allocated, memory::AllocationSearchDirection::BottomUp);
+	uint8_t* stack = memory::allocate(MAX(stackSize, THREAD_MIN_STACK_BYTES), &allocated, THREAD_MEMORY_SEARCH_DIRECTION);
 
 	if (stack) {
 		configureThread(name, stack, allocated, entryPoint);
@@ -181,7 +181,7 @@ Thread* Thread::create(const char* name, const uint16_t stackSize, const ThreadE
 
 		uint16_t allocated = 0UL;
 		uint16_t requestedStackBytes = MAX(stackSize, THREAD_MIN_STACK_BYTES);
-		uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, memory::AllocationSearchDirection::BottomUp);
+		uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_DIRECTION);
 		Thread* newThread = (Thread*) stackBottom;
 
 		if (newThread) {
@@ -265,7 +265,7 @@ const PROGMEM char _idleThreadName[] = "idle";
 Thread* Thread::createIdleThread() {
 	uint16_t allocated = 0UL;
 	uint16_t requestedStackBytes = MAX(IDLE_THREAD_STACK_BYTES, THREAD_MIN_STACK_BYTES);
-	uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, memory::AllocationSearchDirection::BottomUp);
+	uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_DIRECTION);
 	Thread* newThread = (Thread*) stackBottom;
 
 	if (newThread) {
