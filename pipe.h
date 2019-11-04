@@ -51,6 +51,9 @@ namespace zero {
 		uint8_t* _buffer;
 		uint16_t _bufferLength;
 
+		uint16_t _allocatedFromAddr;
+		uint16_t _allocatedBytes;
+
         PipeFilter _onRead;
         PipeFilter _onWrite;
 	};

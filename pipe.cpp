@@ -20,9 +20,13 @@ using namespace zero;
 void Pipe::cleanup() {
 	if (_buffer) {
 		NamedObject::remove((NamedObject*) this);
-		memory::deallocate(_buffer, _bufferLength);
+		memory::deallocate((uint8_t*) _allocatedFromAddr, _allocatedBytes);
+		
 		_buffer = 0UL;
 		_bufferLength = 0;
+
+		_allocatedFromAddr = 0UL;
+		_allocatedBytes = 0UL;
 	}
 }
 
@@ -37,6 +41,9 @@ Pipe* Pipe::create(const char* name, const uint16_t size) {
 		const uint16_t pipeBufferSize = allocated - sizeof(Pipe);
 
 		rc->init(name, (uint8_t*) pipeBufferStartAddress, pipeBufferSize);
+
+		rc->_allocatedFromAddr = (uint16_t) rc;
+		rc->_allocatedBytes = allocated;
 	}
 
 	return rc;
@@ -48,6 +55,9 @@ Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
 	uint16_t allocated = 0UL;
 
 	_buffer = memory::allocate(bufferSize, &allocated, memory::AllocationSearchDirection::BottomUp);
+
+	_allocatedFromAddr = (uint16_t) _buffer;
+	_allocatedBytes = allocated;
 
 	if (strictSize) {
 		_bufferLength = bufferSize;
