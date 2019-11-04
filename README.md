@@ -66,6 +66,15 @@ You can declare as many threads as you like, though your MCU may protest if you 
 
 Just don't include a `main()` function and expect it to work - zero has stolen `main()` for it's own initialization purposes.
 
+I lied when I said there wasn't a single entry point for zero. There sort of is. There's a required `startup_sequence()` function that is run by the kernel just *prior* to kickstarting the scheduler. This allows you to execute initialisation code that needs to run before any threads kick off.
+
+```
+void startup_sequence() {
+    // TODO: Your init code goes here
+    // GPIO DDRs perhaps? Timers?
+}
+```
+
 ### Step 2: Build
 
 Build your source code and link it with the rest of the zero kernel, upload it to your MCU, and you're done.
