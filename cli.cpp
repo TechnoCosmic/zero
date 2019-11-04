@@ -28,8 +28,8 @@ const char CR = 13;
 const char ESCAPE = 27;
 
 
-const PROGMEM char _cliRxPipeName[] = "/pipes/cli_rx";
-const PROGMEM char _cliTxPipeName[] = "/pipes/cli_tx";
+const PROGMEM char _cliRxPipeName[] = "cli_rx";
+const PROGMEM char _cliTxPipeName[] = "cli_tx";
 
 
 CliCommand::CliCommand(const char* name, const CliEntryPoint entry) {
