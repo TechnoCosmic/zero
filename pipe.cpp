@@ -21,10 +21,11 @@ using namespace zero;
 Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
 	uint16_t allocated = 0UL;
 
-	_buffer = memory::allocate(bufferSize, &allocated, memory::AllocationSearchDirection::TopDown);
+	_buffer = memory::allocate(bufferSize, &allocated, memory::AllocationSearchDirection::BottomUp);
 
 	if (strictSize) {
 		_bufferLength = bufferSize;
+		
 	} else {
 		_bufferLength = allocated;
 	}

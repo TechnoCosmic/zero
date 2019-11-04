@@ -18,14 +18,19 @@
 using namespace zero;
 using namespace zero::memory;
 
-const uint16_t TOTAL_BYTES = RAMEND+1;
-const uint16_t ZERO_PAGE_BYTES = 256;
-const uint16_t RESERVED_START_BYTES = ZERO_PAGE_BYTES + GLOBALS_BYTES;
-const uint16_t TOTAL_AVAILABLE_BYTES = TOTAL_BYTES - (ROUND_UP(KERNEL_STACK_BYTES, PAGE_BYTES) + ROUND_UP(RESERVED_START_BYTES, PAGE_BYTES));
+
+// So that the allocator has access to as
+// much SRAM as possible on the target MCU
+const uint16_t DYNAMIC_BYTES = (RAMEND - (256 + KERNEL_STACK_BYTES + GLOBALS_BYTES));
 
 // Don't round this one up. If there's only enough
 // RAM for a partial page, we can't use the page.
-const uint16_t TOTAL_AVAILABLE_PAGES = TOTAL_AVAILABLE_BYTES / PAGE_BYTES;
+const uint16_t TOTAL_AVAILABLE_PAGES = DYNAMIC_BYTES / PAGE_BYTES;
+
+// We use this to let the compiler reserve the SRAM for us.
+// This helps avoid accidental memory corruption towards the
+// lower addresses where globals are held.
+uint8_t __attribute__((__aligned__(PAGE_BYTES))) _memoryArea[DYNAMIC_BYTES];
 
 // round the pages to a multiple of 8 and then divide by 8
 const uint16_t BYTES_FOR_BITMAP = ROUND_UP(TOTAL_AVAILABLE_PAGES, 8) / 8;
@@ -47,11 +52,11 @@ uint8_t _memoryMap[BYTES_FOR_BITMAP];
 
 // Returns the address for the start of a given page
 static constexpr uint16_t getAddressForPage(const uint16_t pageNumber) {
-    return RESERVED_START_BYTES + (pageNumber * PAGE_BYTES);
+    return ((uint16_t) _memoryArea) + (pageNumber * PAGE_BYTES);
 }
 
 static constexpr uint16_t getPageForAddress(const uint16_t address) {
-    return ((address) - RESERVED_START_BYTES) / PAGE_BYTES;
+    return ((address) - ((uint16_t) _memoryArea)) / PAGE_BYTES;
 }
 
 static constexpr uint16_t getNumPagesForBytes(const uint16_t bytes) {
