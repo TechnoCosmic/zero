@@ -22,16 +22,15 @@
 
 using namespace zero;
 
-const int REGISTER_COUNT = 32;
-const int PC_COUNT = 2;
-const uint8_t THREAD_MIN_STACK_BYTES = 96;
+static const int REGISTER_COUNT = 32;
+static const int PC_COUNT = 2;
+static const uint8_t THREAD_MIN_STACK_BYTES = 96;
+static const PROGMEM char DEFAULT_THREAD_NAME[] = "noname";
 
 static inline void saveCurrentContext() __attribute__((always_inline));
 static inline void restoreNewContext(Thread* t) __attribute__((always_inline));
 static inline Thread* selectNextThread() __attribute__((always_inline));
 static inline void yield_internal() __attribute__((always_inline));
-
-static const PROGMEM char DEFAULT_NAME[] = "/threads/noname";
 
 static uint16_t _originalSp;
 static List<Thread> _readyList;
@@ -143,7 +142,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 	// set up system data
 	_tid = _nextTid++;
 	_systemData._objectType = THREAD;
-	_systemData._objectName = name;
+	_systemData._objectName = TOT(name, DEFAULT_THREAD_NAME);
 
 	// initial housekeeping data
 	_state = ThreadState::READY;
@@ -177,7 +176,7 @@ Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoin
 
 
 // creates a new Thread, with stack and TCB allocated dynamically
-Thread* Thread::create(const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
+Thread* Thread::create(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
 		uint16_t allocated = 0UL;
@@ -186,7 +185,7 @@ Thread* Thread::create(const uint16_t stackSize, const ThreadEntryPoint entryPoi
 		Thread* newThread = (Thread*) stackBottom;
 
 		if (newThread) {
-			newThread->configureThread(DEFAULT_NAME, stackBottom, allocated, entryPoint);
+			newThread->configureThread(name, stackBottom, allocated, entryPoint);
 			newThread->_state = ThreadState::PAUSED;
 
 			ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -260,8 +259,7 @@ void Thread::setName(const char* newName) {
 }
 
 
-const PROGMEM char _idleThreadName[] = "/threads/idle";
-
+const PROGMEM char _idleThreadName[] = "idle";
 
 // creates the idle thread, for running when nothing else wants to
 Thread* Thread::createIdleThread() {
@@ -272,18 +270,9 @@ Thread* Thread::createIdleThread() {
 
 	if (newThread) {
 		newThread->configureThread(_idleThreadName, stackBottom, allocated, []() {
-#ifdef IDLE_BLINK
-			DDRB = PORTB = (1 << PINB5);
-			while (true) {
-				PORTB ^= (1 << PINB5);
-				_delay_ms(1000);
-			}
-#else
 			while (true);
-#endif
 			return 0;
 		});
-		
 		newThread->_state = ThreadState::READY;
 	}
 	
@@ -293,7 +282,6 @@ Thread* Thread::createIdleThread() {
 
 #define REG_FOR_PARAM(p) (24-((p)*2))
 #define OFFSET_FOR_REG(r) ((r)+1)
-
 
 bool Thread::setParameter(const uint8_t parameterNumber, const uint16_t v) {
 	if (parameterNumber >= 0 && parameterNumber <= 8) {
@@ -309,7 +297,6 @@ bool Thread::setParameter(const uint8_t parameterNumber, const uint16_t v) {
 
 
 #define SCALE(x) ((F_CPU * (x)) / 16000000UL)
-
 
 // initializes and starts the pre-emptive scheduler
 void Thread::init() {
@@ -583,6 +570,8 @@ uint32_t Thread::now() {
 }
 
 
+extern void startup_sequence();
+
 // normal main() to start the system off
 int main() {
 	// disable all modules, and let the
@@ -593,6 +582,9 @@ int main() {
 
 	// prep the scheduler and the ms timer
 	Thread::init();
+
+	// new entry point to zero programs
+	startup_sequence();
 
 	// enable global interrupts
 	sei();

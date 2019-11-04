@@ -37,6 +37,10 @@ namespace zero {
 		// kickstarts the scheduler
 		static void init();
 
+		// Thread creation
+		static Thread* create(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint);
+		Thread(const char*, const uint16_t stackSize, const ThreadEntryPoint entryPoint);
+
 		// general blocking and unblocking
 		static void block(const ThreadState newState, const uint32_t blockInfo);
 		static void unblock(const ThreadState state, const uint32_t blockInfo);
@@ -44,16 +48,12 @@ namespace zero {
 		// for applications to find the current Thread
 		static Thread* me();
 
-		// Thread creation
-		Thread(const char*, const uint16_t stackSize, const ThreadEntryPoint entryPoint);
-		static Thread* create(const uint16_t stackSize, const ThreadEntryPoint entryPoint);
-		bool setParameter(const uint8_t parameterNumber, const uint16_t value);
-
 		// Thread management
 		static void forbid();
 		static void permit();
 		static bool isSwitchingEnabled();
 
+		bool setParameter(const uint8_t parameterNumber, const uint16_t value);
 		bool run(bool willJoin);
 		int join();
 		bool remove();
@@ -114,8 +114,8 @@ namespace zero {
 
 
 // helper macro for easier Thread creation
-#define thread(v,sz,fn)											\
-	const PROGMEM char _threadName_##v[] = "/threads/" #v;		\
+#define thread(v,sz,fn)								\
+	const PROGMEM char _threadName_##v[] = #v;		\
 	zero::Thread v(_threadName_##v,sz,[]()fn)
 
 

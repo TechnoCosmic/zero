@@ -14,7 +14,7 @@
 
 using namespace zero;
 
-thread(flashPB4, 64, {
+thread(pb4, 64, {
 	_delay_ms(1000);
 
 	while (1) {
@@ -26,7 +26,7 @@ thread(flashPB4, 64, {
 });
 
 
-thread(flashPB5, 64, {
+thread(pb5, 64, {
 	DDRB = PORTB = ((1 << PINB4) | (1 << PINB5));
 	_delay_ms(1000);
 
@@ -37,3 +37,8 @@ thread(flashPB5, 64, {
 
 	return 0;
 });
+
+
+void startup_sequence() {
+	// TODO: Your init code goes here
+}
