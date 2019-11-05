@@ -353,6 +353,36 @@ zero will tokenize the command line for you, and hand you the Pipes attached to 
 
 The intention behind the extensible CLI is so that you have a ready-made infrastructure for adding control and debugging features specific to your program's needs.
 
+### Built-in CLI Commands
+
+zero comes with a suite of CLI commands, which you may or may not find useful, depending on your needs.
+
+Process Status - `ps`
+
+![zero ps](http://www.tcri.com.au/github/zero_ps.png)
+
+Provides a listing of all the current threads, showing their state (running, paused etc) as well as information about the stack (where it is, how much is used), as well as the amount of actual runtime the thread has received so far. If `INSTRUMENTATION` (from `zero_config.h`) is not defined, then `ps` will not show as much information as it normally would, since zero isn't recording as much.
+
+Memory Map - `memmap`
+
+![zero memmap](http://www.tcri.com.au/github/zero_memmap.png)
+
+A colour-coded overview of the SRAM in the MCU, and how it's being used.
+
+Memory Dump - `ram`, `flash`, `eeprom`
+
+![zero memorydump](http://www.tcri.com.au/github/zero_memorydump.png)
+
+These commands provide a hexadecimal display of 256 bytes of memory at a time. They each take a single parameter, which is the 4-digit (hex) address of the memory to show.
+
+Thread Control - `play`, `pause`
+
+These two commands do as they suggest. They take a single parameter, which is the name of the thread to affect (as shown by the `ps` command). This parameter is case-sensitive.
+
+Clear Screen - `clear`
+
+I like a tidy screen, and `clear` does that. :)
+
 ## Troubleshooting
 
 ### Gremlins
