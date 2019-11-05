@@ -43,12 +43,11 @@ static uint16_t _nextTid = 1;
 // remove the Thread from the list of system objects.
 bool Thread::remove() {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {		
-		if (_state != ThreadState::TERMINATED) {
+		if (_state != ThreadState::TS_TERMINATED) {
 			return false;
 		}
 
 		_readyList.remove(this);
-
 		return true;
 	}
 }
@@ -57,7 +56,7 @@ bool Thread::remove() {
 // Frees the Thread's memory and removes it from the system objects list
 bool Thread::cleanup() {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		if (_state != ThreadState::TERMINATED) {
+		if (_state != ThreadState::TS_TERMINATED) {
 			return false;
 		}
 
@@ -86,14 +85,14 @@ static void globalThreadEntry(Thread* t) {
 	t->_exitCode = t->_entryPoint();
 
 	// mark it as terminated
-	t->_state = ThreadState::TERMINATED;
+	t->_state = ThreadState::TS_TERMINATED;
 
 	// remove from the list of running threads
 	t->remove();
 
 	if (t->_willJoin) {
 		// unblock anyone waiting to join()
-		Thread::unblock(ThreadState::WAIT_TERM, (uint32_t) t);
+		Thread::unblock(ThreadState::TS_WAIT_TERM, (uint32_t) t);
 
 	} else {
 		t->cleanup();
@@ -121,8 +120,8 @@ uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize) {
 
 
 // configure the Thread object ready for the execution of a new Thread
-void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
-	// prepare the stack and register
+void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags) {
+	// prepare the stack and registers
 	_sp = Thread::prepareStack(stack, stackSize);
 	_sreg = 0;
 #ifdef RAMPZ
@@ -145,8 +144,18 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 	_systemData._objectName = TOT(name, DEFAULT_THREAD_NAME);
 
 	// initial housekeeping data
-	_state = ThreadState::READY;
-	_willJoin = false;					// fire-and-forget by default
+	if (flags & TLF_READY) {
+		_state = ThreadState::TS_READY;
+	} else {
+		_state = ThreadState::TS_PAUSED;
+	}
+
+	if (flags & TLF_AUTO_CLEANUP) {
+		_willJoin = false;
+	} else {
+		_willJoin = true;
+	}
+
 	_blockInfo = 0UL;
 
 #ifdef INSTRUMENTATION
@@ -157,12 +166,12 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 
 
 // ctor
-Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
+Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags) {
 	uint16_t allocated = 0UL;
 	uint8_t* stack = memory::allocate(MAX(stackSize, THREAD_MIN_STACK_BYTES), &allocated, THREAD_MEMORY_SEARCH_DIRECTION);
 
 	if (stack) {
-		configureThread(name, stack, allocated, entryPoint);
+		configureThread(name, stack, allocated, entryPoint, flags);
 
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 			// add ourselves to the list of system objects
@@ -176,7 +185,7 @@ Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoin
 
 
 // creates a new Thread, with stack and TCB allocated dynamically
-Thread* Thread::create(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint) {
+Thread* Thread::create(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
 		uint16_t allocated = 0UL;
@@ -185,8 +194,7 @@ Thread* Thread::create(const char* name, const uint16_t stackSize, const ThreadE
 		Thread* newThread = (Thread*) stackBottom;
 
 		if (newThread) {
-			newThread->configureThread(name, stackBottom, allocated, entryPoint);
-			newThread->_state = ThreadState::PAUSED;
+			newThread->configureThread(name, stackBottom, allocated, entryPoint, flags);
 
 			ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 				// add ourselves to the list of system objects
@@ -259,6 +267,10 @@ void Thread::setName(const char* newName) {
 }
 
 
+static int idle() {
+	while(1);
+}
+
 const PROGMEM char _idleThreadName[] = "idle";
 
 // creates the idle thread, for running when nothing else wants to
@@ -269,11 +281,7 @@ Thread* Thread::createIdleThread() {
 	Thread* newThread = (Thread*) stackBottom;
 
 	if (newThread) {
-		newThread->configureThread(_idleThreadName, stackBottom, allocated, []() {
-			while (true);
-			return 0;
-		});
-		newThread->_state = ThreadState::READY;
+		newThread->configureThread(_idleThreadName, stackBottom, allocated, idle, TLF_READY | TLF_AUTO_CLEANUP);
 	}
 	
 	return newThread;
@@ -361,8 +369,8 @@ static inline void saveCurrentContext() {
 
 	// reschedule the thread to run again if it simply ran out of time
 	if (_currentThread) {
-		if (_currentThread->_state == ThreadState::RUNNING) {
-			_currentThread->_state = ThreadState::READY;
+		if (_currentThread->_state == ThreadState::TS_RUNNING) {
+			_currentThread->_state = ThreadState::TS_READY;
 		}
 	}
 }
@@ -372,7 +380,7 @@ static inline void saveCurrentContext() {
 static inline void restoreNewContext(Thread* t) {
 	_currentThread = t;
 	_currentThread->_remainingTicks = TIMESLICE_MS;
-	_currentThread->_state = ThreadState::RUNNING;
+	_currentThread->_state = ThreadState::TS_RUNNING;
 
 #ifdef RAMPZ
 	RAMPZ = _currentThread->_rampz;
@@ -401,7 +409,7 @@ static inline Thread* getNextThread(Thread* firstToCheck) {
 	// while we have something to check...
 	while (cur) {
 		// if it's ready to run, we're done!
-		if (cur->_state == ThreadState::READY) {
+		if (cur->_state == ThreadState::TS_READY) {
 			rc = cur;
 			break;
 		}
@@ -444,11 +452,11 @@ static inline Thread* selectNextThread() {
 bool Thread::run(bool willJoin) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		
-		if (_state != ThreadState::PAUSED) {
+		if (_state != ThreadState::TS_PAUSED) {
 			return false;
 		}
 
-		this->_state = ThreadState::READY;
+		this->_state = ThreadState::TS_READY;
 		this->_willJoin = willJoin;
 
 		return true;
@@ -463,8 +471,8 @@ int Thread::join() {
 	int rc = -1;
 
 	if (_willJoin) {
-		if (_state != ThreadState::TERMINATED) {
-			block(ThreadState::WAIT_TERM, (uint32_t) this);
+		if (_state != ThreadState::TS_TERMINATED) {
+			block(ThreadState::TS_WAIT_TERM, (uint32_t) this);
 		}
 
 		rc = this->_exitCode;
@@ -496,7 +504,7 @@ void Thread::unblock(const ThreadState state, const uint32_t blockInfo) {
 			Thread* next = cur->_next;
 
 			if (cur->_state == state && cur->_blockInfo == blockInfo) {
-				cur->_state = ThreadState::READY;
+				cur->_state = ThreadState::TS_READY;
 				cur->_blockInfo = 0UL;
 			}
 			cur = next;

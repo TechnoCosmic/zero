@@ -45,35 +45,15 @@ You'll find easy access to the MCU settings at the beginning of the `makefile`.
 
 ## Very Quick How-To
 
-### Step 1: Declare a Thread
+### startup_sequence()
 
-There is no single entry point in zero. Instead, declare a new thread...
+To start everything off, write some code as follows...
 
-```
-#include "thread.h"
+![zero blink](http://www.tcri.com.au/github/zero_blink.png)
 
-using namespace zero;
+The `startup_sequence` function is a required function to kickstart your zero-based program. Do any initial configuration or set up here, including defining any initial Threads. You'll need at least one.
 
-thread(name, stackBytes, {
-    // Your awesome code goes here
-
-    return 0;
-});
-```
-`name` is the name for your thread global, as well as the string name for it that the thread() macro will store in Flash memory. `stackBytes` is the number of bytes your thread will need for it's own private stack. The stacks for all Threads are dynamically allocated at runtime.
-
-You can declare as many threads as you like, though your MCU may protest if you go too hard at it. It comes down to how much SRAM each thread needs (both stack and heap), as well as what they're doing.
-
-Just don't include a `main()` function and expect it to work - zero has stolen `main()` for it's own initialization purposes.
-
-I lied when I said there wasn't a single entry point for zero. There sort of is. There's a required `startup_sequence()` function that is run by the kernel just *prior* to kickstarting the scheduler. This allows you to execute initialisation code that needs to run before any threads kick off.
-
-```
-void startup_sequence() {
-    // TODO: Your init code goes here
-    // GPIO DDRs perhaps? Timers?
-}
-```
+The example shown starts two Threads, each flashing it's own LED on a GPIO port.
 
 ### Step 2: Build
 

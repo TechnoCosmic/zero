@@ -14,31 +14,30 @@
 
 using namespace zero;
 
-thread(pb4, 64, {
-	_delay_ms(1000);
+#define LED_PORT PORTB
+#define LED_DDR DDRB
+#define LED_PIN_1 PINB4
+#define LED_PIN_2 PINB5
 
-	while (1) {
-		PORTB ^= (1 << PINB4);
+int first() {
+	while (true) {
+		LED_PORT ^= (1 << LED_PIN_1);
 		_delay_ms(250);
 	}
+}
 
-	return 0;
-});
-
-
-thread(pb5, 64, {
-	DDRB = PORTB = ((1 << PINB4) | (1 << PINB5));
-	_delay_ms(1000);
-
-	while (1) {
-		PORTB ^= (1 << PINB5);
+int second() {
+	while (true) {
+		LED_PORT ^= (1 << LED_PIN_2);
 		_delay_ms(330);
 	}
-
-	return 0;
-});
-
+}
 
 void startup_sequence() {
-	// TODO: Your init code goes here
+	// setting up GPIO
+	LED_DDR = (1 << LED_PIN_1) | (1 << LED_PIN_2);
+
+	// the main threads
+	Thread::create(PSTR("first"), 96, first, TLF_READY | TLF_AUTO_CLEANUP);
+	Thread::create(PSTR("second"), 96, second, TLF_READY | TLF_AUTO_CLEANUP);
 }

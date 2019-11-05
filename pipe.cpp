@@ -123,7 +123,7 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 	}
 	
 	while (allowBlock && isFull()) {
-		Thread::block(ThreadState::WAIT_WRITE, (uint32_t) this);
+		Thread::block(ThreadState::TS_WAIT_WRITE, (uint32_t) this);
 	}
 
 	// NOTE: There is potentially a race condition here if multiple
@@ -148,7 +148,7 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 			_length++;
 			// unblock any Thread that was blocked
 			// waiting for data to become available.
-			Thread::unblock(ThreadState::WAIT_READ, (uint32_t) this);
+			Thread::unblock(ThreadState::TS_WAIT_READ, (uint32_t) this);
 		}
 	}
 	
@@ -183,7 +183,7 @@ bool Pipe::read(uint8_t* data, const bool allowBlock) {
 	}
 	
 	while (allowBlock && isEmpty()) {
-		Thread::block(ThreadState::WAIT_READ, (uint32_t) this);
+		Thread::block(ThreadState::TS_WAIT_READ, (uint32_t) this);
 	}
 
 	// NOTE: There is potentially a race condition here if multiple
@@ -211,7 +211,7 @@ bool Pipe::read(uint8_t* data, const bool allowBlock) {
 				_start = 0;
 			}
 
-			Thread::unblock(ThreadState::WAIT_WRITE, (uint32_t) this);
+			Thread::unblock(ThreadState::TS_WAIT_WRITE, (uint32_t) this);
 			return true;
 		}
 	}

@@ -21,15 +21,18 @@ namespace zero {
 	typedef int (*ThreadEntryPoint)();
 
 	enum ThreadState {
-		RUNNING,
-		READY,
-		PAUSED,
-		TERMINATED,
-		WAIT_TERM,
-		WAIT_ATOMIC_WRITE,
-		WAIT_READ,
-		WAIT_WRITE,
+		TS_RUNNING,
+		TS_READY,
+		TS_PAUSED,
+		TS_TERMINATED,
+		TS_WAIT_TERM,
+		TS_WAIT_ATOMIC_WRITE,
+		TS_WAIT_READ,
+		TS_WAIT_WRITE,
 	};
+
+	const int TLF_READY = 1;
+	const int TLF_AUTO_CLEANUP = 2;
 
 	// Thread class
 	class Thread {
@@ -38,8 +41,8 @@ namespace zero {
 		static void init();
 
 		// Thread creation
-		static Thread* create(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint);
-		Thread(const char*, const uint16_t stackSize, const ThreadEntryPoint entryPoint);
+		static Thread* create(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags);
+		Thread(const char*, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags);
 
 		// general blocking and unblocking
 		static void block(const ThreadState newState, const uint32_t blockInfo);
@@ -103,7 +106,7 @@ namespace zero {
 	#endif
 
 	private:
-		void configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint);
+		void configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags);
 		static uint16_t prepareStack(uint8_t* stack, const uint16_t stackSize);
 		static Thread* createIdleThread();
 
@@ -116,7 +119,7 @@ namespace zero {
 // helper macro for easier Thread creation
 #define thread(v,sz,fn)								\
 	const PROGMEM char _threadName_##v[] = #v;		\
-	zero::Thread v(_threadName_##v,sz,[]()fn)
+	zero::Thread v(_threadName_##v,sz,[]()fn, TLF_READY | TLF_AUTO_CLEANUP)
 
 
 // Funky little ATOMIC_BLOCK macro clones for context switching
