@@ -22,6 +22,10 @@ using namespace zero;
 using namespace zero::memory;
 
 
+static const uint32_t STACK_WARN_PERCENTAGE = 80UL;
+static const uint32_t STACK_SCREAM_PERCENTAGE = 100UL;
+
+
 // format a millisecond input as hr:mn:ss.mmm
 // directly into a supplied Pipe
 static void displayTime(TextPipe* tx, uint32_t ms) {
@@ -100,6 +104,10 @@ static const Color _stateColor[] = {
 
 // Sends a single Thread's details to the TextPipe
 void outputThread(Thread* t, TextPipe* tx) {
+    const uint16_t stackWarnLevel = (STACK_WARN_PERCENTAGE * t->getStackSizeBytes()) / 100UL;
+    const uint16_t stackScreamLevel = (STACK_SCREAM_PERCENTAGE * t->getStackSizeBytes()) / 100UL;
+
+
     *tx << setfill(' ');
 
     // Thread ID
@@ -125,16 +133,33 @@ void outputThread(Thread* t, TextPipe* tx) {
     *tx << " (" << dec << setfill(' ');
 
     // stack current
+    Color curStackColor = Color::WHITE;
     uint16_t curStack = t->calcCurrentStackBytesUsed();
-    *tx << setw(5) << right << (int32_t) curStack << '/';
+
+    if (curStack >= stackScreamLevel) {
+        curStackColor =  Color::RED;
+
+    } else if (curStack >= stackWarnLevel) {
+        curStackColor = Color::YELLOW;
+    }
+
+    *tx << settextcolor(curStackColor) << setw(5) << right << (int32_t) curStack << white << '/';
 
 #ifdef INSTRUMENTATION
 
+    Color peakStackColor = Color::WHITE;
     uint16_t peakStack = t->calcPeakStackBytesUsed();
     uint32_t ttl = Thread::now();
 
+    if (peakStack >= stackScreamLevel) {
+        peakStackColor =  Color::RED;
+
+    } else if (peakStack >= stackWarnLevel) {
+        peakStackColor = Color::YELLOW;
+    }
+
     // stack peak
-    *tx << setw(5) << right << (int32_t) peakStack << '/';
+    *tx << settextcolor(peakStackColor) << setw(5) << right << (int32_t) peakStack << white << '/';
 
 #endif
 
@@ -145,7 +170,7 @@ void outputThread(Thread* t, TextPipe* tx) {
 
     // CPU%
     int32_t pc = (t->_ticks * 1000UL) / ttl;
-    *tx << "  " << setw(3) << right << (int32_t) (pc / 10) << '.' << pc % 10  <<  "%   ";
+    *tx << "  " << setfill(' ') << setw(3) << right << (int32_t) (pc / 10) << '.' << pc % 10  <<  "%   ";
 
     // thread tick count
     displayTime(tx, t->_ticks);
