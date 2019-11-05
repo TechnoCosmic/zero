@@ -83,7 +83,7 @@ static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, mem
 	for (uint16_t i = 0; i < 16; i++) {
 		*tx << setw(2) << hex << right << (int)((offset + i) & 0xF) << ' ';
 		if (i == 7) {
-			*tx << "  ";
+			*tx << ' ';
 		}
 	}
 	*tx << "  ";
@@ -108,7 +108,7 @@ static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, mem
 			*tx << setw(2) << hex << right << (int) d << ' ';
 
 			if (c == 7) {
-				*tx << "  ";
+				*tx << ' ';
 			}
 		}
 		*tx << "  ";
