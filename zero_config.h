@@ -73,11 +73,7 @@ namespace zero {
     
     // So that the allocator scales with SRAM
     // NOTE: Change this to a simple fixed size if you prefer
-    #if (RAMEND-255) >= 4096
-        const uint16_t DYNAMIC_BYTES = (3UL * (RAMEND-255UL)) / 4UL;
-    #else
-        const uint16_t DYNAMIC_BYTES = (RAMEND-255) / 2;
-    #endif
+    const uint16_t DYNAMIC_BYTES = RAMEND - (255 + 1024);
 
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum
