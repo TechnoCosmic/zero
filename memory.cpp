@@ -34,6 +34,7 @@ const uint16_t BYTES_FOR_BITMAP = ROUND_UP(TOTAL_AVAILABLE_PAGES, 8) / 8;
 // this is the SRAM page allocation table/memory map
 uint8_t _memoryMap[BYTES_FOR_BITMAP];
 
+
 // bit-field manipulation macros
 #define BF_BYTE(b) ((int)(b) >> 3)
 #define BF_BIT(b) ((int)(b) & 0b111)
@@ -47,19 +48,23 @@ uint8_t _memoryMap[BYTES_FOR_BITMAP];
 #define MARK_AS_ALLOCATED(b) (BF_SET(_memoryMap,b))
 #define MARK_AS_AVAILABLE(b) (BF_CLR(_memoryMap,b))
 
+
 // Returns the address for the start of a given page
 uint16_t memory::getAddressForPage(const uint16_t pageNumber) {
     return ((uint16_t) _memoryArea) + (pageNumber * PAGE_BYTES);
 }
+
 
 // Return the page number for the given SRAM memory address
 uint16_t memory::getPageForAddress(const uint16_t address) {
     return ((address) - ((uint16_t) _memoryArea)) / PAGE_BYTES;
 }
 
+
 static constexpr uint16_t getNumPagesForBytes(const uint16_t bytes) {
     return ROUND_UP(bytes, PAGE_BYTES) / PAGE_BYTES;
 }
+
 
 static int16_t findFreePages(const uint16_t numPagesRequired, const AllocationSearchDirection direction) {
 
@@ -120,12 +125,14 @@ static int16_t findFreePages(const uint16_t numPagesRequired, const AllocationSe
     }
 }
 
+
 // Allocates some memory. The amount of memory actually allocated is optionally
 // returned in allocatedBytes, which will always be a multiple of the page size.
 uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedBytes, const AllocationSearchDirection direction) {
 
     // critical section - no context switching thanks
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+
         const uint16_t numPages = getNumPagesForBytes(numBytesRequested);
         const int16_t startPage = findFreePages(numPages, direction);
 
@@ -150,6 +157,7 @@ uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedB
     }
 }
 
+
 // Frees up a chunk of previously allocated memory. In the interests of performance,
 // there is no checking that the Thread 'owns' the memory being freed, nor is there
 // a check to see if the memory was even allocated in the first place.
@@ -164,6 +172,7 @@ void memory::deallocate(const uint8_t* address, const uint16_t numBytes) {
         }
     }
 }
+
 
 uint8_t* memory::reallocate(const uint8_t* oldMemory,       // the old memory previously allocated
                             const uint16_t oldNumBytes,     // the size of oldMemory
@@ -210,6 +219,7 @@ exit:
     }
 }
 
+
 // Reads a byte from one of the three main on-board memory areas
 uint8_t memory::read(const void* address, const MemoryType memType) {
 	uint8_t rc = 0;
@@ -231,6 +241,7 @@ uint8_t memory::read(const void* address, const MemoryType memType) {
 	return rc;
 }
 
+
 // Writes a byte to one of the two main on-board writable memory areas
 bool memory::write(const void* address, const uint8_t data, const MemoryType memType) {
 	switch (memType) {
@@ -250,17 +261,21 @@ bool memory::write(const void* address, const uint8_t data, const MemoryType mem
 	}
 }
 
+
 bool memory::isPageAvailable(const uint16_t pageNumber) {
 	return IS_PAGE_AVAILABLE(pageNumber);
 }
+
 
 uint16_t memory::getTotalPages() {
 	return TOTAL_AVAILABLE_PAGES;
 }
 
+
 uint16_t memory::getTotalBytes() {
 	return TOTAL_AVAILABLE_PAGES * PAGE_BYTES;
 }
+
 
 uint16_t memory::getPageSize() {
     return PAGE_BYTES;
