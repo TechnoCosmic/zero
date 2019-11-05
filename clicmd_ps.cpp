@@ -85,7 +85,7 @@ static const char* _stateString[] = {
 
 static const Color _stateColor[] = {
     Color::GREEN,
-    Color::YELLOW,
+    Color::WHITE,
     Color::YELLOW,
     Color::RED,
     Color::YELLOW,
