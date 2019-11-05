@@ -151,7 +151,16 @@ thread(cli, CLI_STACK_BYTES, {
         if (rx.read(&input, true)) {
             switch (input) {
                 case ESCAPE:
-                    // no being cheeky with escape sequences
+                    // clear the line and start fresh
+                    if (cursorPosition > 0 && tx.getOutputType() == OutputType::VT100) {
+                        // clear command line
+                        tx << "\e[2K\r";
+
+                        // begin again
+                        memset((uint8_t*) cmdLine, 0, sizeof(cmdLine));
+                        cursorPosition = 0;
+                        displayPrompt(&rx, &tx);
+                    }
                     echo = false;
                 break;
 
