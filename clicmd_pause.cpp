@@ -25,11 +25,14 @@ using namespace zero;
 clicommand(pause, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-        NamedObject* obj = NamedObject::find(argv[1]);
 
-        if (obj && obj->_objectType == ZeroObjectType::THREAD) {
-            Thread* t = (Thread*) obj;
-            t->setState(ThreadState::TS_PAUSED);
+        for (int i = 1; i < argc; i++) {
+            NamedObject* obj = NamedObject::find(argv[i]);
+
+            if (obj && obj->_objectType == ZeroObjectType::THREAD) {
+                Thread* t = (Thread*) obj;
+                t->setState(ThreadState::TS_PAUSED);
+            }
         }
     }
     return 0;
@@ -39,11 +42,14 @@ clicommand(pause, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 clicommand(play, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-        NamedObject* obj = NamedObject::find(argv[1]);
 
-        if (obj && obj->_objectType == ZeroObjectType::THREAD) {
-            Thread* t = (Thread*) obj;
-            t->setState(ThreadState::TS_READY);
+        for (int i = 1; i < argc; i++) {
+            NamedObject* obj = NamedObject::find(argv[i]);
+
+            if (obj && obj->_objectType == ZeroObjectType::THREAD) {
+                Thread* t = (Thread*) obj;
+                t->setState(ThreadState::TS_READY);
+            }
         }
     }
     return 0;
