@@ -128,7 +128,7 @@ void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
 }
 
 
-thread(cli, CLI_STACK_BYTES, {
+thread(cli, CLI_STACK_BYTES, 50, {
     TextPipe rx(_cliRxPipeName, CLI_RX_PIPE_BYTES);
     TextPipe tx(_cliTxPipeName, CLI_TX_PIPE_BYTES);
     Usart serial(CLI_BAUD, &rx, &tx);

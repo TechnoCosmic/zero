@@ -119,9 +119,9 @@ namespace zero {
 
 
 // helper macro for easier Thread creation
-#define thread(v,sz,fn)								\
+#define thread(v,sz,qo,fn)								\
 	const PROGMEM char _threadName_##v[] = #v;		\
-	zero::Thread v(_threadName_##v,sz,0,[]()fn,TLF_READY|TLF_AUTO_CLEANUP)
+	zero::Thread v(_threadName_##v,sz,qo,[]()fn,TLF_READY|TLF_AUTO_CLEANUP)
 
 
 // Funky little ATOMIC_BLOCK macro clones for context switching
