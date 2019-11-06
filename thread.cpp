@@ -449,7 +449,7 @@ static inline Thread* selectNextThread() {
 
 // Starts a PAUSED Thread executing by allowing it to be scheduled.
 // Returns false if the Thread was not PAUSED at the time of the call.
-bool Thread::run(bool willJoin) {
+bool Thread::run() {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		
 		if (_state != ThreadState::TS_PAUSED) {
@@ -457,10 +457,29 @@ bool Thread::run(bool willJoin) {
 		}
 
 		this->_state = ThreadState::TS_READY;
-		this->_willJoin = willJoin;
 
 		return true;
 	}
+}
+
+
+// Pauses a running/ready Thread. Blocks if the caller is pausing itself.
+// Returns false if the Thread was not RUNNING/READY at the time of the call.
+bool Thread::pause() {
+	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+		
+		if (_state != ThreadState::TS_RUNNING && _state != ThreadState::TS_READY) {
+			return false;
+		}
+		this->_state = ThreadState::TS_PAUSED;
+	}
+
+	// block immediately if the thread paused itself
+	if (this == _currentThread) {
+		yield_internal();
+	}
+
+	return true;
 }
 
 

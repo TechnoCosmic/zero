@@ -57,7 +57,8 @@ namespace zero {
 		static bool isSwitchingEnabled();
 
 		bool setParameter(const uint8_t parameterNumber, const uint16_t value);
-		bool run(bool willJoin);
+		bool run();
+		bool pause();
 		int join();
 		bool remove();
 		bool cleanup();

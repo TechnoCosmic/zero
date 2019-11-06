@@ -31,7 +31,7 @@ clicommand(pause, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
             if (obj && obj->_objectType == ZeroObjectType::THREAD) {
                 Thread* t = (Thread*) obj;
-                t->setState(ThreadState::TS_PAUSED);
+                t->pause();
             }
         }
     }
@@ -48,7 +48,7 @@ clicommand(play, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
             if (obj && obj->_objectType == ZeroObjectType::THREAD) {
                 Thread* t = (Thread*) obj;
-                t->setState(ThreadState::TS_READY);
+                t->run();
             }
         }
     }
