@@ -38,6 +38,6 @@ void startup_sequence() {
 	LED_DDR = (1 << LED_PIN_1) | (1 << LED_PIN_2);
 
 	// the main threads
-	Thread::create(PSTR("first"), 96, first, TLF_READY | TLF_AUTO_CLEANUP);
-	Thread::create(PSTR("second"), 96, second, TLF_READY | TLF_AUTO_CLEANUP);
+	Thread::create(PSTR("first"), 0, 20, first, TLF_READY | TLF_AUTO_CLEANUP);
+	Thread::create(PSTR("second"), 0, 0, second, TLF_READY | TLF_AUTO_CLEANUP);
 }
