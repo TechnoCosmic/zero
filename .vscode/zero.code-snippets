@@ -20,7 +20,7 @@
 	"zero Thread": {
 		"prefix": [ "thread", "zero-thread"],
 		"body": [
-			"thread(${1:name}, ${2:stackBytes}, {",
+			"thread(${1:name}, ${2:stackBytes}, ${3:quantum}, {",
 			"\t$0",
 			"\treturn 0;",
 			"});",
@@ -32,19 +32,17 @@
 	"Async function call": {
 		"prefix": ["async", "afc" ],
 		"body": [
-			"Thread* ${1:name} = Thread::create(${2:stackBytes}, [](){",
-			"\t${3:// async code}",
+			"Thread* ${1:name} = Thread::create(${2:stackBytes}, ${3:quantum}, [](){",
+			"\t${4:// async code}",
 			"\treturn 0;",
-			"});",
-			"",
-			"// start it running, will join later",
-			"${1:name}->run(true);",
+			"}, TLD_READY);",
 			"",
 			"// do other stuff",
 			"$0",
 			"",
 			"// wait for async code to finish",
-			"int ${4:returnCode} = ${1:name}->join();",
+			"int ${5:returnCode} = ${1:name}->join();",
+			"",
 		]
 	},
 
