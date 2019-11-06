@@ -23,7 +23,9 @@ namespace zero {
 
 		enum AllocationSearchDirection {
 			TopDown = 0,
-			BottomUp
+			BottomUp,
+			MiddleDown,
+			MiddleUp,
 		};
 
 		uint8_t* allocate(const uint16_t numBytes, uint16_t* allocatedBytes, const AllocationSearchDirection direction);

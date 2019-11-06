@@ -49,6 +49,53 @@ uint8_t _memoryMap[BYTES_FOR_BITMAP];
 #define MARK_AS_AVAILABLE(b) (BF_CLR(_memoryMap,b))
 
 
+static int16_t getPageForSearchStep_MiddleDown(const uint16_t step, const uint16_t totalPages);
+static int16_t getPageForSearchStep_MiddleUp(const uint16_t step, const uint16_t totalPages);
+static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t totalPages);
+static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t totalPages);
+
+
+static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t totalPages) {
+    return step;
+}
+
+
+static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t totalPages) {
+    return totalPages - (step + 1);
+}
+
+
+static int16_t getPageForSearchStep_MiddleDown(const uint16_t step, const uint16_t totalPages) {
+    const int16_t midPoint = totalPages / 2;
+    const int16_t rev = totalPages - (step + 1);
+    const int16_t page = rev - midPoint;
+
+    if (page < 0) {
+        return -1;
+    }
+    return page;
+}
+
+
+static int16_t getPageForSearchStep_MiddleUp(const uint16_t step, const uint16_t totalPages) {
+    const int16_t midPoint = totalPages / 2;
+    const int16_t page = step + midPoint;
+
+    if (page >= totalPages) {
+        return -1;
+    }
+    return page;
+}
+
+
+static int16_t (*_strategies[])(const uint16_t, const uint16_t) = {
+    getPageForSearchStep_TopDown,
+    getPageForSearchStep_BottomUp,
+    getPageForSearchStep_MiddleDown,
+    getPageForSearchStep_MiddleUp,
+};
+
+
 // Returns the address for the start of a given page
 uint16_t memory::getAddressForPage(const uint16_t pageNumber) {
     return ((uint16_t) _memoryArea) + (pageNumber * PAGE_BYTES);
@@ -67,39 +114,29 @@ static constexpr uint16_t getNumPagesForBytes(const uint16_t bytes) {
 
 
 static int16_t findFreePages(const uint16_t numPagesRequired, const AllocationSearchDirection direction) {
+    int16_t startPage = -1;
+    uint16_t pageCount = 0;
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
-        int16_t firstPage, lastPage;
-        int16_t adjust;
+        for (uint16_t curStep = 0; curStep < TOTAL_AVAILABLE_PAGES; curStep++) {
+            const uint16_t curPage =  _strategies[direction](curStep, TOTAL_AVAILABLE_PAGES);
 
-        // prepare the search loop according to the direction
-        if (direction == AllocationSearchDirection::BottomUp) {
-            firstPage = 0;
-            lastPage = TOTAL_AVAILABLE_PAGES - 1;
-            adjust = 1;
+            if (curPage == -1) {
+                break;
+            }
 
-        } else {
-            firstPage = TOTAL_AVAILABLE_PAGES - 1;
-            lastPage = 0;
-            adjust = -1;
-        }
-
-        // start looking for free pages
-        int16_t startPage = -1;
-        uint16_t pageCount = 0;
-
-        for (int16_t curPageNumber = firstPage; curPageNumber >= 0 && curPageNumber <= TOTAL_AVAILABLE_PAGES-1; curPageNumber += adjust) {
-            if (IS_PAGE_AVAILABLE(curPageNumber)) {
+            if (IS_PAGE_AVAILABLE(curPage)) {
                 // we have one more page than we had before
                 pageCount++;
 
                 // if we didn't have a startPage, we do now
                 if (startPage == -1) {
-                    startPage = curPageNumber;
+                    startPage = curPage;
                 }
 
                 // if we've found the right number of pages, stop looking
                 if (pageCount == numPagesRequired) {
+                    startPage = MIN(startPage, curPage);
                     break;
                 }
 
@@ -108,21 +145,14 @@ static int16_t findFreePages(const uint16_t numPagesRequired, const AllocationSe
                 startPage = -1;
                 pageCount = 0;
             }
-
-        }
-
-        // if we couldn't find the memory, return -1
-        if (startPage == -1) {
-            return -1;
-        }
-
-        // figure out what address to return to the caller
-        if (direction == AllocationSearchDirection::BottomUp) {
-            return startPage;                       // startPage is the lowest page
-        } else {
-            return startPage - pageCount + 1;       // startPage is the highest page
         }
     }
+
+    if (pageCount < numPagesRequired) {
+        return -1;
+    }
+
+    return startPage;
 }
 
 
@@ -134,7 +164,16 @@ uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedB
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
         const uint16_t numPages = getNumPagesForBytes(numBytesRequested);
-        const int16_t startPage = findFreePages(numPages, direction);
+        int16_t startPage = findFreePages(numPages, direction);
+
+        // make sure we've covered all the angles
+        if (startPage == -1) {
+            if (direction == AllocationSearchDirection::MiddleUp) {
+                startPage = findFreePages(numPages, AllocationSearchDirection::MiddleDown);
+            } else {
+                startPage = findFreePages(numPages, AllocationSearchDirection::MiddleUp);
+            }
+        }
 
         // if there was a chunk the size we wanted
         if (startPage >= 0) {
