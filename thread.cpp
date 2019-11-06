@@ -90,12 +90,12 @@ static void globalThreadEntry(Thread* t) {
 	// remove from the list of running threads
 	t->remove();
 
-	if (t->_willJoin) {
-		// unblock anyone waiting to join()
-		Thread::unblock(ThreadState::TS_WAIT_TERM, (uint32_t) t);
+	if (t->_autoCleanup) {
+		t->cleanup();
 
 	} else {
-		t->cleanup();
+		// unblock anyone waiting to join()
+		Thread::unblock(ThreadState::TS_WAIT_TERM, (uint32_t) t);
 	}
 	
 	_currentThread = 0UL;
@@ -120,7 +120,7 @@ uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize) {
 
 
 // configure the Thread object ready for the execution of a new Thread
-void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags) {
+void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags) {
 	// prepare the stack and registers
 	_sp = Thread::prepareStack(stack, stackSize);
 	_sreg = 0;
@@ -150,12 +150,8 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 		_state = ThreadState::TS_PAUSED;
 	}
 
-	if (flags & TLF_AUTO_CLEANUP) {
-		_willJoin = false;
-	} else {
-		_willJoin = true;
-	}
-
+	_quantumMs = TOT(quantumOverride, TIMESLICE_MS);
+	_autoCleanup = (flags & TLF_AUTO_CLEANUP);
 	_blockInfo = 0UL;
 
 #ifdef INSTRUMENTATION
@@ -166,12 +162,12 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 
 
 // ctor
-Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags) {
+Thread::Thread(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags) {
 	uint16_t allocated = 0UL;
 	uint8_t* stack = memory::allocate(MAX(stackSize, THREAD_MIN_STACK_BYTES), &allocated, THREAD_MEMORY_SEARCH_DIRECTION);
 
 	if (stack) {
-		configureThread(name, stack, allocated, entryPoint, flags);
+		configureThread(name, stack, allocated, quantumOverride, entryPoint, flags);
 
 		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 			// add ourselves to the list of system objects
@@ -185,7 +181,7 @@ Thread::Thread(const char* name, const uint16_t stackSize, const ThreadEntryPoin
 
 
 // creates a new Thread, with stack and TCB allocated dynamically
-Thread* Thread::create(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags) {
+Thread* Thread::create(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
 		uint16_t allocated = 0UL;
@@ -194,7 +190,7 @@ Thread* Thread::create(const char* name, const uint16_t stackSize, const ThreadE
 		Thread* newThread = (Thread*) stackBottom;
 
 		if (newThread) {
-			newThread->configureThread(name, stackBottom, allocated, entryPoint, flags);
+			newThread->configureThread(name, stackBottom, allocated, quantumOverride, entryPoint, flags);
 
 			ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 				// add ourselves to the list of system objects
@@ -281,7 +277,7 @@ Thread* Thread::createIdleThread() {
 	Thread* newThread = (Thread*) stackBottom;
 
 	if (newThread) {
-		newThread->configureThread(_idleThreadName, stackBottom, allocated, idle, TLF_READY | TLF_AUTO_CLEANUP);
+		newThread->configureThread(_idleThreadName, stackBottom, allocated, 0, idle, TLF_READY | TLF_AUTO_CLEANUP);
 	}
 	
 	return newThread;
@@ -379,7 +375,7 @@ static inline void saveCurrentContext() {
 // Restores the context of the supplied Thread and resumes it's execution
 static inline void restoreNewContext(Thread* t) {
 	_currentThread = t;
-	_currentThread->_remainingTicks = TIMESLICE_MS;
+	_currentThread->_remainingTicks = _currentThread->_quantumMs;
 	_currentThread->_state = ThreadState::TS_RUNNING;
 
 #ifdef RAMPZ
@@ -489,7 +485,7 @@ bool Thread::pause() {
 int Thread::join() {
 	int rc = -1;
 
-	if (_willJoin) {
+	if (!_autoCleanup) {
 		if (_state != ThreadState::TS_TERMINATED) {
 			block(ThreadState::TS_WAIT_TERM, (uint32_t) this);
 		}

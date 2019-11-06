@@ -41,8 +41,8 @@ namespace zero {
 		static void init();
 
 		// Thread creation
-		static Thread* create(const char* name, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags);
-		Thread(const char*, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags);
+		static Thread* create(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
+		Thread(const char*, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
 
 		// general blocking and unblocking
 		static void block(const ThreadState newState, const uint32_t blockInfo);
@@ -96,9 +96,10 @@ namespace zero {
 
 		uint16_t _tid;
 		ThreadState _state;
+		uint8_t _quantumMs;
 		uint8_t _remainingTicks;
 		int (*_entryPoint)();
-		bool _willJoin;
+		bool _autoCleanup;
 		int _exitCode;
 
 	#ifdef INSTRUMENTATION
@@ -107,7 +108,7 @@ namespace zero {
 	#endif
 
 	private:
-		void configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const ThreadEntryPoint entryPoint, const int flags);
+		void configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
 		static uint16_t prepareStack(uint8_t* stack, const uint16_t stackSize);
 		static Thread* createIdleThread();
 
@@ -120,7 +121,7 @@ namespace zero {
 // helper macro for easier Thread creation
 #define thread(v,sz,fn)								\
 	const PROGMEM char _threadName_##v[] = #v;		\
-	zero::Thread v(_threadName_##v,sz,[]()fn, TLF_READY | TLF_AUTO_CLEANUP)
+	zero::Thread v(_threadName_##v,sz,0,[]()fn,TLF_READY|TLF_AUTO_CLEANUP)
 
 
 // Funky little ATOMIC_BLOCK macro clones for context switching
