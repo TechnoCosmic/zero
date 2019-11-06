@@ -8,9 +8,7 @@
 
 #include "zero_config.h"
 
-
 #ifdef CLICMD_MEMDUMP
-
 
 #include <stdint.h>
 #include <avr/pgmspace.h>
@@ -134,7 +132,7 @@ static void displayMemory(TextPipe* rx, TextPipe* tx, const uint16_t offset, mem
 }
 
 
-clicommand(ram, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
+clicommand(rram, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 	uint16_t offset = 0;
 
 	if (argc != 2 || strlen(argv[1]) != 4) {
@@ -149,7 +147,7 @@ clicommand(ram, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 });
 
 
-clicommand(flash, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
+clicommand(rflash, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 	uint16_t offset = 0;
 
 	if (argc != 2 || strlen(argv[1]) != 4) {
@@ -164,7 +162,7 @@ clicommand(flash, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 });
 
 
-clicommand(eeprom, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
+clicommand(reeprom, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 	uint16_t offset = 0;
 
 	if (argc != 2 || strlen(argv[1]) != 4) {
@@ -174,6 +172,42 @@ clicommand(eeprom, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
 	offset = hexStringToValue(argv[1]);
 	displayMemory(rx, tx, offset, memory::MemoryType::EEPROM);
+
+    return 0;
+});
+
+
+clicommand(wram, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
+	uint16_t offset = 0;
+
+	if (argc != 3 || strlen(argv[1]) != 4) {
+		*tx << PGM(ram_Usage) << argv[0] << PGM(ram_Usage2) << endl;
+		return 0;
+	}
+
+	offset = hexStringToValue(argv[1]);
+    
+	for (uint16_t i = 0; i < strlen(argv[2]); i++) {
+		memory::write((uint8_t*) offset + i, argv[2][i], memory::MemoryType::SRAM);
+	}
+
+    return 0;
+});
+
+
+clicommand(weeprom, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
+	uint16_t offset = 0;
+
+	if (argc != 3 || strlen(argv[1]) != 4) {
+		*tx << PGM(ram_Usage) << argv[0] << PGM(ram_Usage2) << endl;
+		return 0;
+	}
+
+	offset = hexStringToValue(argv[1]);
+    
+	for (uint16_t i = 0; i < strlen(argv[2]); i++) {
+		memory::write((uint8_t*) offset + i, argv[2][i], memory::MemoryType::EEPROM);
+	}
 
     return 0;
 });
