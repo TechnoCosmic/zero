@@ -96,7 +96,7 @@ static const Color _stateColor[] = {
 
 
 #ifdef INSTRUMENTATION
-    const PROGMEM char threadList_Header[] = "   TID  NAME                    STATE         STCK RNGE    CUR  PEAK TOTAL     %CPU       TIME    ";
+    const PROGMEM char threadList_Header[] = "   TID  NAME                    STATE         STCK RNGE    CUR  PEAK TOTAL       TIME    ";
 #else
     const PROGMEM char threadList_Header[] = "   TID  NAME                    STATE         STCK RNGE    CUR TOTAL ";
 #endif
@@ -168,9 +168,7 @@ void outputThread(Thread* t, TextPipe* tx) {
 
 #ifdef INSTRUMENTATION
 
-    // CPU%
-    int32_t pc = (t->_ticks * 1000UL) / ttl;
-    *tx << "  " << setfill(' ') << setw(3) << right << (int32_t) (pc / 10) << '.' << pc % 10  <<  "%   ";
+    *tx << "  ";
 
     // thread tick count
     displayTime(tx, t->_ticks);
