@@ -10,6 +10,35 @@
 
 using namespace zero;
 
+
+template <class T>
+bool List<T>::insertAfter(T* newItem, T* after) {
+    const bool newTail = (after == getTail());
+
+    newItem->_next = after->_next;
+    newItem->_prev = after;
+
+    after->_next = newItem;
+
+    if (newTail) {
+        _tail = newItem;
+    }
+}
+
+template <class T>
+bool List<T>::insertBefore(T* newItem, T* before) {
+    const bool newHead = (before == getHead());
+
+    newItem->_prev = before->_prev;
+    newItem->_next = before;
+
+    before->_prev = newItem;
+
+    if (newHead) {
+        _head = newItem;
+    }
+}
+
 template <class T>
 bool List<T>::append(T* item) {
     if (!canModify()) {

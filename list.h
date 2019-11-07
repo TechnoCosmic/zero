@@ -16,6 +16,8 @@ namespace zero {
     template <class T>
     class List {
     public:
+        bool insertAfter(T* newItem, T* after);
+        bool insertBefore(T* newItem, T* before);
         bool append(T* item);
         bool prepend(T* item);
         bool remove(T *item);
