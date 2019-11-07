@@ -57,6 +57,11 @@
 			" * ",
 			" */",
 			"",
+			"#include \"zero_config.h\"",
+			"",
+			"using namespace zero;",
+			"",
+			"",
 			"$0",
 		]
 	},
