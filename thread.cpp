@@ -238,6 +238,12 @@ void Thread::init() {
 }
 
 
+// Who am I?
+Thread* Thread::me() {
+	return _currentThread;
+}
+
+
 static bool _ctxEnabled = false;
 
 

@@ -49,12 +49,6 @@ uint16_t Thread::calcCurrentStackBytesUsed() {
 }
 
 
-// Who am I?
-Thread* Thread::me() {
-	return _currentThread;
-}
-
-
 #ifdef INSTRUMENTATION
 
 
