@@ -87,10 +87,34 @@ int strcmppgm(const char* a, char *b) {
 		if (charA != *b) {
 			return charA - *b;
 		}
+
 		a++;
 		charA = pgm_read_byte_near(a);
 		b++;
 	}
+
+	return charA - *b;
+}
+
+int strcmppgm_wc(const char* a, char *b) {
+	char charA = pgm_read_byte_near(a);
+
+	while (charA && *b) {
+		if (*b == '*') {
+			return 0;
+		}
+
+		if (*b != '?') {
+			if (charA != *b) {
+				return charA - *b;
+			}
+		}
+
+		a++;
+		charA = pgm_read_byte_near(a);
+		b++;
+	}
+
 	return charA - *b;
 }
 
