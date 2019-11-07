@@ -153,25 +153,6 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 }
 
 
-// ctor
-Thread::Thread(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags) {
-	uint16_t allocated = 0UL;
-	uint8_t* stack = memory::allocate(MAX(stackSize, THREAD_MIN_STACK_BYTES), &allocated, THREAD_MEMORY_SEARCH_DIRECTION);
-
-	if (stack) {
-		configureThread(name, stack, allocated, quantumOverride, entryPoint, flags);
-
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-			// add ourselves to the list of system objects
-			NamedObject::add((NamedObject*) this);
-
-			// and to the thread list
-			_readyList.append(this);
-		}
-	}
-}
-
-
 // creates a new Thread, with stack and TCB allocated dynamically
 Thread* Thread::create(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {

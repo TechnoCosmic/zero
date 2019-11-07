@@ -11,13 +11,16 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include "thread.h"
+#include "cli.h"
 
 using namespace zero;
+
 
 #define LED_PORT PORTB
 #define LED_DDR DDRB
 #define LED_PIN_1 PINB4
 #define LED_PIN_2 PINB5
+
 
 int first() {
 	while (true) {
@@ -38,6 +41,7 @@ void startup_sequence() {
 	LED_DDR = (1 << LED_PIN_1) | (1 << LED_PIN_2);
 
 	// the main threads
-	Thread::create(PSTR("first"), 0, 0, first, TLF_AUTO_CLEANUP);
-	Thread::create(PSTR("second"), 0, 0, second, TLF_AUTO_CLEANUP);
+	Thread::create(PSTR("cli"), CLI_STACK_BYTES, 50, cliMain, TLF_READY | TLF_AUTO_CLEANUP);
+	Thread::create(PSTR("first"), 0, 0, first, TLF_READY | TLF_AUTO_CLEANUP);
+	Thread::create(PSTR("second"), 0, 0, second, TLF_READY | TLF_AUTO_CLEANUP);
 }

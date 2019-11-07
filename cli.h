@@ -13,6 +13,10 @@
 #include "namedobject.h"
 #include "textpipe.h"
 
+
+extern int cliMain();
+
+
 namespace zero {
 
     typedef int (*CliEntryPoint)(TextPipe* rx, TextPipe* tx, int argc, char* argv[]);

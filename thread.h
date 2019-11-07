@@ -45,7 +45,7 @@ namespace zero {
 
 		// Thread creation
 		static Thread* create(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
-		Thread(const char*, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
+		// Thread(const char*, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
 
 		// general blocking and unblocking
 		static void block(const ThreadState newState, const uint32_t blockInfo);
@@ -115,12 +115,6 @@ namespace zero {
 		uint8_t* _stackBottom;
 		uint16_t _stackSize;
 	};
-
-
-// helper macro for easier Thread creation
-#define thread(v,sz,qo,fn)							\
-	const PROGMEM char _threadName_##v[] = #v;		\
-	zero::Thread v(_threadName_##v,sz,qo,[]()fn,TLF_READY|TLF_AUTO_CLEANUP)
 
 }
 
