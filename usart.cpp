@@ -13,9 +13,10 @@
 #include "usart.h"
 #include "pipe.h"
 #include "thread.h"
-
+#include "atomic.h"
 
 using namespace zero;
+
 
 #ifndef USART_RX_vect
 #define USART_RX_vect USART0_RX_vect

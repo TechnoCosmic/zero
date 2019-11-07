@@ -16,6 +16,9 @@
 #include <avr/pgmspace.h>
 #include "namedobject.h"
 
+
+static const uint8_t THREAD_MIN_STACK_BYTES = 96;
+
 namespace zero {
 
 	typedef int (*ThreadEntryPoint)();
@@ -62,10 +65,6 @@ namespace zero {
 		int join();
 		bool remove();
 		bool cleanup();
-		void setState(const ThreadState s);
-
-		// Housekeeping
-		void setName(const char* name);
 
 		// Properties
 		bool isDynamic();
@@ -119,32 +118,11 @@ namespace zero {
 
 
 // helper macro for easier Thread creation
-#define thread(v,sz,qo,fn)								\
+#define thread(v,sz,qo,fn)							\
 	const PROGMEM char _threadName_##v[] = #v;		\
 	zero::Thread v(_threadName_##v,sz,qo,[]()fn,TLF_READY|TLF_AUTO_CLEANUP)
 
-
-// Funky little ATOMIC_BLOCK macro clones for context switching
-static __inline__ uint8_t __iForbidRetVal() {
-	Thread::forbid();
-	return 1;
 }
 
-
-static __inline__ void __iZeroRestore(const uint8_t* __tmr_save) {
-	if (*__tmr_save) {
-		Thread::permit();
-	}
-}
-
-
-extern uint8_t __iForbidRetVal();
-
-
-#define ZERO_ATOMIC_BLOCK(t) for ( t, __ToDo = __iForbidRetVal(); __ToDo ; __ToDo = 0 )
-#define ZERO_ATOMIC_RESTORESTATE uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t)(Thread::isSwitchingEnabled())
-#define ZERO_ATOMIC_FORCEON uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t) 1)
-
-}
 
 #endif

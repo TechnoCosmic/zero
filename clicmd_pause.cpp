@@ -16,6 +16,7 @@
 #include "textpipe.h"
 #include "iomanip.h"
 #include "thread.h"
+#include "atomic.h"
 
 using namespace zero;
 

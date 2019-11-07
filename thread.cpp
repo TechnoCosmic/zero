@@ -15,6 +15,7 @@
 #include "zero_config.h"
 #include "thread_macros.h"
 #include "thread.h"
+#include "atomic.h"
 #include "list.h"
 #include "string.h"
 #include "memory.h"
@@ -24,7 +25,6 @@ using namespace zero;
 
 static const int REGISTER_COUNT = 32;
 static const int PC_COUNT = 2;
-static const uint8_t THREAD_MIN_STACK_BYTES = 96;
 static const PROGMEM char DEFAULT_THREAD_NAME[] = "noname";
 
 static inline void saveCurrentContext() __attribute__((always_inline));
@@ -67,14 +67,6 @@ bool Thread::cleanup() {
 		_stackSize = 0;
 
 		return true;
-	}
-}
-
-
-// Sets a new state for the Thread
-void Thread::setState(const ThreadState s) {
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		_state = s;
 	}
 }
 
@@ -203,84 +195,6 @@ Thread* Thread::create(const char* name, const uint16_t stackSize, const uint8_t
 
 		return newThread;
 	}
-}
-
-
-// returns the unique ID of the Thread
-uint16_t Thread::getThreadId() {
-	return _tid;
-}
-
-
-// returns the address of the bottom of the Thread's stack
-uint16_t Thread::getStackBottom() {
-	return (uint16_t) _stackBottom;
-}
-
-
-// returns the address of the top of the Thread's stack
-uint16_t Thread::getStackTop() {
-	return ((uint16_t) _stackBottom) + _stackSize - 1;
-}
-
-
-// returns the size of the Thread's stack, in bytes
-uint16_t Thread::getStackSizeBytes() {
-	return _stackSize;
-}
-
-
-// returns true if the Thread was created dyanmically, false if it was globally declared
-bool Thread::isDynamic() {
-	return ((uint16_t) this) == getStackBottom();
-}
-
-
-// returns the number of bytes of stack used at the last context switch
-uint16_t Thread::calcCurrentStackBytesUsed() {
-	int extra = isDynamic() ? sizeof(Thread) : 0;
-	return (getStackTop() - _sp) + extra;
-}
-
-
-#ifdef INSTRUMENTATION
-
-
-// returns the most number of bytes of stack used at any context switch
-uint16_t Thread::calcPeakStackBytesUsed() {
-	int extra = isDynamic() ? sizeof(Thread) : 0;
-	return (getStackTop() - _lowestSp) + extra;
-}
-
-
-#endif
-
-
-// sets the name of the Thread
-// NOTE: newName is expected to be a pointer into Flash/PROGMEM
-void Thread::setName(const char* newName) {
-	this->_systemData._objectName = newName;
-}
-
-
-static int idle() {
-	while(1);
-}
-
-const PROGMEM char _idleThreadName[] = "idle";
-
-// creates the idle thread, for running when nothing else wants to
-Thread* Thread::createIdleThread() {
-	uint16_t allocated = 0UL;
-	uint16_t requestedStackBytes = MAX(IDLE_THREAD_STACK_BYTES, THREAD_MIN_STACK_BYTES);
-	uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_DIRECTION);
-	Thread* newThread = (Thread*) stackBottom;
-
-	if (newThread) {
-		newThread->configureThread(_idleThreadName, stackBottom, allocated, 0, idle, TLF_READY | TLF_AUTO_CLEANUP);
-	}
-	
-	return newThread;
 }
 
 
@@ -453,7 +367,6 @@ bool Thread::run() {
 		}
 
 		this->_state = ThreadState::TS_READY;
-
 		return true;
 	}
 }
@@ -525,12 +438,6 @@ void Thread::unblock(const ThreadState state, const uint32_t blockInfo) {
 			cur = next;
 		}
 	}
-}
-
-
-// Who am I?
-Thread* Thread::me() {
-	return _currentThread;
 }
 
 

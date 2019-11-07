@@ -12,6 +12,7 @@
 #include "zero_config.h"
 #include "memory.h"
 #include "thread.h"
+#include "atomic.h"
 #include "string.h"
 #include "util.h"
 
