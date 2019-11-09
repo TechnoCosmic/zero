@@ -213,7 +213,32 @@ The Pipe class does this. If you specify a buffer size in the Pipe's constructor
 
 If you don't want to know how much you were given, supply a null for the `allocated` parameter.
 
-**NOTE**: zero's memory system isn't a drop-in replacement for anything at the AVR-libc level or the compiler level, so nothing is changed with regards to using `new`. Because of this, don't expect any constructors to work on any object you use with the allocator. Instead, bundle your construction code into a new function and go from there. Stack-based objects will have their constructors called, as usual, and they can call the central `init()` that you create for initializing new objects in allocated memory.
+**UPDATE**: There is now support for `new` and `delete` operators to use zero's allocator. There is *NO* support for allocating arrays of things using these operators. This is because the implementation being used is an unofficial extension to the C++ bits and pieces, and array deallocation doesn't seem to be included in on the fun because it's implementation at the compiler-level is probably a little complex. For arrays of things, using `memory::allocate()` as described above. You won't be able to use constructors and destructors, but for arrays, that's easily worked around.
+
+```
+class Dummy {
+    public:
+        Dummy(int someInitValue) {
+            // ...
+            ;
+        }
+
+    private:
+        char _myString[128];      // this works fine, if you're allocating it in an object
+        in16_t _myOtherMemberVar;
+};
+
+void doAmazingThings() {
+    Dummy* d = new Dummy(42);
+
+    // do things
+    // ...
+
+    delete d;
+    d = 0UL;
+}
+```
+This will work as expected.
 
 ## Advanced Threading - Dynamic Threads/Asynchronous Function Calls
 

@@ -23,6 +23,7 @@ void* operator new(size_t size) {
     return rc;
 }
 
+
 void operator delete(void* p, size_t size) {
     for (uint16_t i = 0; i < size; i++) {
         ((uint8_t*) p)[i] = 's';
