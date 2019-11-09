@@ -3,5 +3,6 @@
 *.o
 *.elf
 *.gch
+clicmd_pvt_*
 .vscode/*
 !.vscode/zero.*
