@@ -213,7 +213,7 @@ The Pipe class does this. If you specify a buffer size in the Pipe's constructor
 
 If you don't want to know how much you were given, supply a null for the `allocated` parameter.
 
-**UPDATE**: There is now support for `new` and `delete` operators to use zero's allocator. There is *NO* support for allocating arrays of things using these operators. This is because the implementation being used is an unofficial extension to the C++ bits and pieces, and array deallocation doesn't seem to be included in on the fun because it's implementation at the compiler-level is probably a little complex. For arrays of things, using `memory::allocate()` as described above. You won't be able to use constructors and destructors, but for arrays, that's easily worked around.
+**UPDATE**: There is now support for `new` and `delete` operators to use zero's allocator. There is *NO* support for allocating arrays of things using these operators. This is because the implementation being used is an unofficial extension to the C++ bits and pieces, and array deallocation doesn't seem to be included in on the fun because it's implementation at the compiler-level is probably a little complex. For arrays of things, use `memory::allocate()` as described above. You won't be able to use constructors and destructors, but for arrays that's easily worked around.
 
 ```
 class Dummy {
@@ -224,7 +224,9 @@ class Dummy {
         }
 
     private:
-        char _myString[128];      // this works fine, if you're allocating it in an object
+        // this char array works fine, if you're
+        // allocating it in an object at fixed size
+        char _myString[128];
         in16_t _myOtherMemberVar;
 };
 
