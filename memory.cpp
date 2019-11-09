@@ -10,7 +10,6 @@
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
 #include "zero_config.h"
-#include "pagemanager.h"
 #include "memory.h"
 #include "thread.h"
 #include "atomic.h"
@@ -28,66 +27,7 @@ uint8_t __attribute__((__aligned__(256))) _memoryArea[DYNAMIC_BYTES];
 
 
 // The bit mapped page manager
-PageManager<zero::SRAM_PAGES> _sram;
-
-
-// search strategy function prototypes
-static int16_t getPageForSearchStep_MiddleDown(const uint16_t step, const uint16_t totalPages);
-static int16_t getPageForSearchStep_MiddleUp(const uint16_t step, const uint16_t totalPages);
-static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t totalPages);
-static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t totalPages);
-
-
-// search strategy - BottomUp starts searching the allocation table at the bottom and works up
-static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t totalPages) {
-    return step;
-}
-
-
-// search strategy - TopDown starts searching the allocation table at the top and works down
-static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t totalPages) {
-    return totalPages - (step + 1);
-}
-
-
-// search strategy - MiddleDown starts searching the allocation table at the midpoint and works down.
-// NOTE: This does NOT wrap around or do anything weird like that - therefore IT ONLY SEARCHES HALF
-// OF THE AVAILABLE SPACE. Use this in conjuction with other strategies if you don't want attempts to
-// allocate fail when there is in fact some available in a different area.
-static int16_t getPageForSearchStep_MiddleDown(const uint16_t step, const uint16_t totalPages) {
-    const int16_t midPoint = totalPages / 2;
-    const int16_t rev = totalPages - (step + 1);
-    const int16_t page = rev - midPoint;
-
-    if (page < 0) {
-        return -1;
-    }
-    return page;
-}
-
-
-// search strategy - MiddleUp starts searching the allocation table at the midpoint and works up.
-// NOTE: This does NOT wrap around or do anything weird like that - therefore IT ONLY SEARCHES HALF
-// OF THE AVAILABLE SPACE. Use this in conjuction with other strategies if you don't want attempts to
-// allocate fail when there is in fact some available in a different area.
-static int16_t getPageForSearchStep_MiddleUp(const uint16_t step, const uint16_t totalPages) {
-    const int16_t midPoint = totalPages / 2;
-    const int16_t page = step + midPoint;
-
-    if (page >= totalPages) {
-        return -1;
-    }
-    return page;
-}
-
-
-// set up the vector table for the search strategies
-static int16_t (*_strategies[])(const uint16_t, const uint16_t) = {
-    getPageForSearchStep_TopDown,
-    getPageForSearchStep_BottomUp,
-    getPageForSearchStep_MiddleDown,
-    getPageForSearchStep_MiddleUp,
-};
+PageManager<SRAM_PAGES> _sram;
 
 
 // Returns the address for the start of a given page
@@ -108,60 +48,6 @@ static constexpr uint16_t getNumPagesForBytes(const uint16_t bytes) {
 }
 
 
-// This is the main workhorse for the memory allocator. Using only the search strategy supplied,
-// find a supplied number of continguously available pages.
-static int16_t findFreePages(const uint16_t numPagesRequired, const SearchStrategy strat) {
-    int16_t startPage = -1;
-    uint16_t pageCount = 0;
-
-    // critical section as we don't want many threads allocating at once
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
-        const uint16_t ttlPages = _sram.getPageCount();
-
-        for (uint16_t curStep = 0; curStep < ttlPages; curStep++) {
-            const uint16_t curPage =  _strategies[strat](curStep, ttlPages);
-
-            // if the search strategy no longer
-            // has any more pages in it's scope
-            if (curPage == -1) {
-                break;
-            }
-
-            // But if that page was free..
-            if (_sram.isPageAvailable(curPage)) {
-                // we have one more page than we had before
-                pageCount++;
-
-                // if we didn't have a startPage, we do now
-                if (startPage == -1) {
-                    startPage = curPage;
-                }
-
-                // if we've found the right number of pages, stop looking
-                if (pageCount == numPagesRequired) {
-                    startPage = MIN(startPage, curPage);
-                    break;
-                }
-
-            } else {
-                // wasn't free? start the search from scratch
-                startPage = -1;
-                pageCount = 0;
-            }
-        }
-    }
-
-    // if we couldn't find right number of pages
-    if (pageCount < numPagesRequired) {
-        return -1;
-    }
-
-    // if we get here, then we were successful at
-    // finding what the caller wanted
-    return startPage;
-}
-
-
 // Allocates some memory. The amount of memory actually allocated is optionally
 // returned in allocatedBytes, which will always be a multiple of the page size.
 uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedBytes, const SearchStrategy direction) {
@@ -170,17 +56,21 @@ uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedB
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
         const uint16_t numPages = getNumPagesForBytes(numBytesRequested);
-        int16_t startPage = findFreePages(numPages, direction);
+
+        int16_t startPage = _sram.findFreePages(numPages, direction);
+        // int16_t startPage = findFreePages(numPages, direction);
 
         // make sure we've covered all the angles
         if (startPage == -1) {
             if (direction == SearchStrategy::MiddleUp) {
                 // MiddleUp failed, try MiddleDown before giving up entirely
-                startPage = findFreePages(numPages, SearchStrategy::MiddleDown);
+                startPage = _sram.findFreePages(numPages, SearchStrategy::MiddleDown);
+                // startPage = findFreePages(numPages, SearchStrategy::MiddleDown);
 
             } else {
                 // MiddleDown failed, try MiddleUp before giving up entirely
-                startPage = findFreePages(numPages, SearchStrategy::MiddleUp);
+                startPage = _sram.findFreePages(numPages, SearchStrategy::MiddleUp);
+                // startPage = findFreePages(numPages, SearchStrategy::MiddleUp);
             }
         }
 

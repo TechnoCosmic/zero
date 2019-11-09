@@ -10,6 +10,8 @@
 #define TCRI_ZERO_MEMORY_H
 
 #include <stdint.h>
+#include "pagemanager.h"
+
 
 namespace zero {
 
@@ -19,13 +21,6 @@ namespace zero {
 			SRAM = 0,
 			FLASH,
 			EEPROM,
-		};
-
-		enum SearchStrategy {
-			TopDown = 0,
-			BottomUp,
-			MiddleDown,
-			MiddleUp,
 		};
 
 		uint8_t* allocate(const uint16_t numBytes, uint16_t* allocatedBytes, const SearchStrategy direction);
