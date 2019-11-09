@@ -17,7 +17,7 @@
 #include "namedobject.h"
 
 
-static const uint8_t THREAD_MIN_STACK_BYTES = 96;
+static const uint8_t THREAD_MIN_STACK_BYTES = 48;
 
 namespace zero {
 
@@ -44,8 +44,7 @@ namespace zero {
 		static void init();
 
 		// Thread creation
-		static Thread* create(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
-		// Thread(const char*, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
+		Thread(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
 
 		// general blocking and unblocking
 		static void block(const ThreadState newState, const uint32_t blockInfo);
