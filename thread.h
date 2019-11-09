@@ -17,7 +17,7 @@
 #include "namedobject.h"
 
 
-static const uint8_t THREAD_MIN_STACK_BYTES = 48;
+static const uint8_t THREAD_MIN_STACK_BYTES = 64;
 
 namespace zero {
 
