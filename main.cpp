@@ -10,6 +10,7 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include "zero_config.h"
 #include "thread.h"
 #include "cli.h"
 
@@ -39,7 +40,11 @@ void startup_sequence() {
 	LED_DDR = (1 << LED_PIN_1) | (1 << LED_PIN_2);
 
 	// the main threads
-	Thread::create(PSTR("cli"), CLI_STACK_BYTES, 50, cliMain, TLF_READY | TLF_AUTO_CLEANUP);
-	Thread::create(PSTR("first"), 0, 0, first, TLF_READY | TLF_AUTO_CLEANUP);
-	Thread::create(PSTR("second"), 0, 0, second, TLF_READY | TLF_AUTO_CLEANUP);
+
+#ifdef CLI_ENABLED
+	new Thread(PSTR("cli"), CLI_STACK_BYTES, 50, cliMain, TLF_READY | TLF_AUTO_CLEANUP);
+#endif
+
+	new Thread(PSTR("first"), 0, 0, first, TLF_READY | TLF_AUTO_CLEANUP);
+	new Thread(PSTR("second"), 0, 0, second, TLF_READY | TLF_AUTO_CLEANUP);
 }
