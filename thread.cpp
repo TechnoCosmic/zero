@@ -67,6 +67,7 @@ bool Thread::cleanup() {
 		_stackBottom = 0UL;
 		_stackSize = 0;
 
+		delete this;
 		return true;
 	}
 }
