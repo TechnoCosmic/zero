@@ -69,7 +69,7 @@ namespace zero {
 	const int TIMESLICE_MS = 25;
 
     // Allocator search strategy for Threads and Stacks
-    #define THREAD_MEMORY_SEARCH_DIRECTION memory::SearchStrategy::TopDown
+    #define THREAD_MEMORY_SEARCH_STRATEGY memory::SearchStrategy::TopDown
     
     // So that the allocator scales with SRAM
     // NOTE: Change this to a simple fixed size if you prefer

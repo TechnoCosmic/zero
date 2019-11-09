@@ -50,27 +50,24 @@ static constexpr uint16_t getNumPagesForBytes(const uint16_t bytes) {
 
 // Allocates some memory. The amount of memory actually allocated is optionally
 // returned in allocatedBytes, which will always be a multiple of the page size.
-uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedBytes, const SearchStrategy direction) {
+uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedBytes, const SearchStrategy strategy) {
 
     // critical section - one Thread allocating at a time, thank you
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
         const uint16_t numPages = getNumPagesForBytes(numBytesRequested);
 
-        int16_t startPage = _sram.findFreePages(numPages, direction);
-        // int16_t startPage = findFreePages(numPages, direction);
+        int16_t startPage = _sram.findFreePages(numPages, strategy);
 
         // make sure we've covered all the angles
         if (startPage == -1) {
-            if (direction == SearchStrategy::MiddleUp) {
+            if (strategy == SearchStrategy::MiddleUp) {
                 // MiddleUp failed, try MiddleDown before giving up entirely
                 startPage = _sram.findFreePages(numPages, SearchStrategy::MiddleDown);
-                // startPage = findFreePages(numPages, SearchStrategy::MiddleDown);
 
             } else {
                 // MiddleDown failed, try MiddleUp before giving up entirely
                 startPage = _sram.findFreePages(numPages, SearchStrategy::MiddleUp);
-                // startPage = findFreePages(numPages, SearchStrategy::MiddleUp);
             }
         }
 
@@ -128,7 +125,7 @@ uint8_t* memory::reallocate(const uint8_t* oldMemory,       // the old memory pr
                             const uint16_t oldNumBytes,     // the size of oldMemory
                             const uint16_t newNumBytes,     // new amount of memory needed
                             uint16_t* allocatedBytes,       // a pointer to how big the new memory is
-                            const SearchStrategy direction) {
+                            const SearchStrategy strategy) {
 
     // critical section, no context switching
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
@@ -141,7 +138,7 @@ uint8_t* memory::reallocate(const uint8_t* oldMemory,       // the old memory pr
         }
 
         // try to allocate the new required RAM
-        newMemory = memory::allocate(newNumBytes, &allocated, direction);
+        newMemory = memory::allocate(newNumBytes, &allocated, strategy);
 
         // the whole thing fails if we couldn't get the new memory
         if (!newMemory) {

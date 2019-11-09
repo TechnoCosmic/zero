@@ -160,7 +160,7 @@ Thread* Thread::create(const char* name, const uint16_t stackSize, const uint8_t
 
 		uint16_t allocated = 0UL;
 		uint16_t requestedStackBytes = MAX(stackSize, THREAD_MIN_STACK_BYTES);
-		uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_DIRECTION);
+		uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_STRATEGY);
 		Thread* newThread = (Thread*) stackBottom;
 
 		if (newThread) {

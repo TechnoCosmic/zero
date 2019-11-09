@@ -23,8 +23,8 @@ using namespace zero::memory;
 
 // friendly names for the bit-field manipulators
 #define IS_PAGE_AVAILABLE(b) (!BF_TST(_memoryMap,b))
-#define MARK_AS_ALLOCATED(b) (BF_SET(_memoryMap,b))
-#define MARK_AS_AVAILABLE(b) (BF_CLR(_memoryMap,b))
+#define MARK_AS_USED(b) (BF_SET(_memoryMap,b))
+#define MARK_AS_FREE(b) (BF_CLR(_memoryMap,b))
 
 
 // Has the page been marked as used, or is it free?
@@ -37,14 +37,14 @@ bool PageManager<PAGE_COUNT>::isPageAvailable(const uint16_t pageNumber) {
 // Mark the supplied page as free
 template <uint16_t PAGE_COUNT>
 void PageManager<PAGE_COUNT>::markAsFree(const uint16_t pageNumber) {
-    MARK_AS_AVAILABLE(pageNumber);
+    MARK_AS_FREE(pageNumber);
 }
 
 
 // Mark the supplied page as used
 template <uint16_t PAGE_COUNT>
 void PageManager<PAGE_COUNT>::markAsUsed(const uint16_t pageNumber) {
-    MARK_AS_ALLOCATED(pageNumber);
+    MARK_AS_USED(pageNumber);
 }
 
 

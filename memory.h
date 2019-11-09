@@ -23,8 +23,8 @@ namespace zero {
 			EEPROM,
 		};
 
-		uint8_t* allocate(const uint16_t numBytes, uint16_t* allocatedBytes, const SearchStrategy direction);
-		uint8_t* reallocate(const uint8_t* oldMemory, const uint16_t oldNumBytes, const uint16_t newNumBytes, uint16_t* allocatedBytes, const SearchStrategy direction);
+		uint8_t* allocate(const uint16_t numBytes, uint16_t* allocatedBytes, const SearchStrategy strategy);
+		uint8_t* reallocate(const uint8_t* oldMemory, const uint16_t oldNumBytes, const uint16_t newNumBytes, uint16_t* allocatedBytes, const SearchStrategy strategy);
 		void deallocate(const uint8_t* address, uint16_t numBytes);
 
 		uint8_t read(const void* address, const MemoryType memType);

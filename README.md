@@ -195,7 +195,7 @@ There is also a `memory::reallocate()` function that behaves similarly to POSIX 
 uint8_t* buffer;
 uint16_t allocated = 0UL;
 
-buffer = memory::allocate(114, &allocated, memory::AllocationSearchDirection::BottomUp);
+buffer = memory::allocate(114, &allocated, memory::SearchStrategy::BottomUp);
 
 // do something with the buffer
 
