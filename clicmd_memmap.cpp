@@ -84,23 +84,23 @@ clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     uint16_t usedPages = 0UL;
 
 
-    for (uint16_t curAddress = 0; curAddress < RAMEND; curAddress += memory::getPageSize()) {
+    for (uint16_t curAddress = 0; curAddress < RAMEND; curAddress += memory::getPageSizeBytes()) {
         const char symbol = getSymbolForAddress(curAddress);
         const Color col = getColorForSymbol(symbol);
 
-        if (curAddress % (memory::getPageSize() * 32) == 0) {
+        if (curAddress % (memory::getPageSizeBytes() * 32) == 0) {
             *tx << setreverse(true);
             *tx << white << right << uppercase << hex << setfill('0') << setw(4) << (int32_t) curAddress;
             *tx << setreverse(false);
         }
 
-        if (curAddress % (memory::getPageSize() * 16) == 0) {
+        if (curAddress % (memory::getPageSizeBytes() * 16) == 0) {
             *tx << ' ';
         }
 
         *tx << settextcolor(col) << (char) symbol;
 
-        if ((curAddress + memory::getPageSize()) % (memory::getPageSize() * 32) == 0) {
+        if ((curAddress + memory::getPageSizeBytes()) % (memory::getPageSizeBytes() * 32) == 0) {
             *tx << endl;
         }
     }

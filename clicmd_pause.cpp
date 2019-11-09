@@ -25,6 +25,7 @@ static const PROGMEM char _paused[] = "Paused ";
 static const PROGMEM char _resumed[] = "Resumed ";
 static const PROGMEM char _threads[] = " threads";
 
+
 clicommand(pause, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     int c = 0;
 

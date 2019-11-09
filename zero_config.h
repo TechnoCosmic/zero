@@ -66,10 +66,10 @@ namespace zero {
 #endif
 
     // Default quantum, in milliseconds
-	const int TIMESLICE_MS = 15;
+	const int TIMESLICE_MS = 25;
 
     // Allocator search strategy for Threads and Stacks
-    #define THREAD_MEMORY_SEARCH_DIRECTION memory::AllocationSearchDirection::TopDown
+    #define THREAD_MEMORY_SEARCH_DIRECTION memory::SearchStrategy::TopDown
     
     // So that the allocator scales with SRAM
     // NOTE: Change this to a simple fixed size if you prefer
@@ -86,6 +86,9 @@ namespace zero {
     #else
         const uint8_t PAGE_BYTES = 16;
     #endif
+
+    // leave this one alone
+    const uint16_t SRAM_PAGES = DYNAMIC_BYTES / PAGE_BYTES;
 
     // Minimum size of a dynamic Pipe buffer, in bytes
     const uint16_t MINIMUM_PIPE_BYTES = PAGE_BYTES;

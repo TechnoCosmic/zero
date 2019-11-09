@@ -18,11 +18,12 @@ namespace zero {
     public:
         bool insertAfter(T* newItem, T* after);
         bool insertBefore(T* newItem, T* before);
+        bool setNewHead(T* newHead);
         bool append(T* item);
         bool prepend(T* item);
         bool remove(T *item);
-        bool canModify();
 
+        bool canModify();
         T* getHead();
         T* getTail();
 

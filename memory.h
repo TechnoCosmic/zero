@@ -18,18 +18,18 @@ namespace zero {
 		enum MemoryType {
 			SRAM = 0,
 			FLASH,
-			EEPROM
+			EEPROM,
 		};
 
-		enum AllocationSearchDirection {
+		enum SearchStrategy {
 			TopDown = 0,
 			BottomUp,
 			MiddleDown,
 			MiddleUp,
 		};
 
-		uint8_t* allocate(const uint16_t numBytes, uint16_t* allocatedBytes, const AllocationSearchDirection direction);
-		uint8_t* reallocate(const uint8_t* oldMemory, const uint16_t oldNumBytes, const uint16_t newNumBytes, uint16_t* allocatedBytes, const AllocationSearchDirection direction);
+		uint8_t* allocate(const uint16_t numBytes, uint16_t* allocatedBytes, const SearchStrategy direction);
+		uint8_t* reallocate(const uint8_t* oldMemory, const uint16_t oldNumBytes, const uint16_t newNumBytes, uint16_t* allocatedBytes, const SearchStrategy direction);
 		void deallocate(const uint8_t* address, uint16_t numBytes);
 
 		uint8_t read(const void* address, const MemoryType memType);
@@ -37,7 +37,7 @@ namespace zero {
 
 		uint16_t getTotalPages();
 		uint16_t getTotalBytes();
-		uint16_t getPageSize();
+		uint16_t getPageSizeBytes();
 
 		bool isPageAvailable(const uint16_t pageNumber);
 		uint16_t getAddressForPage(const uint16_t pageNumber);

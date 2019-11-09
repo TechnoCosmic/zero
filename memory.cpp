@@ -10,6 +10,7 @@
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
 #include "zero_config.h"
+#include "pagemanager.h"
 #include "memory.h"
 #include "thread.h"
 #include "atomic.h"
@@ -20,52 +21,39 @@ using namespace zero;
 using namespace zero::memory;
 
 
-// Don't round this one up. If there's only enough
-// RAM for a partial page, we can't use the page.
-const uint16_t TOTAL_AVAILABLE_PAGES = DYNAMIC_BYTES / PAGE_BYTES;
-
 // We use this to let the compiler reserve the SRAM for us.
 // This helps avoid accidental memory corruption towards the
 // lower addresses where globals are held.
 uint8_t __attribute__((__aligned__(256))) _memoryArea[DYNAMIC_BYTES];
 
-// round the pages to a multiple of 8 and then divide by 8
-const uint16_t BYTES_FOR_BITMAP = ROUND_UP(TOTAL_AVAILABLE_PAGES, 8) / 8;
 
-// this is the SRAM page allocation table/memory map
-uint8_t _memoryMap[BYTES_FOR_BITMAP];
+// The bit mapped page manager
+PageManager<zero::SRAM_PAGES> _sram;
 
 
-// bit-field manipulation macros
-#define BF_BYTE(b) ((int)(b) >> 3)
-#define BF_BIT(b) ((int)(b) & 0b111)
-
-#define BF_SET(bf,b) bf[BF_BYTE(b)] |= (1 << BF_BIT(b))
-#define BF_CLR(bf,b) bf[BF_BYTE(b)] &= ~(1 << BF_BIT(b))
-#define BF_TST(bf,b) (bf[BF_BYTE(b)] & (1 << BF_BIT(b)))
-
-// friendly names for the bit-field manipulators
-#define IS_PAGE_AVAILABLE(b) (!BF_TST(_memoryMap,b))
-#define MARK_AS_ALLOCATED(b) (BF_SET(_memoryMap,b))
-#define MARK_AS_AVAILABLE(b) (BF_CLR(_memoryMap,b))
-
-
+// search strategy function prototypes
 static int16_t getPageForSearchStep_MiddleDown(const uint16_t step, const uint16_t totalPages);
 static int16_t getPageForSearchStep_MiddleUp(const uint16_t step, const uint16_t totalPages);
 static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t totalPages);
 static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t totalPages);
 
 
+// search strategy - BottomUp starts searching the allocation table at the bottom and works up
 static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t totalPages) {
     return step;
 }
 
 
+// search strategy - TopDown starts searching the allocation table at the top and works down
 static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t totalPages) {
     return totalPages - (step + 1);
 }
 
 
+// search strategy - MiddleDown starts searching the allocation table at the midpoint and works down.
+// NOTE: This does NOT wrap around or do anything weird like that - therefore IT ONLY SEARCHES HALF
+// OF THE AVAILABLE SPACE. Use this in conjuction with other strategies if you don't want attempts to
+// allocate fail when there is in fact some available in a different area.
 static int16_t getPageForSearchStep_MiddleDown(const uint16_t step, const uint16_t totalPages) {
     const int16_t midPoint = totalPages / 2;
     const int16_t rev = totalPages - (step + 1);
@@ -78,6 +66,10 @@ static int16_t getPageForSearchStep_MiddleDown(const uint16_t step, const uint16
 }
 
 
+// search strategy - MiddleUp starts searching the allocation table at the midpoint and works up.
+// NOTE: This does NOT wrap around or do anything weird like that - therefore IT ONLY SEARCHES HALF
+// OF THE AVAILABLE SPACE. Use this in conjuction with other strategies if you don't want attempts to
+// allocate fail when there is in fact some available in a different area.
 static int16_t getPageForSearchStep_MiddleUp(const uint16_t step, const uint16_t totalPages) {
     const int16_t midPoint = totalPages / 2;
     const int16_t page = step + midPoint;
@@ -89,6 +81,7 @@ static int16_t getPageForSearchStep_MiddleUp(const uint16_t step, const uint16_t
 }
 
 
+// set up the vector table for the search strategies
 static int16_t (*_strategies[])(const uint16_t, const uint16_t) = {
     getPageForSearchStep_TopDown,
     getPageForSearchStep_BottomUp,
@@ -109,24 +102,33 @@ uint16_t memory::getPageForAddress(const uint16_t address) {
 }
 
 
+// Returns the number of pages needed to store the supplied number of bytes
 static constexpr uint16_t getNumPagesForBytes(const uint16_t bytes) {
     return ROUND_UP(bytes, PAGE_BYTES) / PAGE_BYTES;
 }
 
 
-static int16_t findFreePages(const uint16_t numPagesRequired, const AllocationSearchDirection direction) {
+// This is the main workhorse for the memory allocator. Using only the search strategy supplied,
+// find a supplied number of continguously available pages.
+static int16_t findFreePages(const uint16_t numPagesRequired, const SearchStrategy strat) {
     int16_t startPage = -1;
     uint16_t pageCount = 0;
 
+    // critical section as we don't want many threads allocating at once
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
-        for (uint16_t curStep = 0; curStep < TOTAL_AVAILABLE_PAGES; curStep++) {
-            const uint16_t curPage =  _strategies[direction](curStep, TOTAL_AVAILABLE_PAGES);
+        const uint16_t ttlPages = _sram.getPageCount();
 
+        for (uint16_t curStep = 0; curStep < ttlPages; curStep++) {
+            const uint16_t curPage =  _strategies[strat](curStep, ttlPages);
+
+            // if the search strategy no longer
+            // has any more pages in it's scope
             if (curPage == -1) {
                 break;
             }
 
-            if (IS_PAGE_AVAILABLE(curPage)) {
+            // But if that page was free..
+            if (_sram.isPageAvailable(curPage)) {
                 // we have one more page than we had before
                 pageCount++;
 
@@ -149,19 +151,22 @@ static int16_t findFreePages(const uint16_t numPagesRequired, const AllocationSe
         }
     }
 
+    // if we couldn't find right number of pages
     if (pageCount < numPagesRequired) {
         return -1;
     }
 
+    // if we get here, then we were successful at
+    // finding what the caller wanted
     return startPage;
 }
 
 
 // Allocates some memory. The amount of memory actually allocated is optionally
 // returned in allocatedBytes, which will always be a multiple of the page size.
-uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedBytes, const AllocationSearchDirection direction) {
+uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedBytes, const SearchStrategy direction) {
 
-    // critical section - no context switching thanks
+    // critical section - one Thread allocating at a time, thank you
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
         const uint16_t numPages = getNumPagesForBytes(numBytesRequested);
@@ -169,18 +174,21 @@ uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedB
 
         // make sure we've covered all the angles
         if (startPage == -1) {
-            if (direction == AllocationSearchDirection::MiddleUp) {
-                startPage = findFreePages(numPages, AllocationSearchDirection::MiddleDown);
+            if (direction == SearchStrategy::MiddleUp) {
+                // MiddleUp failed, try MiddleDown before giving up entirely
+                startPage = findFreePages(numPages, SearchStrategy::MiddleDown);
+
             } else {
-                startPage = findFreePages(numPages, AllocationSearchDirection::MiddleUp);
+                // MiddleDown failed, try MiddleUp before giving up entirely
+                startPage = findFreePages(numPages, SearchStrategy::MiddleUp);
             }
         }
 
         // if there was a chunk the size we wanted
         if (startPage >= 0) {
-            // mark them as no longer available
+            // mark the pages as no longer available
             for (uint16_t curPageNumber = startPage; curPageNumber < startPage + numPages; curPageNumber++) {
-                MARK_AS_ALLOCATED(curPageNumber);
+                _sram.markAsUsed(curPageNumber);
             }
 
             // tell the caller how much we gave them
@@ -208,17 +216,29 @@ void memory::deallocate(const uint8_t* address, const uint16_t numBytes) {
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
         // simply run from the first page to the last, ensuring the bit map says 'free'
         for (int curPage = startPage; curPage < startPage + numPages; curPage++) {
-            MARK_AS_AVAILABLE(curPage);
+            _sram.markAsFree(curPage);
         }
     }
 }
 
 
+// Very unintelligent reallocator that simply finds a new chunk of the required size,
+// copies the memory over to the new area, and deallocates the old chunk.
+//
+// More optimal approaches that could be taken include...
+//
+// - If shrinking the allocated memory size, we could just calculate the new number of
+//   pages needed and just deallocate the difference from the end of the existing chunk
+//
+// - If expanding the allocated memory size, we could calculate the new number of pages
+//   required and see if the difference is available at the end of the current chunk
+//   before resorting to the full alloc/copy/dealloc sequence
+
 uint8_t* memory::reallocate(const uint8_t* oldMemory,       // the old memory previously allocated
                             const uint16_t oldNumBytes,     // the size of oldMemory
                             const uint16_t newNumBytes,     // new amount of memory needed
                             uint16_t* allocatedBytes,       // a pointer to how big the new memory is
-                            const AllocationSearchDirection direction) {
+                            const SearchStrategy direction) {
 
     // critical section, no context switching
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
@@ -233,7 +253,7 @@ uint8_t* memory::reallocate(const uint8_t* oldMemory,       // the old memory pr
         // try to allocate the new required RAM
         newMemory = memory::allocate(newNumBytes, &allocated, direction);
 
-        // the whole fails if we couldn't get the new memory
+        // the whole thing fails if we couldn't get the new memory
         if (!newMemory) {
             // outta here
             goto exit;
@@ -302,21 +322,25 @@ bool memory::write(const void* address, const uint8_t data, const MemoryType mem
 }
 
 
+// Finds out if the supplied page is available for use
 bool memory::isPageAvailable(const uint16_t pageNumber) {
-	return IS_PAGE_AVAILABLE(pageNumber);
+	return _sram.isPageAvailable(pageNumber);
 }
 
 
+// Returns the total number of pages at the allocator's disposal
 uint16_t memory::getTotalPages() {
-	return TOTAL_AVAILABLE_PAGES;
+	return _sram.getPageCount();
 }
 
 
+// Returns the total number of bytes at the allocator's disposal
 uint16_t memory::getTotalBytes() {
-	return TOTAL_AVAILABLE_PAGES * PAGE_BYTES;
+	return _sram.getPageCount() * PAGE_BYTES;
 }
 
 
-uint16_t memory::getPageSize() {
+// Returns the page size, in bytes
+uint16_t memory::getPageSizeBytes() {
     return PAGE_BYTES;
 }

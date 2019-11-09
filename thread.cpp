@@ -25,6 +25,7 @@ using namespace zero;
 
 static const int REGISTER_COUNT = 32;
 static const int PC_COUNT = 2;
+
 static const PROGMEM char DEFAULT_THREAD_NAME[] = "noname";
 
 static inline void saveCurrentContext() __attribute__((always_inline));
@@ -292,7 +293,7 @@ static inline void restoreNewContext(Thread* t) {
 // over to another Thread of the scheduler's choosing
 static inline void yield_internal() {
 	saveCurrentContext();
-	TIMSK2 &= ~(1 << OCIE2B);
+	TIMSK2 &= ~(1 << OCIE2B);					// switch off context switch ISR
 	restoreNewContext(selectNextThread());
 }
 

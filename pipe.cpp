@@ -34,7 +34,7 @@ void Pipe::cleanup() {
 // Dynamically allocate a Pipe object and it's ringbuffer
 Pipe* Pipe::create(const char* name, const uint16_t size) {
 	uint16_t allocated = 0UL;
-	Pipe* rc = (Pipe*) memory::allocate(MAX(size, sizeof(Pipe) + MINIMUM_PIPE_BYTES), &allocated, memory::AllocationSearchDirection::BottomUp);
+	Pipe* rc = (Pipe*) memory::allocate(MAX(size, sizeof(Pipe) + MINIMUM_PIPE_BYTES), &allocated, memory::SearchStrategy::BottomUp);
 
 	if (rc && allocated) {
 		const uint16_t pipeBufferStartAddress = ((uint16_t) rc) + sizeof(Pipe);
@@ -54,7 +54,7 @@ Pipe* Pipe::create(const char* name, const uint16_t size) {
 Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
 	uint16_t allocated = 0UL;
 
-	_buffer = memory::allocate(bufferSize, &allocated, memory::AllocationSearchDirection::BottomUp);
+	_buffer = memory::allocate(bufferSize, &allocated, memory::SearchStrategy::BottomUp);
 
 	_allocatedFromAddr = (uint16_t) _buffer;
 	_allocatedBytes = allocated;
