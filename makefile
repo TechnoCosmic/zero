@@ -12,7 +12,7 @@ OUTPUT=zero
 AVRDUDE_CFG=pi
 AVRDUDE_PART=m328p
 MCU=atmega328p
-F_CPU16000000UL
+F_CPU=16000000UL
 
 # probably don't adjust these so much :)
 CC=avr-gcc
@@ -47,7 +47,7 @@ upload: $(OUTPUT).hex
 	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U flash:w:$(OUTPUT).hex
 
 
-# these fuses are verified correct for 328P, 644P, and 1284P
+# these fuses are verified correct for 328P, 644P, and 328P
 fuses:
 	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U lfuse:w:0xff:m -U hfuse:w:0xd9:m -U efuse:w:0xff:m
 
