@@ -19,7 +19,6 @@ CC=avr-gcc
 FLAGS +=-Os
 FLAGS +=-g
 FLAGS +=--std=c++17
-FLAGS +=-Wno-write-strings
 FLAGS +=-mmcu=$(MCU)
 FLAGS +=-DF_CPU=$(F_CPU)
 
