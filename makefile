@@ -10,9 +10,9 @@
 # to brick an MCU because the fuses weren't right!!!
 OUTPUT=zero
 AVRDUDE_CFG=pi
-AVRDUDE_PART=m1284p
-MCU=atmega1284p
-F_CPU=20000000UL
+AVRDUDE_PART=m328p
+MCU=atmega328p
+F_CPU16000000UL
 
 # probably don't adjust these so much :)
 CC=avr-gcc

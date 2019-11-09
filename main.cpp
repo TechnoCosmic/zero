@@ -40,6 +40,6 @@ void startup_sequence() {
 
 	// the main threads
 	Thread::create(PSTR("cli"), CLI_STACK_BYTES, 50, cliMain, TLF_READY | TLF_AUTO_CLEANUP);
-	Thread::create(PSTR("first"), 0, 0, first, TLF_AUTO_CLEANUP);
-	Thread::create(PSTR("second"), 0, 0, second, TLF_AUTO_CLEANUP);
+	Thread::create(PSTR("first"), 0, 0, first, TLF_READY | TLF_AUTO_CLEANUP);
+	Thread::create(PSTR("second"), 0, 0, second, TLF_READY | TLF_AUTO_CLEANUP);
 }
