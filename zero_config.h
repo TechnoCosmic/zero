@@ -70,10 +70,10 @@ namespace zero {
 
     // Allocator search strategy for Threads and Stacks
     #define THREAD_MEMORY_SEARCH_STRATEGY memory::SearchStrategy::TopDown
-    
+
     // So that the allocator scales with SRAM
     // NOTE: Change this to a simple fixed size if you prefer
-    const uint16_t DYNAMIC_BYTES = RAMEND - (255 + 1024);
+    const uint16_t DYNAMIC_BYTES = RAMEND - (255 + 1536);
 
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum
@@ -81,11 +81,7 @@ namespace zero {
     const uint16_t IDLE_THREAD_STACK_BYTES = 96;
 
     // Memory allocator page size
-    #if RAMEND >= 8192
-        const uint8_t PAGE_BYTES = 32;
-    #else
-        const uint8_t PAGE_BYTES = 16;
-    #endif
+    const uint8_t PAGE_BYTES = 16;
 
     // leave this one alone
     const uint16_t SRAM_PAGES = DYNAMIC_BYTES / PAGE_BYTES;
