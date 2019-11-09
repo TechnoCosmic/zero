@@ -16,47 +16,11 @@
 using namespace zero;
 
 
-// cleans up after itself
-void Pipe::cleanup() {
-	if (_buffer) {
-		NamedObject::remove((NamedObject*) this);
-		memory::deallocate((uint8_t*) _allocatedFromAddr, _allocatedBytes);
-		
-		_buffer = 0UL;
-		_bufferLength = 0;
-
-		_allocatedFromAddr = 0UL;
-		_allocatedBytes = 0UL;
-	}
-}
-
-
-// Dynamically allocate a Pipe object and it's ringbuffer
-Pipe* Pipe::create(const char* name, const uint16_t size) {
-	uint16_t allocated = 0UL;
-	Pipe* rc = (Pipe*) memory::allocate(MAX(size, sizeof(Pipe) + MINIMUM_PIPE_BYTES), &allocated, memory::SearchStrategy::BottomUp);
-
-	if (rc && allocated) {
-		const uint16_t pipeBufferStartAddress = ((uint16_t) rc) + sizeof(Pipe);
-		const uint16_t pipeBufferSize = allocated - sizeof(Pipe);
-
-		rc->init(name, (uint8_t*) pipeBufferStartAddress, pipeBufferSize);
-
-		rc->_allocatedFromAddr = (uint16_t) rc;
-		rc->_allocatedBytes = allocated;
-	}
-
-	return rc;
-}
-
-
 // ctor
 Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
 	uint16_t allocated = 0UL;
 
 	_buffer = memory::allocate(bufferSize, &allocated, memory::SearchStrategy::BottomUp);
-
-	_allocatedFromAddr = (uint16_t) _buffer;
 	_allocatedBytes = allocated;
 
 	if (strictSize) {
@@ -65,15 +29,6 @@ Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
 	} else {
 		_bufferLength = allocated;
 	}
-
-	this->init(name, _buffer, _bufferLength);
-}
-
-
-// Setup a new Pipe's internals
-void Pipe::init(const char* name, uint8_t* buffer, const uint16_t bufferLength) {
-	_buffer = buffer;
-	_bufferLength = bufferLength;
 
 	_start = _length = 0;
 
@@ -86,7 +41,14 @@ void Pipe::init(const char* name, uint8_t* buffer, const uint16_t bufferLength) 
 
 // dtor
 Pipe::~Pipe() {
-	cleanup();
+	if (_buffer) {
+		NamedObject::remove((NamedObject*) this);
+		memory::deallocate((uint8_t*) _buffer, _allocatedBytes);
+		
+		_buffer = 0UL;
+		_bufferLength = 0;
+		_allocatedBytes = 0UL;
+	}
 }
 
 
