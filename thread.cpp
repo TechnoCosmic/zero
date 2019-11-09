@@ -381,7 +381,7 @@ bool Thread::pause() {
 
 
 // Blocks the *calling* Thread until *this* Thread terminates.
-// NOTE: willJoin against *this* Thread must be set to true prior
+// NOTE: autoCleanup against *this* Thread must be set to FALSE prior
 // to *this* Thread terminating for the join to be successful.
 int Thread::join() {
 	int rc = -1;
