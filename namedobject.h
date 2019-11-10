@@ -16,7 +16,6 @@ namespace zero {
 	enum ZeroObjectType {
 		THREAD = 0,
 		PIPE,
-		SEMAPHORE,
 		CLICOMMAND,
 	};
 
@@ -25,10 +24,10 @@ namespace zero {
 	
 		static NamedObject* find(const char* name);
 		static NamedObject* find(const char* name, const ZeroObjectType objType);
-		static NamedObject* findByPattern(const char* pattern);
+		static NamedObject* findFirstByPattern(const char* pattern);
 	
 		static void remove(NamedObject*);
-		static void iterate(void* data, bool (*func)(void* data, NamedObject* obj));
+		static void iterate(void* data, bool (*func)(void* data, uint16_t i, NamedObject* obj));
 
 		ZeroObjectType _objectType;
 		const char* _objectName;

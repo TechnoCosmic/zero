@@ -143,7 +143,7 @@ void handleTabCompletion(TextPipe* cliInputPipe, char* commandLine, const int16_
     uint16_t typedLength = strlen(&commandLine[pos]) - 1;
 
     if (pos >= 0) {
-        NamedObject* obj = NamedObject::findByPattern(&commandLine[pos]);
+        NamedObject* obj = NamedObject::findFirstByPattern(&commandLine[pos]);
 
         if (obj) {
             const uint16_t spaceNeeded = strlenpgm(obj->_objectName);
@@ -151,9 +151,12 @@ void handleTabCompletion(TextPipe* cliInputPipe, char* commandLine, const int16_
             // copy the object's name into the command line
             for (uint16_t i = typedLength; i < spaceNeeded; i++) {
                 const char inChar = pgm_read_byte(obj->_objectName + i);
+
+                // inject characters into the CLI input Pipe
                 *cliInputPipe << (char) inChar;
             }
 
+            // add a trailing space for kindness
             *cliInputPipe << ' ';
         }
     }

@@ -25,18 +25,35 @@ using namespace zero::memory;
 
 const PROGMEM char _unnamedDefault[] = "*** UNNAMED ***";
 
+static Color _colorsForObjType[] {
+    Color::GREEN,
+    Color::BLUE,
+    Color::YELLOW,
+};
+
 clicommand(ls, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
-    NamedObject::iterate(tx, [](void* data, NamedObject* obj) {
+    NamedObject::iterate(tx, [](void* data, uint16_t i, NamedObject* obj) {
+        const char* nameToUse = (char*) TOT(obj->_objectName, _unnamedDefault);
         TextPipe* out = (TextPipe*) data;
 
-        if (obj->_objectName) {
-            *out << PGM(obj->_objectName) << endl;
+        // set the right color
+        *out << settextcolor(_colorsForObjType[obj->_objectType]);
 
-        } else {
-            *out << PGM(_unnamedDefault) << endl;
+        // no need to pad the last column, saves time
+        if ((i & 0b11) != 3) {
+            *out << setw(20) << setfill(' ');
         }
 
+        *out << PGM(nameToUse);
+
+        // if it's the last column, newline please
+        if ((i & 0b11) == 3) {
+            *out << endl;
+        }
+
+        *out << white;
+        
         return true;
     });
 

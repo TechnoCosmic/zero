@@ -55,7 +55,7 @@ NamedObject* NamedObject::find(const char* name) {
 }
 
 // locates a NamedObject by it's name
-NamedObject* NamedObject::findByPattern(const char* pattern) {
+NamedObject* NamedObject::findFirstByPattern(const char* pattern) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		NamedObject* rc = 0UL;
 		NamedObject* cur = _systemObjectList.getHead();
@@ -83,21 +83,22 @@ NamedObject* NamedObject::find(const char* name, const ZeroObjectType objType) {
 	return 0UL;
 }
 
-void NamedObject::iterate(void* data, bool (*func)(void* data, NamedObject* obj)) {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+void NamedObject::iterate(void* data, bool (*func)(void* data, uint16_t i, NamedObject* obj)) {
+	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		_lockedCount++;
 	}
 
 	NamedObject* cur = _systemObjectList.getHead();
+	uint16_t i = 0;
 
 	while (cur) {
-		if (!func(data, cur)) {
+		if (!func(data, i++, cur)) {
 			break;
 		}
 		cur = cur->_next;
 	}
 
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		_lockedCount--;
 	}
 }

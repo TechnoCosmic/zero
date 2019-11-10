@@ -187,7 +187,7 @@ clicommand(ps, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     *tx << setreverse(false);
     *tx << endl;
 
-    NamedObject::iterate(tx, [](void* data, NamedObject* obj) {
+    NamedObject::iterate(tx, [](void* data, uint16_t i, NamedObject* obj) {
 
         if (obj->_objectType == ZeroObjectType::THREAD) {
             outputThread((Thread*) obj, (TextPipe*) data);
