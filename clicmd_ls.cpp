@@ -52,10 +52,10 @@ clicommand(ls, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
             *out << endl;
         }
 
-        *out << white;
-        
         return true;
     });
+
+    *tx << white << endl;
 
     return 0;
 });
