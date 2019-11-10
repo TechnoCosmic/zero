@@ -184,3 +184,79 @@ char* itoa(int32_t num, char* str, const uint16_t base, const bool positive, con
 	// escape
 	return str;
 }
+
+
+// Return true if str matches pattern, false otherwise
+bool matches(char* str, char* pattern) {
+    bool rc = true;
+    char* pAfterLastWild = 0UL;     // The location after the last '*', if we’ve encountered one
+    char* pAfterLastTame = 0UL;     // The location in the tame string, from which we started after last wildcard
+    char t, w;
+
+    while (true) {
+        t = *str;
+        w = *pattern;
+
+        if (!t) {
+
+            if (!w) {
+                break;
+
+            } else if (w == '*') {
+                pattern++;
+                continue;
+
+            } else if (pAfterLastTame) {
+                if (!*pAfterLastTame) {
+                    rc = false;
+                    break;
+                }
+                str = pAfterLastTame++;
+                pattern = pAfterLastWild;
+                continue;
+            }
+
+            rc = false;
+            break;
+
+        } else {
+            if (t != w) {
+                if (w == '*') {
+                    pAfterLastWild = ++pattern;
+                    pAfterLastTame = str;
+                    w = *pattern;
+
+                    if (!w) {
+                        break;
+                    }
+                    continue;
+
+                } else if ( w == '?') {
+                    // do nothing - the characters are considered a match
+
+                } else if (pAfterLastWild) {
+                    if (pAfterLastWild != pattern) {
+                        pattern = pAfterLastWild;
+                        w = *pattern;
+                        
+                        if (t == w) {
+                            pattern++;
+                        }
+                    }
+
+                    str++;
+                    continue;
+
+                } else {
+                    rc = false;
+                    break;
+                }
+            }
+        }
+
+        str++;
+        pattern++;
+    }
+
+    return rc;
+}
