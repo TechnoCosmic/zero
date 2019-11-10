@@ -188,10 +188,19 @@ bool Thread::setParameter(const uint8_t parameterNumber, const uint16_t v) {
 	return false;
 }
 
-
+// so that the millisecond timer automatically
+// scales with your chosen MCU speed
 #define SCALE(x) ((F_CPU * (x)) / 16000000UL)
 
-// initializes and starts the pre-emptive scheduler
+// Initializes and starts the pre-emptive scheduler
+
+// NOTE: Timer2 is used here, because on most ATmega MCUs, that's an
+// 8-bit timer with a /128 pre-scalar option. This pre-scalar is used
+// because it has the resolution to scale up and down with the chosen
+// clock speed, without needing to use a 16-bit timer.
+// Feel free to relocate this to another timer if you need to. Just
+// make sure it ticks every millisecond at your chosen MCU frequency.
+
 void Thread::init() {
 	// 8-bit Timer/Counter2
 	power_timer2_enable();
@@ -219,6 +228,7 @@ Thread* Thread::me() {
 }
 
 
+// Are we allowing Thread swaps at the moment?
 static bool _ctxEnabled = false;
 
 
