@@ -22,8 +22,11 @@ namespace zero {
 
 	struct NamedObject {
 		static void add(NamedObject*);
+	
 		static NamedObject* find(const char* name);
 		static NamedObject* find(const char* name, const ZeroObjectType objType);
+		static NamedObject* findByPattern(const char* pattern);
+	
 		static void remove(NamedObject*);
 		static void iterate(void* data, bool (*func)(void* data, NamedObject* obj));
 

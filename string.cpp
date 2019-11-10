@@ -187,15 +187,22 @@ char* itoa(int32_t num, char* str, const uint16_t base, const bool positive, con
 
 
 // Return true if str matches pattern, false otherwise
-bool matches(char* str, char* pattern) {
+bool matches(const char* str, char* pattern, const bool srcIsFlash) {
     bool rc = true;
+	char* st = (char*) str;
+	char* pt = (char*) pattern;
     char* pAfterLastWild = 0UL;     // The location after the last '*', if we’ve encountered one
     char* pAfterLastTame = 0UL;     // The location in the tame string, from which we started after last wildcard
     char t, w;
 
     while (true) {
-        t = *str;
-        w = *pattern;
+		if (srcIsFlash) {
+			t = pgm_read_byte(st);
+		} else {
+			t = *st;
+		}
+
+		w = *pt;
 
         if (!t) {
 
@@ -203,7 +210,7 @@ bool matches(char* str, char* pattern) {
                 break;
 
             } else if (w == '*') {
-                pattern++;
+                pt++;
                 continue;
 
             } else if (pAfterLastTame) {
@@ -211,8 +218,8 @@ bool matches(char* str, char* pattern) {
                     rc = false;
                     break;
                 }
-                str = pAfterLastTame++;
-                pattern = pAfterLastWild;
+                st = pAfterLastTame++;
+                pt = pAfterLastWild;
                 continue;
             }
 
@@ -222,29 +229,29 @@ bool matches(char* str, char* pattern) {
         } else {
             if (t != w) {
                 if (w == '*') {
-                    pAfterLastWild = ++pattern;
-                    pAfterLastTame = str;
-                    w = *pattern;
+                    pAfterLastWild = ++pt;
+                    pAfterLastTame = st;
+                    w = *pt;
 
                     if (!w) {
                         break;
                     }
                     continue;
 
-                } else if ( w == '?') {
+                } else if (w == '?') {
                     // do nothing - the characters are considered a match
 
                 } else if (pAfterLastWild) {
-                    if (pAfterLastWild != pattern) {
-                        pattern = pAfterLastWild;
-                        w = *pattern;
+                    if (pAfterLastWild != pt) {
+                        pt = pAfterLastWild;
+                        w = *pt;
                         
                         if (t == w) {
-                            pattern++;
+                            pt++;
                         }
                     }
 
-                    str++;
+                    st++;
                     continue;
 
                 } else {
@@ -254,8 +261,8 @@ bool matches(char* str, char* pattern) {
             }
         }
 
-        str++;
-        pattern++;
+        st++;
+        pt++;
     }
 
     return rc;

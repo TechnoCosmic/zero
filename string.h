@@ -23,7 +23,7 @@ void* memcpy(uint8_t* dest, const uint8_t* src, const uint16_t count);
 int strlen(const char*);
 int strlenpgm(const char*);
 int strcmppgm(const char*, char*);
-bool matches(char* str, char* pattern);
+bool matches(const char* str, char* pattern, const bool srcIsFlash);
 
 char* itoa(int32_t num, char* buffer, const uint16_t base, const bool positive, const bool ucase);
 

@@ -54,6 +54,24 @@ NamedObject* NamedObject::find(const char* name) {
 	}
 }
 
+// locates a NamedObject by it's name
+NamedObject* NamedObject::findByPattern(const char* pattern) {
+	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+		NamedObject* rc = 0UL;
+		NamedObject* cur = _systemObjectList.getHead();
+
+		while (cur) {
+			if(matches(cur->_objectName, (char*) pattern, true)) {
+				rc = cur;
+				break;
+			}
+			cur = cur->_next;
+		}
+
+		return rc;
+	}
+}
+
 // locates a NamedObject by it's name and type
 NamedObject* NamedObject::find(const char* name, const ZeroObjectType objType) {
 	NamedObject* obj = NamedObject::find(name);

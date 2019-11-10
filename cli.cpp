@@ -23,6 +23,7 @@ using namespace zero;
 
 
 const char BELL = 7;
+const char TAB = 9;
 const char BACKSPACE = 8;
 const char CR = 13;
 const char ESCAPE = 27;
@@ -127,6 +128,37 @@ void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
     }
 }
 
+
+void handleTabCompletion(TextPipe* cliInputPipe, char* commandLine, const int16_t cursorPosition) {
+    int16_t pos = cursorPosition;
+
+    // step to the previous whitespace
+    while (--pos) {
+        if (commandLine[pos] == ' ') {
+            pos++;
+            break;
+        }
+    }
+
+    uint16_t typedLength = strlen(&commandLine[pos]) - 1;
+
+    if (pos >= 0) {
+        NamedObject* obj = NamedObject::findByPattern(&commandLine[pos]);
+
+        if (obj) {
+            const uint16_t spaceNeeded = strlenpgm(obj->_objectName);
+
+            // copy the object's name into the command line
+            for (uint16_t i = typedLength; i < spaceNeeded; i++) {
+                const char inChar = pgm_read_byte(obj->_objectName + i);
+                *cliInputPipe << (char) inChar;
+            }
+
+            *cliInputPipe << ' ';
+        }
+    }
+}
+
 int cliMain() {
     TextPipe rx(_cliRxPipeName, CLI_RX_PIPE_BYTES);
     TextPipe tx(_cliTxPipeName, CLI_TX_PIPE_BYTES);
@@ -149,6 +181,12 @@ int cliMain() {
         // blocking call to read() to gather keystrokes from the USART
         if (rx.read(&input, true)) {
             switch (input) {
+                case TAB:
+                    cmdLine[cursorPosition] = '*';
+                    handleTabCompletion(&rx, cmdLine, cursorPosition);
+                    echo = false;
+                break;
+
                 case ESCAPE:
                     // clear the line and start fresh
                     if (cursorPosition > 0 && tx.getOutputType() == OutputType::VT100) {
@@ -194,7 +232,7 @@ int cliMain() {
 
                 default:
                     // Check for buffer underrun and overflow - safety first, CASE!
-                    if (cursorPosition >= 0 && cursorPosition < CLI_CMD_LINE_BUFFER_BYTES) {
+                    if (cursorPosition >= 0 && cursorPosition < (CLI_CMD_LINE_BUFFER_BYTES - 1)) {
                         cmdLine[cursorPosition++] = input;
 
                     } else {
