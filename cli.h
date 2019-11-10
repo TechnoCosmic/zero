@@ -36,7 +36,7 @@ namespace zero {
 	// helper macro for easier Thread creation
 	#define clicommand(v,fn)										\
 		const PROGMEM char _cmdName_##v[] = #v;	                	\
-		zero::CliCommand v(_cmdName_##v,[]fn)
+		CliCommand v(_cmdName_##v,[]fn)
 #else
     #define clicommand(v,fn) ;                                       
 #endif

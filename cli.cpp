@@ -54,16 +54,16 @@ void displayPrompt(TextPipe* rx, TextPipe* tx) {
 }
 
 
-static const PROGMEM char _welcomeText[] = "\fWelcome to zero";
+static const PROGMEM char _welcomeText[] = "\fWelcome to zero ";
 static const PROGMEM char _cliOnUsart[] = "CLI on USART0 @ ";
 static const PROGMEM char _bps[] = "bps";
 static const PROGMEM char _speed[] = "MHz system";
 
 
 void displayWelcome(TextPipe* rx, TextPipe* tx) {
-    *tx << dec << PGM(_welcomeText) << zero::endl;
-    *tx << PGM(_cliOnUsart) << (int32_t) CLI_BAUD << PGM(_bps) << zero::endl;
-    *tx << (int) (F_CPU / 1000000UL) << PGM(_speed) << zero::endl;
+    *tx << dec << PGM(_welcomeText) << 'v' << ZERO_BUILD_VERSION << '.' << ZERO_BUILD_REVISION << endl;
+    *tx << PGM(_cliOnUsart) << (int32_t) CLI_BAUD << PGM(_bps) << endl;
+    *tx << (int) (F_CPU / 1000000UL) << PGM(_speed) << endl;
 }
 
 

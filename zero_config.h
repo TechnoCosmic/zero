@@ -36,7 +36,7 @@ namespace zero {
     const uint16_t CLI_TX_PIPE_BYTES = 96;
 
     // CLI stack size
-    const uint16_t CLI_STACK_BYTES = 512;
+    const uint16_t CLI_STACK_BYTES = 384;
 
     // CLI command line buffer size
     const uint16_t CLI_CMD_LINE_BUFFER_BYTES = 40;
@@ -66,14 +66,14 @@ namespace zero {
 #endif
 
     // Default quantum, in milliseconds
-	const int TIMESLICE_MS = 25;
+	const int TIMESLICE_MS = 15;
 
     // Allocator search strategy for Threads and Stacks
     #define THREAD_MEMORY_SEARCH_STRATEGY memory::SearchStrategy::TopDown
 
     // So that the allocator scales with SRAM
     // NOTE: Change this to a simple fixed size if you prefer
-    const uint16_t DYNAMIC_BYTES = RAMEND - (255 + 1536);
+    const uint16_t DYNAMIC_BYTES = RAMEND - (255 + 1024);
 
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum
