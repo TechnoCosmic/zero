@@ -84,7 +84,7 @@ static void globalThreadEntry(Thread* t) {
 	// remove from the list of running threads
 	t->remove();
 
-	if (t->_autoCleanup) {
+	if (t->_launchFlags & TLF_AUTO_CLEANUP) {
 		t->cleanup();
 
 	} else {
@@ -99,11 +99,13 @@ static void globalThreadEntry(Thread* t) {
 
 
 // Configure a chunk of memory so it can be used as a stack for a Thread
-uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize) {
+uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const bool quick) {
 	uint8_t* stackEnd = &stack[stackSize-1];
 
-	// clear the stack space in case it's recycled memory
-	memset(stack, 0, stackSize);
+	if (!quick) {
+		// clear the stack space in case it's recycled memory
+		memset(stack, 0, stackSize);
+	}
 
 	// the entry point for the Thread
 	stackEnd[ 0] = ((uint16_t) globalThreadEntry) & 0xFF;
@@ -114,19 +116,19 @@ uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize) {
 
 
 // configure the Thread object ready for the execution of a new Thread
-void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags) {
+void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const uint16_t flags) {
 	// prepare the stack and registers
-	_sp = Thread::prepareStack(stack, stackSize);
+	_sp = Thread::prepareStack(stack, stackSize, flags & TLF_QUICK);
 	_sreg = 0;
 #ifdef RAMPZ
 	_rampz = 0;
 #endif
 
-	// so that the globalThreadEntry knows what to call
-	_entryPoint = entryPoint;
-
 	// pass ourselves in as a parameter to the launch function
 	setParameter(0, (uint16_t) this);
+
+	// so that the globalThreadEntry knows what to call
+	_entryPoint = entryPoint;
 
 	// stack details
 	_stackBottom = stack;
@@ -145,7 +147,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 	}
 
 	_quantumMs = TOT(quantumOverride, TIMESLICE_MS);
-	_autoCleanup = (flags & TLF_AUTO_CLEANUP);
+	_launchFlags = flags;
 	_blockInfo = 0UL;
 
 #ifdef INSTRUMENTATION
@@ -389,13 +391,21 @@ bool Thread::pause() {
 int Thread::join() {
 	int rc = -1;
 
-	if (!_autoCleanup) {
+	// join can only occur on Threads
+	// that do NOT auto-cleanup
+	if (!(_launchFlags & TLF_AUTO_CLEANUP)) {
+
+		// block the *calling* Thread until *this* Thread terminates
 		if (_state != ThreadState::TS_TERMINATED) {
 			block(ThreadState::TS_WAIT_TERM, (uint32_t) this);
 		}
 
+		// the main Thread entry code deposits the
+		// Thread's exit code into the TCB for us
+		// to return here
 		rc = this->_exitCode;
 
+		// cleanup the Thread properly now
 		if (!cleanup()) {
 			rc = -1;
 		}

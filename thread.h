@@ -37,8 +37,13 @@ namespace zero {
 		TS_WAIT_WRITE,
 	};
 
-	const int TLF_READY = 1;
-	const int TLF_AUTO_CLEANUP = 2;
+	// Thread Launch Flags - these control various aspects
+	// of how a Thread starts up and shuts down
+
+	const uint16_t TLF_READY = 1;				// Thread is ready to run as soon as the scheduler allows
+	const uint16_t TLF_AUTO_CLEANUP = 2;		// Thread will clean up after itself upon termination
+	const uint16_t TLF_QUICK = 4;				// Quick launch - bypass niceties like clearing stack memory
+	const uint16_t TLF_POOL = 8;				// Thread is part of a Thread Pool. Tells the cleanup to recycle.
 
 	// Thread class
 	class Thread {
@@ -85,6 +90,8 @@ namespace zero {
 
 		// NamedObject must be first
 		NamedObject _systemData;
+
+		// This is for Thread-only Lists
 		Thread* _prev;
 		Thread* _next;
 
@@ -95,12 +102,13 @@ namespace zero {
 		uint8_t _rampz;
 	#endif
 
+		// main control block
 		uint16_t _tid;
 		ThreadState _state;
+		int (*_entryPoint)();
 		uint8_t _quantumMs;
 		uint8_t _remainingTicks;
-		int (*_entryPoint)();
-		bool _autoCleanup;
+		uint16_t _launchFlags;
 		int _exitCode;
 
 	#ifdef INSTRUMENTATION
@@ -109,8 +117,8 @@ namespace zero {
 	#endif
 
 	private:
-		void configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
-		static uint16_t prepareStack(uint8_t* stack, const uint16_t stackSize);
+		void configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const uint16_t flags);
+		static uint16_t prepareStack(uint8_t* stack, const uint16_t stackSize, const bool quick);
 		static Thread* createIdleThread();
 
 		uint32_t _blockInfo;
