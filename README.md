@@ -403,3 +403,5 @@ If you're not using a VT100 terminal emulator to connect to your AVR's newly acq
 ### Garbage without text on USART
 
 Check the `zero_config.h` file to make sure you've got the `CLI_BAUD` set to match the rate in your serial monitor or terminal emulator. You also need 8 data bits, 1 stop bit, no parity bits.
+
+
