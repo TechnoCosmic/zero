@@ -306,7 +306,7 @@ If you're familiar with the `ATOMIC_BLOCK` macros in `util/atomic.h`, then you'l
 
 using namespace zero;
 
-thread(myThread, 128, {
+void myFunc()
     // do normal stuff here
 
     // ...
@@ -330,7 +330,7 @@ thread(myThread, 128, {
     // ...
 
     return 0;
-});
+}
 ```
 zero's atomic macros support both `ZERO_ATOMIC_RESTORESTATE` which re-enables context switching only if it was enabled when the atomic block started, and `ZERO_ATOMIC_FORCEON` which will force context switching back on at the end of the block, regardless of whether it was enabled upon entry.
 
@@ -403,3 +403,26 @@ If you're not using a VT100 terminal emulator to connect to your AVR's newly acq
 ### Garbage without text on USART
 
 Check the `zero_config.h` file to make sure you've got the `CLI_BAUD` set to match the rate in your serial monitor or terminal emulator. You also need 8 data bits, 1 stop bit, no parity bits.
+
+
+## Under the Hood - Scheduler
+
+zero has a properly pre-emptive scheduler, providing full context save and restore. A forced context switch is generally triggered by an ISR attached to one of your MCU's timer peripherals. By default, this is 8-bit Timer2 on the reference ATmega MCUs. A manual context switch is triggered by a call to `Thread::block()`, but this is usually done by lower-level components such as peripheral drivers or Pipes.
+
+### Thread Control Block Structure
+
+A `Thread` in zero is a handful of bytes of information regarding it's name (a pointer into Flash memory, not precious SRAM), it's entry point, it's current state, launch flags, stack information, and so on. Details can be found in `thread.h`. One main piece of information is how much of it's quantum is left before it will be booted out in favour of another Thread, `_remainingTicks`. When this reaches 0, the Thread will be pre-empted. One tick is currently one (1) millisecond. By default, zero Threads have a 15ms quantum. You can change the default in `zero_config.h`. You can also give each Thread it's own timeslice setting, by supplying a non-zero value to the `quantumOverride` argument.
+
+### Scheduler Operation
+
+The scheduler maintains a solitary doubly-linked list of Threads, be they ready, running, blocked, or otherwise. This will change to a more optimal mechanism in the not-too-distant future. Whether triggered by the ISR, or via `::block()`, a context switch is started by a call to `yield_intenal()` (implemented in `thread.cpp`). A context switch consists of three main steps...
+
+- Preserve the current contents of all registers onto the current Thread's stack. This is implemented by an inline assembly language macro found in `thread_macros.h`. zero also preserves the contents of the SP, SREG, and RAMPZ (if applicable). They are saved in the Thread object itself, and not pushed onto the Thread's stack as in some other implementations. This is done in `saveCurrentContext()`.
+
+As part of this step, the SP is temporarily updated to the original SP that was in place when the main initialisation of the kernel occurred, just prior to starting the scheduler. This is considered the kernel stack, and is the stack used by the next step. This is so that individual Thread stacks don't need to account for any extra kernel overhead.
+
+- Choose the next Thread to resume. This is done via a call to `selectNextThread()`. It simply steps through the Thread list, stopping when it comes to a Thread that is ready to run. zero will be switching to a far more optimal O(1) list in the near future.
+
+- Restore the context of the newly chosen Thread. This is done in `restoreContext()`.
+
+At this point, the yield finishes with a `reti` instruction, which pops the new Thread's PC off the Thread's own stack, re-enables ISRs, and the chosen Thread's execution resumes immediately.
