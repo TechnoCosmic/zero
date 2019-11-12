@@ -42,10 +42,10 @@ namespace zero {
     const uint16_t CLI_TX_PIPE_BYTES = 96;
 
     // CLI stack size
-    const uint16_t CLI_STACK_BYTES = 384;
+    const uint16_t CLI_STACK_BYTES = 512;
 
     // CLI command line buffer size
-    const uint16_t CLI_CMD_LINE_BUFFER_BYTES = 40;
+    const uint16_t CLI_CMD_LINE_BUFFER_BYTES = 80;
 
     // Maximum number of tokens on a CLI command line
     const uint16_t CLI_CMD_LINE_MAX_TOKENS = 16;
@@ -84,7 +84,7 @@ namespace zero {
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum
     // stack size required (found at the top of thread.cpp)
-    const uint16_t IDLE_THREAD_STACK_BYTES = 96;
+    const uint16_t IDLE_THREAD_STACK_BYTES = 128;
 
     // Memory allocator page size
     const uint8_t PAGE_BYTES = 16;
