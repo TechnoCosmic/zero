@@ -18,7 +18,7 @@
 
 
 #define ZERO_BUILD_VERSION 0
-#define ZERO_BUILD_REVISION 1
+#define ZERO_BUILD_REVISION 2
 
 static const uint8_t THREAD_MIN_STACK_BYTES = 64;
 
@@ -52,7 +52,7 @@ namespace zero {
 		static void init();
 
 		// Thread creation
-		Thread(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags);
+		Thread(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags = TLF_READY | TLF_AUTO_CLEANUP);
 
 		// general blocking and unblocking
 		static void block(const ThreadState newState, const uint32_t blockInfo);
@@ -73,7 +73,7 @@ namespace zero {
 		bool remove();
 		bool cleanup();
 
-		// Properties
+		// Properties (thread_info.cpp)
 		bool isDynamic();
 		uint16_t getThreadId();
 		uint16_t getStackBottom();
@@ -84,6 +84,7 @@ namespace zero {
 #ifdef INSTRUMENTATION
 		uint16_t calcPeakStackBytesUsed();
 #endif
+		// end (thread_info.cpp)
 
 		// miscellaneous, but sort of related!
 		static uint32_t now();
@@ -91,7 +92,7 @@ namespace zero {
 		// NamedObject must be first
 		NamedObject _systemData;
 
-		// This is for Thread-only Lists
+		// This is for the system Thread Lists
 		Thread* _prev;
 		Thread* _next;
 
@@ -118,7 +119,7 @@ namespace zero {
 
 	private:
 		void configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const uint16_t flags);
-		static uint16_t prepareStack(uint8_t* stack, const uint16_t stackSize, const bool quick);
+		void prepareStack(uint8_t* stack, const uint16_t stackSize, const bool quick);
 		static Thread* createIdleThread();
 
 		uint32_t _blockInfo;

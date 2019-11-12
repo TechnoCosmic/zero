@@ -29,7 +29,7 @@ static const int PC_COUNT = 2;
 static const PROGMEM char DEFAULT_THREAD_NAME[] = "noname";
 
 static inline void saveCurrentContext() __attribute__((always_inline));
-static inline void restoreNewContext(Thread* t) __attribute__((always_inline));
+static inline void restoreContext(Thread* t) __attribute__((always_inline));
 static inline Thread* selectNextThread() __attribute__((always_inline));
 static inline void yield_internal() __attribute__((always_inline));
 
@@ -84,25 +84,28 @@ static void globalThreadEntry(Thread* t) {
 	// remove from the list of running threads
 	t->remove();
 
+	// tidy up if it's an auto cleanup job...
 	if (t->_launchFlags & TLF_AUTO_CLEANUP) {
 		t->cleanup();
 
 	} else {
-		// unblock anyone waiting to join()
+		// ... or unblock anyone waiting to join()
 		Thread::unblock(ThreadState::TS_WAIT_TERM, (uint32_t) t);
 	}
 	
 	_currentThread = 0UL;
 
+	// this is the official end of a Thread,
+	// so time to schedule another one
 	yield_internal();
 }
 
 
 // Configure a chunk of memory so it can be used as a stack for a Thread
-uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const bool quick) {
+void Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const bool erase) {
 	uint8_t* stackEnd = &stack[stackSize-1];
 
-	if (!quick) {
+	if (erase) {
 		// clear the stack space in case it's recycled memory
 		memset(stack, 0, stackSize);
 	}
@@ -111,21 +114,23 @@ uint16_t Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const bo
 	stackEnd[ 0] = ((uint16_t) globalThreadEntry) & 0xFF;
 	stackEnd[-1] = ((uint16_t) globalThreadEntry) >> 8;
 
-	return (uint16_t) &stackEnd[-(REGISTER_COUNT + (PC_COUNT * 1))];
+	// set the stack pointer to the right place
+	_sp = (uint16_t) &stackEnd[-(REGISTER_COUNT + (PC_COUNT * 1))];
+
+	// pass ourselves in as a parameter to the launch function
+	setParameter(0, (uint16_t) this);
 }
 
 
 // configure the Thread object ready for the execution of a new Thread
 void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const uint16_t flags) {
 	// prepare the stack and registers
-	_sp = Thread::prepareStack(stack, stackSize, flags & TLF_QUICK);
+	Thread::prepareStack(stack, stackSize, !(flags & TLF_QUICK));
+
 	_sreg = 0;
 #ifdef RAMPZ
 	_rampz = 0;
 #endif
-
-	// pass ourselves in as a parameter to the launch function
-	setParameter(0, (uint16_t) this);
 
 	// so that the globalThreadEntry knows what to call
 	_entryPoint = entryPoint;
@@ -280,7 +285,7 @@ static inline void saveCurrentContext() {
 
 
 // Restores the context of the supplied Thread and resumes it's execution
-static inline void restoreNewContext(Thread* t) {
+static inline void restoreContext(Thread* t) {
 	_currentThread = t;
 	_currentThread->_remainingTicks = _currentThread->_quantumMs;
 	_currentThread->_state = ThreadState::TS_RUNNING;
@@ -299,7 +304,7 @@ static inline void restoreNewContext(Thread* t) {
 static inline void yield_internal() {
 	saveCurrentContext();
 	TIMSK2 &= ~(1 << OCIE2B);					// switch off context switch ISR
-	restoreNewContext(selectNextThread());
+	restoreContext(selectNextThread());
 }
 
 
