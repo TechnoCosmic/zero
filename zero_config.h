@@ -30,7 +30,13 @@ namespace zero {
     #define CLI_VT100
 
     // CLI RX Pipe buffer bytes
-    const uint16_t CLI_RX_PIPE_BYTES = 32;
+    // NOTE: CliCommand::execute() works by sending the
+    // supplied command line into the CLI's RX Pipe.
+    // If you use ::execute() from within another CLI
+    // command, then you run the risk of deadlocking the
+    // CLI on itself. To avoid this, increase the RX Pipe
+    // size here so that the RX Pipe doesn't become full.
+    const uint16_t CLI_RX_PIPE_BYTES = 96;
 
     // CLI TX Pipe buffer bytes
     const uint16_t CLI_TX_PIPE_BYTES = 96;
@@ -73,7 +79,7 @@ namespace zero {
 
     // So that the allocator scales with SRAM
     // NOTE: Change this to a simple fixed size if you prefer
-    const uint16_t DYNAMIC_BYTES = RAMEND - (255 + 1024);
+    const uint16_t DYNAMIC_BYTES = RAMEND - (255 + 1536);
 
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum

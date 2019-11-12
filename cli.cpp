@@ -23,8 +23,8 @@ using namespace zero;
 
 
 const char BELL = 7;
-const char TAB = 9;
 const char BACKSPACE = 8;
+const char TAB = 9;
 const char CR = 13;
 const char ESCAPE = 27;
 
@@ -42,6 +42,15 @@ CliCommand::CliCommand(const char* name, const CliEntryPoint entry) {
 
     // add to the list of NamedObjects
     NamedObject::add((NamedObject*) this);
+}
+
+
+void CliCommand::execute(const char* commandLine) {
+    Pipe* rx = (Pipe*) Pipe::find("cli_rx");
+
+    if (rx) {
+        *((TextPipe*) rx) << commandLine;
+    }
 }
 
 
@@ -162,6 +171,10 @@ void handleTabCompletion(TextPipe* cliInputPipe, char* commandLine, const int16_
     }
 }
 
+
+static const PROGMEM char _bsCoel[] = "\010\e[K";
+static const PROGMEM char _clCr[] = "\e[2K\r";
+
 int cliMain() {
     TextPipe rx(_cliRxPipeName, CLI_RX_PIPE_BYTES);
     TextPipe tx(_cliTxPipeName, CLI_TX_PIPE_BYTES);
@@ -187,6 +200,7 @@ int cliMain() {
                 case TAB:
                     cmdLine[cursorPosition] = '*';
                     handleTabCompletion(&rx, cmdLine, cursorPosition);
+                    cmdLine[cursorPosition] = 0;
                     echo = false;
                 break;
 
@@ -194,7 +208,7 @@ int cliMain() {
                     // clear the line and start fresh
                     if (cursorPosition > 0 && tx.getOutputType() == OutputType::VT100) {
                         // clear command line
-                        tx << "\e[2K\r";
+                        tx << PGM(_clCr);
 
                         // begin again
                         memset((uint8_t*) cmdLine, 0, sizeof(cmdLine));
@@ -211,10 +225,8 @@ int cliMain() {
                         cmdLine[cursorPosition] = 0;
 
                         // backspace + clear to end of line
+                        tx << PGM(_bsCoel);
 
-                        // TODO: Make these PROGMEM when iomanip.h
-                        // is written
-                        tx << "\010\e[K";
                     } else {
                         tx << (char) BELL;
                     }
