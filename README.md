@@ -415,7 +415,7 @@ A `Thread` in zero is a handful of bytes of information regarding it's name (a p
 
 ### Scheduler Operation
 
-The scheduler maintains a solitary doubly-linked list of Threads, be they ready, running, blocked, or otherwise. This will change to a more optimal mechanism in the not-too-distant future. Whether triggered by the ISR, or via `::block()`, a context switch is started by a call to `yield_intenal()` (implemented in `thread.cpp`). A context switch consists of three main steps...
+The scheduler maintains a solitary doubly-linked list of Threads, be they ready, running, blocked, or otherwise. This will change to a more optimal mechanism in the not-too-distant future. Whether triggered by the ISR, or via `::block()`, a context switch is started by a call to `yield_internal()` (implemented in `thread.cpp`). A context switch consists of three main steps...
 
 - Preserve the current contents of all registers onto the current Thread's stack. This is implemented by an inline assembly language macro found in `thread_macros.h`. zero also preserves the contents of the SP, SREG, and RAMPZ (if applicable). They are saved in the Thread object itself, and not pushed onto the Thread's stack as in some other implementations. This is done in `saveCurrentContext()`.
 
