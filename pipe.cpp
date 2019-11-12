@@ -52,6 +52,11 @@ Pipe::~Pipe() {
 }
 
 
+Pipe* Pipe::find(const char* name) {
+	return (Pipe*) NamedObject::find(name, ZeroObjectType::PIPE);
+}
+
+
 // Returns true if the Pipe contains no data, false otherwise
 bool Pipe::isEmpty() {
 	return _length == 0;
