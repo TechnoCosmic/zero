@@ -419,9 +419,9 @@ The scheduler maintains a solitary doubly-linked list of Threads, be they ready,
 
 - Preserve the current contents of all registers onto the current Thread's stack. This is implemented by an inline assembly language macro found in `thread_macros.h`. zero also preserves the contents of the SP, SREG, and RAMPZ (if applicable). They are saved in the Thread object itself, and not pushed onto the Thread's stack as in some other implementations. This is done in `saveCurrentContext()`.
 
-As part of this step, the SP is temporarily updated to the original SP that was in place when the main initialisation of the kernel occurred, just prior to starting the scheduler. This is considered the kernel stack, and is the stack used by the next step. This is so that individual Thread stacks don't need to account for any extra kernel overhead.
+**NOTE:** As part of this step, the SP is temporarily updated to the original SP that was in place when the main initialisation of the kernel occurred, just prior to starting the scheduler. This is considered the kernel stack, and is the stack used by the next step. This is so that individual Thread stacks don't need to account for any extra kernel overhead.
 
-- Choose the next Thread to resume. This is done via a call to `selectNextThread()`. It simply steps through the Thread list, stopping when it comes to a Thread that is ready to run. zero will be switching to a far more optimal O(1) list in the near future.
+- Choose the next Thread to resume. This is done via a call to `selectNextThread()`. It simply steps through the Thread list, stopping when it comes to a Thread that is ready to run.
 
 - Restore the context of the newly chosen Thread. This is done in `restoreContext()`.
 
