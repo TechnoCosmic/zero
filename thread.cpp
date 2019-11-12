@@ -513,18 +513,16 @@ int main() {
 	// disable all modules, and let the
 	// appropriate init routines power
 	// up things as they get used
+	power_all_disable();
 
-	// power_all_disable();
-
-	// prep the scheduler and the ms timer
+	// prep the scheduler/ms timer
 	Thread::init();
 
 	// new entry point to zero programs
 	startup_sequence();
 
-	// enable global interrupts
-	sei();
-
-	// and hang around. This won't actually run for long at all.
-	while(1);
+	// and immediately cause a context switch.
+	// ISRs will be enabled at the very end of
+	// this first context switch
+	yield_internal();
 }
