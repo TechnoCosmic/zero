@@ -421,8 +421,56 @@ The scheduler maintains a solitary doubly-linked list of Threads, be they ready,
 
 **NOTE:** As part of this step, the SP is temporarily updated to the original SP that was in place when the main initialisation of the kernel occurred, just prior to starting the scheduler. This is considered the kernel stack, and is the stack used by the next step. This is so that individual Thread stacks don't need to account for any extra kernel overhead.
 
-- Choose the next Thread to resume. This is done via a call to `selectNextThread()`. It simply steps through the Thread list, stopping when it comes to a Thread that is ready to run.
+- Choose the next Thread to resume. This is done via a call to `selectNextThread()`. It simply steps through the Thread list, stopping when it comes to a Thread that is ready to run, looping back to the head of the list if necessary.
 
 - Restore the context of the newly chosen Thread. This is done in `restoreContext()`.
 
 At this point, the yield finishes with a `reti` instruction, which pops the new Thread's PC off the Thread's own stack, re-enables ISRs, and the chosen Thread's execution resumes immediately.
+
+## Under the Hood - Memory Allocator
+
+The dynamic memory allocator in zero is fairly simple. Using some constants in `zero_config,h` to figure out how much of the MCU's SRAM you want to give to the allocator to hand out, zero then conceptually divides this into pages of `PAGE_BYTES`. These pages are tracked using a small bitmapped array. Although even simpler methods exist to track free space using the free space itself (essentially costing no memory to track), such a method wouldn't translate well into slower access external memories, such as SPI SRAM/EEPROM. The finding of free space and the marking of it as allocated/free would be forced through that serial access mechanism, slowing the allocation/deallocation process down. This is even more true if the communications mechanism, such as SPI, has many devices on the bus, forcing the allocator to wait it's turn to even begin the allocation process.
+
+**NOTE:** Despite the underlying mechanism for the allocator being page-based, all API calls for the allocator are in bytes, as you'd hope. The allocator internally translates this into the correct number of pages and back again, as required.
+
+### Allocation
+
+Due to this approach, `memory::allocate()` looks a little different to typical `malloc()` style functions. zero's incarnation takes two parameters beyond the usual size of the memory block requested.
+
+`uint16_t* allocated`
+
+Because memory is allocated in pages, every successful allocation will be for a chunk of memory that is an even multiple of `PAGE_BYTES`. So when you ask for 24 bytes when `PAGE_BYTES` is 32, you will given 32 bytes, and you have access to all 32 of those bytes, if you want them. `memory::allocate()` can optionally take a pointer to a `uint16_t` where it will tell you how many bytes you *actually* received from the allocator, if your program could benefit from knowing.
+
+zero's built-in `Pipe` class does this. Because a pipe is a variable length buffer, almost by definition, then if it gets more bytes than it asked for, it will use them.
+
+`SearchStrategy strategy`
+
+The next extra paramater that `memory::allocate()` can accept is an enum that directs the allocator to use a particular search alogithm when scanning the bitmap for available pages.
+
+The possibilities are...
+
+`BottomUp`
+
+In typical memory allocators, the search for free space usually begins at regions towards the lower end of address space, proceeeding upwards. The `BottomUp` strategy is this same method, beginning it's search at page 0, proceeding upwards into higher pages.
+
+**NOTE:** Page 0 is NOT page zero in the MCU. Page 0, as far the PageManager is concerned, is the first page in whatever physical area of SRAM the compiler assigned to the `uint8_t` array that is used. This array is called `_memoryArea` found in `memory.cpp`. It is this array that is the reason that GCC will show a huge amount of data used.
+
+`TopDown`
+
+The exact opposite of `BottomUp` in name as well as function. It starts at the last page and searches backwards through the pages to find a contiguous chunk of pages of the required size.
+
+Why have these two strategies? Speed.
+
+Being able to allocate all your longer-lived data structures at one each of the dynamic space, and your more fleeting ones at the other, can mean reduced allocation times. It may not. Your mileage may vary. The search options are provided so that you may take advantage of any inherent knowledge of your own program's dataflow.
+
+In terms of memory fragmentation, in general, you will find there to be little practical difference between allocating everything at one end of the address space, versus allocating both both ends. Of course you will be able to fabricate a situation where that isn't true, and that's fine. Most of the time, you can be fairly safe with this assumption until your own careful analysis of your program determines otherwise.
+
+`MiddleUp`/`MiddleDown`
+
+There are two additional search strategies, `MiddleUp` and `MiddleDown` that work as they imply. The downside to their use is the *guaranteed fragmentation of memory*. The instant you allocate even a single page in the middle of the address space, you've more or less halved the size of the largest contiguous block of memory you can allocate, until you deallocate it.
+
+These two extra strategies exist for those situations where you won't be allocating anything massive, but do want the additional little areas where you know the searches will be shorter, because of how you've planned your memory usage.
+
+**NOTE:** Because of the way `MiddleUp` and `MiddleDown` work, algorithmically, they can only search half of the address space (lower half or upper half). They can't "wrap around" because the allocated space must be contiguous. Due to this, when you call `memory::allocate()` with either of these `Middle` strategies and the search for free memory fails, the allocator will automatically renew the search in the other half of memory using the other `Middle` strategy.
+
+This is done to ensure that no matter which strategy you use, if the required sized chunk is available somewhere, it will be found.
