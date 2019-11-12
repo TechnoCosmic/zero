@@ -415,11 +415,11 @@ A `Thread` in zero is a handful of bytes of information regarding it's name (a p
 
 ### Scheduler Operation
 
-The scheduler maintains a solitary doubly-linked list of Threads, be they ready, running, blocked, or otherwise. This will change to a more optimal mechanism in the not-too-distant future. Whether triggered by the ISR, or via `::block()`, a context switch is started by a call to `yield_internal()` (implemented in `thread.cpp`). A context switch consists of three main steps...
+The scheduler maintains a solitary doubly-linked list of Threads, be they ready, running, blocked, or otherwise. This will change to a more optimal mechanism in the not-too-distant future. Whether triggered by the ISR, or via `::block()`, a context switch is started by a call to `yield()` or `yield_to()` (implemented in `thread.cpp`). A context switch consists of three main steps...
 
-- Preserve the current contents of all registers onto the current Thread's stack. This is implemented by an inline assembly language macro found in `thread_macros.h`. zero also preserves the contents of the SP, SREG, and RAMPZ (if applicable). They are saved in the Thread object itself, and not pushed onto the Thread's stack as in some other implementations. This is done in `saveCurrentContext()`.
+- Preserve the current contents of all registers onto the current Thread's stack. This is implemented by an inline assembly language macro found in `thread_macros.h`. zero also preserves the contents of the SP, SREG, and RAMPZ (if applicable). Some kernels save SREG on the Thread's stack, others in the Thread object. zero stores it in the Thread object. This is done in `saveCurrentContext()`.
 
-**NOTE:** As part of this step, the SP is temporarily updated to the original SP that was in place when the main initialisation of the kernel occurred, just prior to starting the scheduler. This is considered the kernel stack, and is the stack used by the next step. This is so that individual Thread stacks don't need to account for any extra kernel overhead.
+**NOTE:** As part of this step, the SP is temporarily updated to the original SP that was in place when the main initialisation of the kernel occurred (just prior to starting the scheduler). This is considered the kernel stack, and is the stack used by the next step. This is so that individual Thread stacks don't need to account for any extra kernel overhead.
 
 - Choose the next Thread to resume. This is done via a call to `selectNextThread()`. It simply steps through the Thread list, stopping when it comes to a Thread that is ready to run, looping back to the head of the list if necessary.
 
@@ -436,6 +436,12 @@ The dynamic memory allocator in zero is fairly simple. Using some constants in `
 ### Allocation
 
 Due to this approach, `memory::allocate()` looks a little different to typical `malloc()` style functions. zero's incarnation takes two parameters beyond the usual size of the memory block requested.
+
+`uint8_t* memory::allocate(const uint16_t numBytes, uint16_t* allocatedBytes, const SearchStrategy strategy)`
+
+`uint16_t numBytes`
+
+The first parameter is the easiest one - how many bytes of memory do you need?
 
 `uint16_t* allocated`
 

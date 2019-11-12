@@ -16,12 +16,12 @@
 using namespace zero;
 
 static List<NamedObject> _systemObjectList;
-static uint8_t _lockedCount = 0;
+static uint8_t _lockCount = 0;
 
 // Adds a NamedObject to the _systemObjectsList
 void NamedObject::add(NamedObject* obj) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		if (_lockedCount == 0) {
+		if (_lockCount == 0) {
 			_systemObjectList.append(obj);
 		}
 	}
@@ -30,7 +30,7 @@ void NamedObject::add(NamedObject* obj) {
 // removes the NamedObject from the _systemObjectsList
 void NamedObject::remove(NamedObject* obj) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		if (_lockedCount == 0) {
+		if (_lockCount == 0) {
 			_systemObjectList.remove(obj);
 		}
 	}
@@ -85,7 +85,7 @@ NamedObject* NamedObject::find(const char* name, const ZeroObjectType objType) {
 
 void NamedObject::iterate(void* data, bool (*func)(void* data, uint16_t i, NamedObject* obj)) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		_lockedCount++;
+		_lockCount++;
 	}
 
 	NamedObject* cur = _systemObjectList.getHead();
@@ -99,6 +99,6 @@ void NamedObject::iterate(void* data, bool (*func)(void* data, uint16_t i, Named
 	}
 
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		_lockedCount--;
+		_lockCount--;
 	}
 }

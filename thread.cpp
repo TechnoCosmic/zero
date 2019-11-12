@@ -31,7 +31,8 @@ static const PROGMEM char DEFAULT_THREAD_NAME[] = "noname";
 static inline void saveCurrentContext() __attribute__((always_inline));
 static inline void restoreContext(Thread* t) __attribute__((always_inline));
 static inline Thread* selectNextThread() __attribute__((always_inline));
-static inline void yield_internal() __attribute__((always_inline));
+static inline void yield() __attribute__((always_inline));
+static inline void yield_to() __attribute__((always_inline));
 
 static uint16_t _originalSp;
 static List<Thread> _readyList;
@@ -97,7 +98,7 @@ static void globalThreadEntry(Thread* t) {
 
 	// this is the official end of a Thread,
 	// so time to schedule another one
-	yield_internal();
+	yield();
 }
 
 
@@ -301,10 +302,17 @@ static inline void restoreContext(Thread* t) {
 
 // halts the calling thread and transfers MCU control
 // over to another Thread of the scheduler's choosing
-static inline void yield_internal() {
+static inline void yield() {
 	saveCurrentContext();
 	TIMSK2 &= ~(1 << OCIE2B);					// switch off context switch ISR
 	restoreContext(selectNextThread());
+}
+
+
+static inline void yield_to(Thread* t) {
+	saveCurrentContext();
+	TIMSK2 &= ~(1 << OCIE2B);					// switch off context switch ISR
+	restoreContext(t);
 }
 
 
@@ -345,7 +353,7 @@ static inline Thread* getNextThread(Thread* firstToCheck) {
 
 
 static inline Thread* selectNextThread() {
-	Thread* firstToCheck = _currentThread->_next;
+	Thread* firstToCheck = TTT(_currentThread, _currentThread->_next);
 
 	if (!firstToCheck || firstToCheck == _idleThread) {
 		firstToCheck = _readyList.getHead();
@@ -383,7 +391,7 @@ bool Thread::pause() {
 
 	// block immediately if the thread paused itself
 	if (this == _currentThread) {
-		yield_internal();
+		yield();
 	}
 
 	return true;
@@ -425,7 +433,7 @@ void Thread::block(const ThreadState newState, uint32_t blockInfo) {
 	cli();
 	_currentThread->_state = newState;
 	_currentThread->_blockInfo = blockInfo;
-	yield_internal();
+	yield();
 }
 
 
@@ -454,8 +462,8 @@ volatile uint32_t _milliseconds = 0UL;
 // triggers Timer2 COMPB ISR, which will do the switch
 static void triggerContextSwitch() {
 	if (Thread::isSwitchingEnabled()) {
-		TIMSK2 |= (1 << OCIE2B);
 		OCR2B = TCNT2;
+		TIMSK2 |= (1 << OCIE2B);
 	}
 }
 
@@ -494,7 +502,7 @@ ISR(TIMER2_COMPA_vect) {
 
 // context switch ISR
 ISR(TIMER2_COMPB_vect, ISR_NAKED) {
-	yield_internal();
+	yield();
 }
 
 
@@ -524,5 +532,5 @@ int main() {
 	// and immediately cause a context switch.
 	// ISRs will be enabled at the very end of
 	// this first context switch
-	yield_internal();
+	yield();
 }
