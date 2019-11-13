@@ -18,7 +18,7 @@
 
 
 #define ZERO_BUILD_VERSION 0
-#define ZERO_BUILD_REVISION 2
+#define ZERO_BUILD_REVISION 3
 
 static const uint8_t THREAD_MIN_STACK_BYTES = 64;
 
@@ -30,6 +30,7 @@ namespace zero {
 		TS_RUNNING,
 		TS_READY,
 		TS_PAUSED,
+		TS_WAITING,
 		TS_TERMINATED,
 		TS_WAIT_TERM,
 		TS_WAIT_ATOMIC_WRITE,
@@ -72,6 +73,7 @@ namespace zero {
 		int join();
 		bool remove();
 		bool cleanup();
+		void waitUntil(const uint32_t untilMs);
 
 		// Properties (thread_info.cpp)
 		bool isDynamic();
@@ -106,6 +108,7 @@ namespace zero {
 		// main control block
 		uint16_t _tid;
 		ThreadState _state;
+		uint32_t _blockInfo;
 		int (*_entryPoint)();
 		uint8_t _quantumMs;
 		uint8_t _remainingTicks;
@@ -122,12 +125,14 @@ namespace zero {
 		void prepareStack(uint8_t* stack, const uint16_t stackSize, const bool quick);
 		static Thread* createIdleThread();
 
-		uint32_t _blockInfo;
 		uint8_t* _stackBottom;
 		uint16_t _stackSize;
 	};
 
 }
+
+
+#define delay(ms) { Thread::me()->waitUntil(Thread::now() + (ms)); }
 
 
 #endif

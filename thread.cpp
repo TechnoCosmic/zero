@@ -28,15 +28,15 @@ static const int PC_COUNT = 2;
 
 static const PROGMEM char DEFAULT_THREAD_NAME[] = "noname";
 
-static inline void saveCurrentContext() __attribute__((always_inline));
+static inline void saveCurrentContext(Thread* destThread) __attribute__((always_inline));
 static inline void restoreContext(Thread* t) __attribute__((always_inline));
 static inline Thread* selectNextThread() __attribute__((always_inline));
 static inline void yield() __attribute__((always_inline));
-static inline void yield_to() __attribute__((always_inline));
 
 static uint16_t _originalSp;
-static List<Thread> _readyList;
+static List<Thread> _threadList;
 static Thread* _currentThread = 0UL;
+static Thread* _specificNextThread = 0UL;
 static Thread* _idleThread = 0UL;
 static uint16_t _nextTid = 1;
 
@@ -45,11 +45,11 @@ static uint16_t _nextTid = 1;
 // remove the Thread from the list of system objects.
 bool Thread::remove() {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {		
-		if (_state != ThreadState::TS_TERMINATED) {
+		if (_state != TS_TERMINATED) {
 			return false;
 		}
 
-		_readyList.remove(this);
+		_threadList.remove(this);
 		return true;
 	}
 }
@@ -58,7 +58,7 @@ bool Thread::remove() {
 // Frees the Thread's memory and removes it from the system objects list
 bool Thread::cleanup() {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		if (_state != ThreadState::TS_TERMINATED) {
+		if (_state != TS_TERMINATED) {
 			return false;
 		}
 
@@ -80,7 +80,7 @@ static void globalThreadEntry(Thread* t) {
 	t->_exitCode = t->_entryPoint();
 
 	// mark it as terminated
-	t->_state = ThreadState::TS_TERMINATED;
+	t->_state = TS_TERMINATED;
 
 	// remove from the list of running threads
 	t->remove();
@@ -91,9 +91,10 @@ static void globalThreadEntry(Thread* t) {
 
 	} else {
 		// ... or unblock anyone waiting to join()
-		Thread::unblock(ThreadState::TS_WAIT_TERM, (uint32_t) t);
+		Thread::unblock(TS_WAIT_TERM, (uint32_t) t);
 	}
 	
+	// clear this so that context won't be needlessly saved
 	_currentThread = 0UL;
 
 	// this is the official end of a Thread,
@@ -147,9 +148,9 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 
 	// initial housekeeping data
 	if (flags & TLF_READY) {
-		_state = ThreadState::TS_READY;
+		_state = TS_READY;
 	} else {
-		_state = ThreadState::TS_PAUSED;
+		_state = TS_PAUSED;
 	}
 
 	_quantumMs = TOT(quantumOverride, TIMESLICE_MS);
@@ -176,7 +177,7 @@ Thread::Thread(const char* name, const uint16_t stackSize, const uint8_t quantum
 		NamedObject::add((NamedObject*) this);
 
 		// and to the thread list
-		_readyList.append(this);
+		_threadList.append(this);
 	}
 }
 
@@ -259,27 +260,27 @@ bool Thread::isSwitchingEnabled() {
 
 
 // Saves the current state of the MCU to _currentThread
-static inline void saveCurrentContext() {
+static inline void saveCurrentContext(Thread* destThread) {
 	SAVE_REGS;
-	if (_currentThread) {
-		_currentThread->_sreg = SREG;
-		_currentThread->_sp = SP;
+	if (destThread) {
+		destThread->_sreg = SREG;
+		destThread->_sp = SP;
 #ifdef RAMPZ
-		_currentThread->_rampz = RAMPZ;
+		destThread->_rampz = RAMPZ;
 #endif
 
 		// switch to the 'kernel' stack
 		SP = _originalSp;
 
 #ifdef INSTRUMENTATION
-		_currentThread->_lowestSp = MIN(_currentThread->_lowestSp, _currentThread->_sp);
+		destThread->_lowestSp = MIN(destThread->_lowestSp, destThread->_sp);
 #endif
 	}
 
 	// reschedule the thread to run again if it simply ran out of time
-	if (_currentThread) {
-		if (_currentThread->_state == ThreadState::TS_RUNNING) {
-			_currentThread->_state = ThreadState::TS_READY;
+	if (destThread) {
+		if (destThread->_state == TS_RUNNING) {
+			destThread->_state = TS_READY;
 		}
 	}
 }
@@ -289,7 +290,7 @@ static inline void saveCurrentContext() {
 static inline void restoreContext(Thread* t) {
 	_currentThread = t;
 	_currentThread->_remainingTicks = _currentThread->_quantumMs;
-	_currentThread->_state = ThreadState::TS_RUNNING;
+	_currentThread->_state = TS_RUNNING;
 
 #ifdef RAMPZ
 	RAMPZ = _currentThread->_rampz;
@@ -303,21 +304,15 @@ static inline void restoreContext(Thread* t) {
 // halts the calling thread and transfers MCU control
 // over to another Thread of the scheduler's choosing
 static inline void yield() {
-	saveCurrentContext();
+	saveCurrentContext(_currentThread);
 	TIMSK2 &= ~(1 << OCIE2B);					// switch off context switch ISR
 	restoreContext(selectNextThread());
 }
 
 
-static inline void yield_to(Thread* t) {
-	saveCurrentContext();
-	TIMSK2 &= ~(1 << OCIE2B);					// switch off context switch ISR
-	restoreContext(t);
-}
-
-
 // main decision maker for the round-robin scheduler
 static inline Thread* getNextThread(Thread* firstToCheck) {
+	const uint32_t now = Thread::now();
 	Thread* rc = 0UL;
 	Thread* cur = firstToCheck;
 	Thread* startedAt = firstToCheck;
@@ -325,7 +320,12 @@ static inline Thread* getNextThread(Thread* firstToCheck) {
 	// while we have something to check...
 	while (cur) {
 		// if it's ready to run, we're done!
-		if (cur->_state == ThreadState::TS_READY) {
+		if (cur->_state == TS_READY) {
+			rc = cur;
+			break;
+		}
+
+		if (cur->_state == TS_WAITING && now >= cur->_blockInfo) {
 			rc = cur;
 			break;
 		}
@@ -336,7 +336,7 @@ static inline Thread* getNextThread(Thread* firstToCheck) {
 		// if we got to the end of the list,
 		// start again at the head
 		if (!cur) {
-			cur = _readyList.getHead();
+			cur = _threadList.getHead();
 		}
 
 		// if we've come full circle, escape,
@@ -353,13 +353,26 @@ static inline Thread* getNextThread(Thread* firstToCheck) {
 
 
 static inline Thread* selectNextThread() {
+	if (_specificNextThread) {
+		Thread* t = _specificNextThread;
+		_specificNextThread = 0UL;
+		return t;
+	}
+
 	Thread* firstToCheck = TTT(_currentThread, _currentThread->_next);
 
 	if (!firstToCheck || firstToCheck == _idleThread) {
-		firstToCheck = _readyList.getHead();
+		firstToCheck = _threadList.getHead();
 	}
 
 	return getNextThread(firstToCheck);
+}
+
+
+void Thread::waitUntil(const uint32_t untilMs) {
+	// Threads can only sleep themselves, they can't be forced
+	if (_currentThread != this) return;
+	Thread::block(TS_WAITING, untilMs);
 }
 
 
@@ -368,11 +381,11 @@ static inline Thread* selectNextThread() {
 bool Thread::run() {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		
-		if (_state != ThreadState::TS_PAUSED) {
+		if (_state != TS_PAUSED) {
 			return false;
 		}
 
-		this->_state = ThreadState::TS_READY;
+		this->_state = TS_READY;
 		return true;
 	}
 }
@@ -383,10 +396,10 @@ bool Thread::run() {
 bool Thread::pause() {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		
-		if (_state != ThreadState::TS_RUNNING && _state != ThreadState::TS_READY) {
+		if (_state != TS_RUNNING && _state != TS_READY && _state != TS_WAITING) {
 			return false;
 		}
-		this->_state = ThreadState::TS_PAUSED;
+		this->_state = TS_PAUSED;
 	}
 
 	// block immediately if the thread paused itself
@@ -409,8 +422,8 @@ int Thread::join() {
 	if (!(_launchFlags & TLF_AUTO_CLEANUP)) {
 
 		// block the *calling* Thread until *this* Thread terminates
-		if (_state != ThreadState::TS_TERMINATED) {
-			block(ThreadState::TS_WAIT_TERM, (uint32_t) this);
+		if (_state != TS_TERMINATED) {
+			block(TS_WAIT_TERM, (uint32_t) this);
 		}
 
 		// the main Thread entry code deposits the
@@ -440,13 +453,13 @@ void Thread::block(const ThreadState newState, uint32_t blockInfo) {
 // Unblock any/all Threads matching a given state and blockInfo
 void Thread::unblock(const ThreadState state, const uint32_t blockInfo) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		Thread* cur = _readyList.getHead();
+		Thread* cur = _threadList.getHead();
 
 		while (cur) {
 			Thread* next = cur->_next;
 
 			if (cur->_state == state && cur->_blockInfo == blockInfo) {
-				cur->_state = ThreadState::TS_READY;
+				cur->_state = TS_READY;
 				cur->_blockInfo = 0UL;
 			}
 			cur = next;
@@ -480,6 +493,7 @@ ISR(TIMER2_COMPA_vect) {
 	
 #ifdef INSTRUMENTATION
 	_currentThread->_ticks++;
+	_currentThread->_lowestSp = MIN(_currentThread->_lowestSp, SP);
 #endif
 
 	if (Thread::isSwitchingEnabled()) {
@@ -531,6 +545,6 @@ int main() {
 
 	// and immediately cause a context switch.
 	// ISRs will be enabled at the very end of
-	// this first context switch
+	// this first switch
 	yield();
 }

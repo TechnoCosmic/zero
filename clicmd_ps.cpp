@@ -64,6 +64,7 @@ clicommand(uptime, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 static const PROGMEM char STATE_RUNNING[] = "running";
 static const PROGMEM char STATE_READY[] = "ready";
 static const PROGMEM char STATE_PAUSED[] = "paused";
+static const PROGMEM char STATE_WAITING[] = "waiting";
 static const PROGMEM char STATE_TERMINATED[] = "terminated";
 static const PROGMEM char STATE_WAITTERM[] = "wait term";
 static const PROGMEM char STATE_WAITATOMICWR[] = "wait lock";
@@ -75,6 +76,7 @@ static const char* _stateString[] = {
 	STATE_RUNNING,
 	STATE_READY,
     STATE_PAUSED,
+    STATE_WAITING,
 	STATE_TERMINATED,
     STATE_WAITTERM,
     STATE_WAITATOMICWR,
@@ -86,6 +88,7 @@ static const char* _stateString[] = {
 static const Color _stateColor[] = {
     Color::GREEN,
     Color::WHITE,
+    Color::YELLOW,
     Color::YELLOW,
     Color::RED,
     Color::YELLOW,
