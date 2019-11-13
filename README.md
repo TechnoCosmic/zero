@@ -23,7 +23,9 @@ zero is very much an active project. Some of the more impactful features planned
 
 Major things in the updates will be listed here. Bug fixes, refactoring, tidy ups are all implied in every update, so they won't be mentioned.
 
-2019-11-14      0.3        Initial implementation of `Thread::waitUntil()` for a blocking `delay()`
+| Date | Ver | Comments |
+| ---- | --- | -------- |
+2019-11-14 | 0.3 | Initial implementation of `Thread::waitUntil()` for a blocking `delay()`
 
 ## Licensing
 
