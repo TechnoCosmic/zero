@@ -19,6 +19,12 @@ zero is very much an active project. Some of the more impactful features planned
 - [ ] Interrupt-driven peripheral classes for I²C, SPI, ADC
 - [ ] FAT32 file system support on SD cards
 
+## Latest Changes
+
+Major things in the updates will be listed here. Bug fixes, refactoring, tidy ups are all implied in every update, so they won't be mentioned.
+
+2019-11-14      0.3        Initial implementation of `Thread::waitUntil()` for a blocking `delay()`
+
 ## Licensing
 
 zero does **NOT** use *any* third-party library, or code from any other project. It is entirely self-contained in terms of authorship, dependencies, and licensing, and is released under the MIT License. Please see LICENSE.txt for details.
@@ -69,7 +75,6 @@ Here's a simple example...
 
 ```
 #include <avr/pgmspace.h>
-#include <util/delay.h>
 #include "thread.h"
 #include "pipe.h"
 
@@ -82,7 +87,7 @@ const char PROGMEM ipcPipeName[] = "ipcPipe";
 
 // declare a thread to send some data to the other thread
 
-thread(sender, 128, {
+int firstThread() {
     // create a 256-byte Pipe named "ipcPipe"
     Pipe ipcPipe(ipcPipeName, 256);
 
@@ -91,16 +96,16 @@ thread(sender, 128, {
         ipcPipe << "This is a test" << endl;
 
         // wait a little bit before sending it again
-        _delay_ms(1000);
+        delay(1000);
     }
 
     return 0;
-});
+}
 
 
 // this thread will receive data from the first thread via a Pipe
 
-thread(receiver, 128, {
+int secondThread() {
     Pipe* ipcPipe = 0UL;
 
     // find the Pipe that the other thread created
@@ -121,7 +126,7 @@ thread(receiver, 128, {
     }
 
     return 0;
-});
+}
 ```
 ## Using the USART
 
@@ -138,13 +143,11 @@ Firing up the USART in zero is as follows...
 
 using namespace zero;
 
-thread(simpleUsartExample, 128, {
+int usartExampleThread() {
 
     // The first thing we do is create two Pipes
     // to use. One as the receive buffer, and
-    // the other for transmission. These two
-    // will be created without names for
-    // simplicity.
+    // the other for transmission.
 
     // NOTE: If we don't want to receive any data,
     // then we don't have to create a Pipe for it.
@@ -157,8 +160,8 @@ thread(simpleUsartExample, 128, {
     // are local, the 128 byte buffers they create
     // are dynamically allocated on the heap.
 
-    Pipe rx(0UL, 128);
-    Pipe tx(0UL, 128);
+    Pipe rx(PSTR("pipe_rx"), 128);
+    Pipe tx(PSTR("pipe_tx"), 128);
 
     // Now create a USART object and supply
     // those two Pipes to the constructor.
@@ -175,7 +178,7 @@ thread(simpleUsartExample, 128, {
     }
 
     return 0;
-});
+}
 ```
 To receive data from the USART, just read from the receive Pipe you created.
 
@@ -199,9 +202,8 @@ buffer = memory::allocate(114, &allocated, memory::SearchStrategy::BottomUp);
 
 // do something with the buffer
 
-myClass* myObject = (myClass*) buffer;
+char* myString = (char*) buffer;
 
-myObject->init();
 
 // ...
 ```
@@ -251,9 +253,9 @@ Sometimes you will want to spin up a thread to do some work asynchronously, and 
 ```
 void demo() {
 
-    // Create a new Thread, but it doesn't start running immediately
+    // Create a new Thread, and it will start running ASAP
 
-    Thread* asyncDemo = Thread::create(128, [](){
+    Thread* asyncDemo = new Thread(0UL, 0, 0, [](){
         // async code
 
         // do something here that needs to
@@ -262,21 +264,7 @@ void demo() {
         // ...
 
         return 0;
-    });
-
-    // Start it running. The `true` parameter here means
-    // that when the asyncDemo thread terminates, zero
-    // shouldn't clean it up entirely until someone calls
-    // join() on it. If you're happy for your dynamic
-    // thread to fully disappear and not be able to
-    // synchronize with it's termination, use `false` here.
-
-    // NOTE: If you supply `false`, then you must act as if the
-    // asyncDemo Thread object is immediately an invalid
-    // reference, as you do not know when it has terminated and
-    // been automatically cleaned up.
-
-    asyncDemo->run(true);
+    }, TLF_READY);
 
     // do the other stuff you wanted to do
     // while the asyncDemo thread is running
@@ -286,7 +274,8 @@ void demo() {
     // Join is a function that will block until asyncDemo
     // terminates. Returns immediately if asyncDemo has
     // already terminated. May or may not crash spectacularly
-    // if you supplied `false` to run(), above.
+    // if you supplied TLF_AUTO_CLEANUP in the launch flags
+    // to the Thread's constructor.
 
     int returnCode = asyncDemo->join();
 
@@ -295,7 +284,7 @@ void demo() {
     // ...
 }
 ```
-If you allow a dynamic thread to be `join()ed` by passing `true` to `run()`, that thread's return code is passed out as the return code from `join()`. This is a simple form of message passing from the dynamic thread back to the main logic. There are many other ways, such as using Pipes as IPC as shown earlier or sharing access to memory, perhaps dynamically allocated.
+If you `join()` a Thread that is NOT flagged for auto-cleanup, that thread's return code is passed out as the return code from `join()`. This is a simple form of message passing from the dynamic thread back to the main logic. There are many other ways, such as using Pipes as IPC as shown earlier or sharing access to memory, perhaps dynamically allocated.
 
 ## Advanced Threading - Atomic Blocks
 
