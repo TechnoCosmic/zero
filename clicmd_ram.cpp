@@ -64,7 +64,7 @@ static void setColorForByte(TextPipe* tx, uint8_t data) {
 			*tx << yellow;
 
 		} else {
-			*tx << white;
+			*tx << magenta;
 		}
 	} else {
 		*tx << white;
