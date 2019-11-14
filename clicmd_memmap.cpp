@@ -83,12 +83,24 @@ clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     const uint16_t ttlRam = memory::getTotalBytes();
     uint16_t usedPages = 0UL;
 
+    // Zero page (I/O)
+    *tx << setreverse(true);
+    *tx << white << right << uppercase << hex << setfill('0') << setw(4) << (int32_t) 0;
+    *tx << setreverse(false);
+    *tx << ' ';
+    
+    for (uint16_t i = 0; i < 256; i += memory::getPageSizeBytes()) {
+        *tx << 'Z';
+    }
+    
+    *tx << endl;
 
-    for (uint16_t curAddress = 0; curAddress < RAMEND; curAddress += memory::getPageSizeBytes()) {
+    // the rest of memory
+    for (uint16_t curAddress = 256; curAddress < RAMEND; curAddress += memory::getPageSizeBytes()) {
         const char symbol = getSymbolForAddress(curAddress);
         const Color col = getColorForSymbol(symbol);
 
-        if (curAddress % (memory::getPageSizeBytes() * 32) == 0) {
+        if ((curAddress - 256) % (memory::getPageSizeBytes() * 64) == 0) {
             *tx << setreverse(true);
             *tx << white << right << uppercase << hex << setfill('0') << setw(4) << (int32_t) curAddress;
             *tx << setreverse(false);
@@ -100,7 +112,7 @@ clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
         *tx << settextcolor(col) << (char) symbol;
 
-        if ((curAddress + memory::getPageSizeBytes()) % (memory::getPageSizeBytes() * 32) == 0) {
+        if (((curAddress - 256) + memory::getPageSizeBytes()) % (memory::getPageSizeBytes() * 64) == 0) {
             *tx << endl;
         }
     }
@@ -108,7 +120,6 @@ clicommand(memmap, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     *tx << left << dec << endl;
 
     // legend
-    *tx << endl;
     *tx << settextcolor(getColorForSymbol(SYMBOL_ZEROPAGE)) << SYMBOL_ZEROPAGE << white << ": Zero page (I/O)\t";    
     *tx << settextcolor(getColorForSymbol(SYMBOL_GLOBAL)) << SYMBOL_GLOBAL << white << ": Globals" << endl;    
     *tx << settextcolor(getColorForSymbol(SYMBOL_USED)) << SYMBOL_USED << white << ": Allocated\t\t";    
