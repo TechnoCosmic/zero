@@ -28,9 +28,8 @@ const char TAB = 9;
 const char CR = 13;
 const char ESCAPE = 27;
 
-
-const PROGMEM char _cliRxPipeName[] = "cli_rx";
-const PROGMEM char _cliTxPipeName[] = "cli_tx";
+static const PROGMEM char _cliRxPipeName[] = "cli_rx";
+static const PROGMEM char _cliTxPipeName[] = "cli_tx";
 
 
 CliCommand::CliCommand(const char* name, const CliEntryPoint entry) {
@@ -60,11 +59,11 @@ int CliCommand::execute(TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 
 
 void displayPrompt(TextPipe* rx, TextPipe* tx) {
-    *tx << green << "zero" << white << ": " << blue << "$ " << white;
+    *tx << green << PROJ_NAME << white << ": " << blue << "$ " << white;
 }
 
 
-static const PROGMEM char _welcomeText[] = "\fWelcome to zero ";
+static const PROGMEM char _welcomeText[] = "\fWelcome to " PROJ_NAME ", powered by zero ";
 static const PROGMEM char _cliOnUsart[] = "CLI on USART0 @ ";
 static const PROGMEM char _bps[] = "bps";
 static const PROGMEM char _speed[] = "MHz system";
