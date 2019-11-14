@@ -72,7 +72,7 @@ $(OUTPUT).hex: $(OBJ)
 	@$(CC) $(FLAGS) $(LDFLAGS) -o $(OUTPUT).elf $^
 	@echo " done"
 	@avr-objcopy -j .text -j .data -O ihex $(OUTPUT).elf $(OUTPUT).hex
-	@avr-size -A --mcu=$(MCU) $(OUTPUT).elf
+	@avr-size -C --mcu=$(MCU) $(OUTPUT).elf
 	@rm -f *.elf *.gch
 
 
