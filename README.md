@@ -24,8 +24,9 @@ zero is very much an active project. Some of the more impactful features planned
 Major things in the updates will be listed here. Bug fixes, refactoring, tidy ups are all implied in every update, so they won't be mentioned.
 
 | Date | Ver | Comments |
-| ---- | --- | -------- |
+| ---- | ---:| -------- |
 2019-11-14 | 0.3 | Initial implementation of `Thread::waitUntil()` for a blocking `delay()`
+2019-11-15 | 0.4 | Overhaul of how SRAM is handled - see the top of the `makefile` for info
 
 ## Licensing
 
@@ -351,6 +352,16 @@ zero will tokenize the command line for you, and hand you the Pipes attached to 
 
 The intention behind the extensible CLI is so that you have a ready-made infrastructure for adding control and debugging features specific to your program's needs.
 
+### CLI Basic Features
+
+The CLI is very rudimentary. Hitting ESC will clear the currently entered command line, BACKSPACE will erase the previous character entered, pressing ENTER/RETURN will try to execute the current command line. There is currently no cursor key support so command line editing is limited to what we see here.
+
+#### TAB Auto-Completion
+
+Pressing TAB will perform auto-completion on the last word you've typed, by searching through the system objects list (as displayed by the `ls` command) for the first thing it finds that matches.
+
+**NOTE:** This is not a sorted list, so don't expect the first alphabetical match.
+
 ### Built-in CLI Commands
 
 zero comes with a suite of CLI commands, which you may or may not find useful, depending on your needs.
@@ -367,15 +378,17 @@ Memory Map - `memmap`
 
 A colour-coded overview of the SRAM in the MCU, and how it's being used.
 
-Memory Dump - `ram`, `flash`, `eeprom`
+Memory Dump - `rram`, `rflash`, `reeprom`
 
 ![zero memorydump](http://www.tcri.com.au/github/zero_memorydump.png)
 
-These commands provide a hexadecimal display of 256 bytes of memory at a time. They each take a single parameter, which is the 4-digit (hex) address of the memory to show.
+These commands provide a hexadecimal display of memory, 256 bytes at a time. They each take a single parameter, which is the 4-digit (hex) address of the memory to show. Two of these commands have companion 'write' versions, `wram` and `weeprom`. They take a third parameter which is the string you'd like written to memory...
+
+`weeprom 0100 "My dog is the best boy ever!"`
 
 Thread Control - `play`, `pause`
 
-These two commands do as they suggest. They take a single parameter, which is the name of the thread to affect (as shown by the `ps` command). This parameter is case-sensitive.
+These two commands do as they suggest. They take multiple parameters, being the names of the threads to affect (as shown by the `ps` command), and are case-sensitive.
 
 Clear Screen - `clear`
 
@@ -458,9 +471,9 @@ The exact opposite of `BottomUp` in name as well as function. It starts at the l
 
 Why have these two strategies? Speed.
 
-Being able to allocate all your longer-lived data structures at one each of the dynamic space, and your more fleeting ones at the other, can mean reduced allocation times. It may not. Your mileage may vary. The search options are provided so that you may take advantage of any inherent knowledge of your own program's dataflow.
+Being able to allocate all your longer-lived data structures at one end of the dynamic space, and your more fleeting ones at the other, can mean reduced allocation times. It may not. Your mileage may vary. The search options are provided so that you may take advantage of any inherent knowledge of your own program's dataflow.
 
-In terms of memory fragmentation, in general, you will find there to be little practical difference between allocating everything at one end of the address space, versus allocating both both ends. Of course you will be able to fabricate a situation where that isn't true, and that's fine. Most of the time, you can be fairly safe with this assumption until your own careful analysis of your program determines otherwise.
+In terms of memory *fragmentation*, general speaking you will find there to be little practical difference between allocating everything at one end of the address space, versus allocating both both ends - fragmentation under both of these strategies is more likely to be a result of your program's allocation/deallocation pattern. Of course you will be able to fabricate a situation where that isn't true, and that's fine. Most of the time, you can be fairly safe with this assumption until your own careful analysis of your program determines otherwise.
 
 `MiddleUp`/`MiddleDown`
 
