@@ -18,9 +18,9 @@
 
 
 #define ZERO_BUILD_VERSION 0
-#define ZERO_BUILD_REVISION 3
+#define ZERO_BUILD_REVISION 4
 
-static const uint8_t THREAD_MIN_STACK_BYTES = 64;
+static const uint8_t THREAD_MIN_STACK_BYTES = 48;
 
 namespace zero {
 

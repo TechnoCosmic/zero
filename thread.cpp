@@ -134,7 +134,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 	_rampz = 0;
 #endif
 
-	// so that the globalThreadEntry knows what to call
+	// so that globalThreadEntry knows what to call
 	_entryPoint = entryPoint;
 
 	// stack details

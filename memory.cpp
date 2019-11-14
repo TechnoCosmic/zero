@@ -23,7 +23,7 @@ using namespace zero::memory;
 // We use this to let the compiler reserve the SRAM for us.
 // This helps avoid accidental memory corruption towards the
 // lower addresses where globals are held.
-uint8_t _memoryArea[DYNAMIC_BYTES] __attribute__((__aligned__(PAGE_BYTES)));
+uint8_t _memoryArea[DYNAMIC_BYTES] __attribute__((section(".heap")));
 
 
 // The bit mapped page manager
@@ -38,6 +38,7 @@ uint16_t memory::getAddressForPage(const uint16_t pageNumber) {
 
 // Return the page number for the given SRAM memory address
 uint16_t memory::getPageForAddress(const uint16_t address) {
+
     return ((address) - ((uint16_t) _memoryArea)) / PAGE_BYTES;
 }
 

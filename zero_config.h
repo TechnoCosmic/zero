@@ -36,16 +36,16 @@ namespace zero {
     // command, then you run the risk of deadlocking the
     // CLI on itself. To avoid this, increase the RX Pipe
     // size here so that the RX Pipe doesn't become full.
-    const uint16_t CLI_RX_PIPE_BYTES = 96;
+    const uint16_t CLI_RX_PIPE_BYTES = 32;
 
     // CLI TX Pipe buffer bytes
     const uint16_t CLI_TX_PIPE_BYTES = 96;
 
     // CLI stack size
-    const uint16_t CLI_STACK_BYTES = 512;
+    const uint16_t CLI_STACK_BYTES = 448;
 
     // CLI command line buffer size
-    const uint16_t CLI_CMD_LINE_BUFFER_BYTES = 80;
+    const uint16_t CLI_CMD_LINE_BUFFER_BYTES = 40;
 
     // Maximum number of tokens on a CLI command line
     const uint16_t CLI_CMD_LINE_MAX_TOKENS = 16;
@@ -76,10 +76,6 @@ namespace zero {
 
     // Allocator search strategy for Threads and Stacks
     #define THREAD_MEMORY_SEARCH_STRATEGY memory::SearchStrategy::TopDown
-
-    // So that the allocator scales with SRAM
-    // NOTE: Change this to a simple fixed size if you prefer
-    const uint16_t DYNAMIC_BYTES = RAMEND - (255 + 1536);
 
     // Idle thread stack size
     // NOTE: This may be bumped up if it is below the minimum
