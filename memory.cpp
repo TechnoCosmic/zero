@@ -23,7 +23,7 @@ using namespace zero::memory;
 // We use this to let the compiler reserve the SRAM for us.
 // This helps avoid accidental memory corruption towards the
 // lower addresses where globals are held.
-uint8_t __attribute__((__aligned__(256))) _memoryArea[DYNAMIC_BYTES];
+uint8_t _memoryArea[DYNAMIC_BYTES] __attribute__((__aligned__(PAGE_BYTES)));
 
 
 // The bit mapped page manager
@@ -134,6 +134,7 @@ uint8_t* memory::reallocate(const uint8_t* oldMemory,       // the old memory pr
 
         // nothing to do, clean up and exit
         if (newNumBytes == oldNumBytes) {
+            allocated = newNumBytes;
             goto exit;
         }
 
@@ -217,13 +218,13 @@ bool memory::isPageAvailable(const uint16_t pageNumber) {
 
 // Returns the total number of pages at the allocator's disposal
 uint16_t memory::getTotalPages() {
-	return _sram.getPageCount();
+	return _sram.getTotalPageCount();
 }
 
 
 // Returns the total number of bytes at the allocator's disposal
 uint16_t memory::getTotalBytes() {
-	return _sram.getPageCount() * PAGE_BYTES;
+	return _sram.getTotalPageCount() * PAGE_BYTES;
 }
 
 
