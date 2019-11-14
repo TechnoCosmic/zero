@@ -31,7 +31,9 @@ namespace zero {
         void markAsFree(const uint16_t pageNumber);
         void markAsUsed(const uint16_t pageNumber);
 
-        uint16_t getPageCount();
+        uint16_t getTotalPageCount();
+        uint16_t getUsedPageCount();
+        uint16_t getFreePageCount();
 
         // higher level operations
         int16_t findFreePages(const uint16_t numPagesRequired, const memory::SearchStrategy strat);

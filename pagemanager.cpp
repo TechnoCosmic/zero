@@ -50,8 +50,30 @@ void PageManager<PAGE_COUNT>::markAsUsed(const uint16_t pageNumber) {
 
 // Returns the number of pages being managed
 template <uint16_t PAGE_COUNT>
-uint16_t PageManager<PAGE_COUNT>::getPageCount() {
+uint16_t PageManager<PAGE_COUNT>::getTotalPageCount() {
     return PAGE_COUNT;
+}
+
+
+// Returns the number of currently available pages
+template <uint16_t PAGE_COUNT>
+uint16_t PageManager<PAGE_COUNT>::getFreePageCount() {
+    uint16_t rc = 0UL;
+
+    for (uint16_t i = 0; i < getTotalPageCount(); i++) {
+        if (isPageAvailable(i)) {
+            rc++;
+        }
+    }
+    
+    return rc;
+}
+
+
+// Returns the number of currently allocated pages
+template <uint16_t PAGE_COUNT>
+uint16_t PageManager<PAGE_COUNT>::getUsedPageCount() {
+    return getTotalPageCount() - getFreePageCount();
 }
 
 
