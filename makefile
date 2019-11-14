@@ -5,24 +5,57 @@
 
 # adjust these to suit your needs
 
-# NOTE: If you adjust the MCU, then be sure you update
-# the fuses section of this makefile - you don't want
-# to brick an MCU because the fuses weren't right!!!
-OUTPUT=zero
-AVRDUDE_CFG=pi
-AVRDUDE_PART=m328p
-MCU=atmega328p
-F_CPU=16000000UL
+OUTPUT = demo
+AVRDUDE_PART = m328p
+AVRDUDE_CFG = pi
+F_CPU = 16000000UL
+
+
+# some standard MCU settings.
+
+# the default HEAP_HEX_END values give 1K
+# to the globals/kernel stack, and the
+# remainder to the dynamic allocator.
+# change these as you need
+
+ifeq ($(AVRDUDE_PART),m328p)
+	MCU = atmega328p
+	HEAP_END_HEX = 0500
+	LFUSE = 0xFF
+	HFUSE = 0xD9
+	EFUSE = 0xFF
+endif
+
+ifeq ($(AVRDUDE_PART),m644p)
+	MCU = atmega644p
+	HEAP_END_HEX = 0D00
+	LFUSE = 0xFF
+	HFUSE = 0xD9
+	EFUSE = 0xFF
+endif
+
+ifeq ($(AVRDUDE_PART),m1284p)
+	MCU = atmega1284p
+	HEAP_END_HEX = 3D00
+	LFUSE = 0xFF
+	HFUSE = 0xD9
+	EFUSE = 0xFF
+endif
+
 
 # probably don't adjust these so much :)
-CC=avr-gcc
-FLAGS +=-Os
-FLAGS +=-g
-FLAGS +=--std=c++17
-FLAGS +=-mmcu=$(MCU)
-FLAGS +=-DF_CPU=$(F_CPU)
+HEAP_START_HEX = 0100
+FLAGS += -Os
+FLAGS += -g
+FLAGS += --std=c++17
+FLAGS += -mmcu=$(MCU)
+FLAGS += -DF_CPU=$(F_CPU)
+FLAGS += -DDYNAMIC_BYTES="(0x$(HEAP_END_HEX)-0x$(HEAP_START_HEX))"
+FLAGS += -DPROJ_NAME=\"$(OUTPUT)\"
 
-OBJ:=$(patsubst %.cpp,%.o,$(wildcard *.cpp))
+CC = avr-gcc
+OBJ := $(patsubst %.cpp,%.o,$(wildcard *.cpp))
+LDFLAGS := -Wl,--section-start=.heap=0x80$(HEAP_START_HEX),--section-start=.data=0x80$(HEAP_END_HEX)
 
 
 .PHONY: push fuses upload clean gettools
@@ -36,10 +69,10 @@ OBJ:=$(patsubst %.cpp,%.o,$(wildcard *.cpp))
 
 $(OUTPUT).hex: $(OBJ)
 	@echo -n "Linking..."
-	@$(CC) $(FLAGS) -o $(OUTPUT).elf $^
+	@$(CC) $(FLAGS) $(LDFLAGS) -o $(OUTPUT).elf $^
 	@echo " done"
 	@avr-objcopy -j .text -j .data -O ihex $(OUTPUT).elf $(OUTPUT).hex
-	@avr-size -C --mcu=$(MCU) $(OUTPUT).elf
+	@avr-size -A --mcu=$(MCU) $(OUTPUT).elf
 	@rm -f *.elf *.gch
 
 
@@ -47,9 +80,8 @@ upload: $(OUTPUT).hex
 	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U flash:w:$(OUTPUT).hex
 
 
-# these fuses are verified correct for 328P, 644P, and 328P
 fuses:
-	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U lfuse:w:0xff:m -U hfuse:w:0xd9:m -U efuse:w:0xff:m
+	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U lfuse:w:$(LFUSE):m -U hfuse:w:$(HFUSE):m -U efuse:w:$(EFUSE):m
 
 
 push: $(OUTPUT).hex
