@@ -25,8 +25,8 @@ Major things in the updates will be listed here. Bug fixes, refactoring, tidy up
 
 | Date | Ver | Comments |
 | ---- | ---:| -------- |
-2019-11-14 | 0.3 | Initial implementation of `Thread::waitUntil()` for a blocking `delay()`
 2019-11-15 | 0.4 | Overhaul of how SRAM is handled - see the top of the `makefile` for info
+2019-11-14 | 0.3 | Initial implementation of `Thread::waitUntil()` for a blocking `delay()`
 
 ## Licensing
 
