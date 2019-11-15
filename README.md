@@ -30,7 +30,7 @@ Major things in the updates will be listed here. Bug fixes, refactoring, tidy up
 
 ## Licensing
 
-zero does **NOT** use *any* third-party library, or code from any other project. It is entirely self-contained in terms of authorship, dependencies, and licensing, and is released under the MIT License. Please see LICENSE.txt for details.
+zero does not use any third-party library, or code from any other project. It is entirely self-contained in terms of authorship, dependencies, and licensing, and is released under the MIT License. Please see LICENSE.txt for details.
 
 ## Documentation
 
@@ -67,6 +67,32 @@ The example shown starts two Threads, each flashing it's own LED on a GPIO port.
 ### Step 2: Build
 
 Build your source code and link it with the rest of the zero kernel, upload it to your MCU, and you're done.
+
+### The makefile
+
+The default makefile for zero isn't a simple one, in order to make it easy to configure your build.
+
+The first lines of interest look like this...
+```
+OUTPUT = monty
+AVRDUDE_PART = m1284p
+AVRDUDE_CFG = pi
+F_CPU = 16000000UL
+```
+`OUTPUT` specifies the name of your project. For example, [Monty](https://github.com/slipperyseal/monty "Monty Stereo SID Synth").
+
+`AVRDUDE_PART` is the MCU part number as avrdude would expect to see it as it's `-p` parameter. Stuff later on in the makefile converts this to the avr-gcc `-mmcu` parameter.
+
+`AVRDUDE_CFG` is the programming config option that avrdude would use to upload your compiled binary to your MCU, as expected by it's `-c` parameter.
+
+`F_CPU` is the speed, in **Hz** (not MHz) of your target MCU. zero uses this to scale it's Timer and USART settings automatically. You should be able to choose a clock frequency of anywhere between 1MHz and 32MHz and zero will correctly adjust accordingly. Whether your MCU copes with your chosen speed is another story.
+
+With those basic settings out of the way, here are the build targets for the makefile and what they're for...
+
+`make` - Builds the binaries
+`make clean` - Removes all temporary files and binary outputs
+`make upload` - Builds the binaries and uploads the firmware to yout MCU
+`make gettools` - Uses apt-get to install all the avr-gcc bits and pieces needed to build zero. You probably already have these.
 
 ## Pipes and IPC
 
@@ -245,7 +271,7 @@ void doAmazingThings() {
     d = 0UL;
 }
 ```
-This will work as expected.
+This will work as expected. The `new` operator uses the `BottomUp` strategy when calling into `memory::allocate()`.
 
 ## Advanced Threading - Dynamic Threads/Asynchronous Function Calls
 
