@@ -91,8 +91,8 @@ With those basic settings out of the way, here are the build targets for the mak
 
 - `make` - Builds the binaries
 - `make clean` - Removes all temporary files and binary outputs
-- `make upload` - Builds the binaries and uploads the firmware to yout MCU
-- `make gettools` - Uses apt-get to install all the avr-gcc bits and pieces needed to build zero. You probably already have these.
+- `make upload` - Builds the binaries and uploads the firmware to your MCU
+- `make gettools` - Downloads and installs all the avr-gcc bits and pieces needed to build zero. You probably already have these.
 
 ## Pipes and IPC
 
