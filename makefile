@@ -11,40 +11,37 @@ AVRDUDE_CFG = pi
 F_CPU = 16000000UL
 
 
-# some standard MCU settings.
+# some standard MCU settings
+
+LFUSE = 0xFF
+HFUSE = 0xD9
+EFUSE = 0xFF
 
 # the default HEAP_HEX_END values give 1K
 # to the globals/kernel stack, and the
 # remainder to the dynamic allocator.
 # change these as you need
 
+HEAP_START_HEX = 0100
+
+# amtToAllocator = HEAP_END_HEX - 0x100 (HEAP_START_HEX)
+
 ifeq ($(AVRDUDE_PART),m328p)
 	MCU = atmega328p
 	HEAP_END_HEX = 0500
-	LFUSE = 0xFF
-	HFUSE = 0xD9
-	EFUSE = 0xFF
 endif
 
 ifeq ($(AVRDUDE_PART),m644p)
 	MCU = atmega644p
 	HEAP_END_HEX = 0D00
-	LFUSE = 0xFF
-	HFUSE = 0xD9
-	EFUSE = 0xFF
 endif
 
 ifeq ($(AVRDUDE_PART),m1284p)
 	MCU = atmega1284p
 	HEAP_END_HEX = 3D00
-	LFUSE = 0xFF
-	HFUSE = 0xD9
-	EFUSE = 0xFF
 endif
 
-
 # probably don't adjust these so much :)
-HEAP_START_HEX = 0100
 FLAGS += -Os
 FLAGS += -g
 FLAGS += --std=c++17
