@@ -79,9 +79,9 @@ AVRDUDE_PART = m1284p
 AVRDUDE_CFG = pi
 F_CPU = 16000000UL
 ```
-`OUTPUT` specifies the name of your project. For example, [Monty](https://github.com/slipperyseal/monty "Monty Stereo SID Synth").
+`OUTPUT` specifies the name of your project. For example, [monty](https://github.com/slipperyseal/monty "Monty Stereo SID Synth").
 
-`AVRDUDE_PART` is the MCU part number as avrdude would expect to see it as it's `-p` parameter. Stuff later on in the makefile converts this to the avr-gcc `-mmcu` parameter.
+`AVRDUDE_PART` is the MCU part number as avrdude would expect as it's `-p` parameter. Stuff later on in the makefile converts this to the value required for avr-gcc's `-mmcu` parameter.
 
 `AVRDUDE_CFG` is the programming config option that avrdude would use to upload your compiled binary to your MCU, as expected by it's `-c` parameter.
 
@@ -89,10 +89,10 @@ F_CPU = 16000000UL
 
 With those basic settings out of the way, here are the build targets for the makefile and what they're for...
 
-`make` - Builds the binaries
-`make clean` - Removes all temporary files and binary outputs
-`make upload` - Builds the binaries and uploads the firmware to yout MCU
-`make gettools` - Uses apt-get to install all the avr-gcc bits and pieces needed to build zero. You probably already have these.
+- `make` - Builds the binaries
+- `make clean` - Removes all temporary files and binary outputs
+- `make upload` - Builds the binaries and uploads the firmware to yout MCU
+- `make gettools` - Uses apt-get to install all the avr-gcc bits and pieces needed to build zero. You probably already have these.
 
 ## Pipes and IPC
 
