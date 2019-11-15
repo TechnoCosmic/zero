@@ -36,7 +36,6 @@ static inline void yield() __attribute__((always_inline));
 static uint16_t _originalSp;
 static List<Thread> _threadList;
 static Thread* _currentThread = 0UL;
-static Thread* _specificNextThread = 0UL;
 static Thread* _idleThread = 0UL;
 static uint16_t _nextTid = 1;
 
@@ -353,12 +352,6 @@ static inline Thread* getNextThread(Thread* firstToCheck) {
 
 
 static inline Thread* selectNextThread() {
-	if (_specificNextThread) {
-		Thread* t = _specificNextThread;
-		_specificNextThread = 0UL;
-		return t;
-	}
-
 	Thread* firstToCheck = TTT(_currentThread, _currentThread->_next);
 
 	if (!firstToCheck || firstToCheck == _idleThread) {

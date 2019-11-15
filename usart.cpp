@@ -39,7 +39,6 @@ Usart::Usart(const uint32_t baud, Pipe* rx, Pipe* tx) {
     // set up the USART hardware
     const uint16_t pre = (F_CPU / (16UL * baud)) - 1;
 
-
     power_usart0_enable();
 
     _rx = rx;
