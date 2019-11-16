@@ -8,25 +8,31 @@
 
 #include <avr/pgmspace.h>
 
+
 int islower(const char c) {
 	return c >= 'a' && c <= 'z';
 }
+
 
 int isupper(const char c) {
 	return c >= 'A' && c <= 'Z';
 }
 
+
 int isdigit(const char c) {
 	return '0' <= c && c <= '9';
 }
+
 
 int isalpha(const char c) {
 	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
 }
 
+
 int isapnum(const char c) {
 	return isdigit(c) || isalpha(c);
 }
+
 
 char tolower(const char c) {
 	if (isupper(c)) {
@@ -35,6 +41,7 @@ char tolower(const char c) {
 	return c;
 }
 
+
 char toupper(const char c) {
 	if (islower(c)) {
 		return c - 32;
@@ -42,12 +49,14 @@ char toupper(const char c) {
 	return c;
 }
 
+
 void* memset(uint8_t* ptr, const uint8_t d, const uint16_t sz) {
 	for (uint16_t i = 0; i < sz; i++) {
 		ptr[i] = d;
 	}
 	return ptr;
 }
+
 
 void* memcpy(uint8_t* dest, const uint8_t* src, const uint16_t count) {
 	uint16_t c = count;
@@ -58,6 +67,7 @@ void* memcpy(uint8_t* dest, const uint8_t* src, const uint16_t count) {
 	return dest;
 }
 
+
 int strlen(const char* s) {
 	int rc = 0;
 
@@ -67,6 +77,7 @@ int strlen(const char* s) {
 
 	return rc;
 }
+
 
 int strlenpgm(const char* s) {
 	int rc = 0;
@@ -79,6 +90,7 @@ int strlenpgm(const char* s) {
 
 	return rc;
 }
+
 
 int strcmppgm(const char* a, char *b) {
 	char charA = pgm_read_byte_near(a);
@@ -95,6 +107,7 @@ int strcmppgm(const char* a, char *b) {
 
 	return charA - *b;
 }
+
 
 int strcmppgm_wc(const char* a, char *b) {
 	char charA = pgm_read_byte_near(a);
@@ -118,12 +131,14 @@ int strcmppgm_wc(const char* a, char *b) {
 	return charA - *b;
 }
 
+
 // swap two characters around
 void swap(char* a, char* b) {
 	char t = *a;
 	*a = *b;
 	*b = t;
 }
+
 
 // flip a string backwards
 void reverse(char* str, int length) {
@@ -136,6 +151,7 @@ void reverse(char* str, int length) {
 		end--;
 	}
 }
+
 
 char* itoa(int32_t num, char* str, const uint16_t base, const bool positive, const bool ucase) {
 	int i = 0;
