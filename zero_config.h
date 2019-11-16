@@ -77,11 +77,6 @@ namespace zero {
     // Allocator search strategy for Threads and Stacks
     #define THREAD_MEMORY_SEARCH_STRATEGY memory::SearchStrategy::TopDown
 
-    // Idle thread stack size
-    // NOTE: This may be bumped up if it is below the minimum
-    // stack size required (found at the top of thread.cpp)
-    const uint16_t IDLE_THREAD_STACK_BYTES = 96;
-
     // Memory allocator page size
     const uint8_t PAGE_BYTES = 16;
 
