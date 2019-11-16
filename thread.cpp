@@ -27,6 +27,7 @@ static const int REGISTER_COUNT = 32;
 static const int PC_COUNT = 2;
 
 static const PROGMEM char DEFAULT_THREAD_NAME[] = "noname";
+static const PROGMEM char _idleThreadName[] = "idle";
 
 static inline void saveCurrentContext(Thread* destThread) __attribute__((always_inline));
 static inline void restoreContext(Thread* t) __attribute__((always_inline));
@@ -38,6 +39,8 @@ static List<Thread> _threadList;
 static Thread* _currentThread = 0UL;
 static Thread* _idleThread = 0UL;
 static uint16_t _nextTid = 1;
+static volatile bool _ctxEnabled = false;
+static volatile uint32_t _milliseconds = 0UL;
 
 
 // Removes the Thread from the scheduler. This does NOT
@@ -47,7 +50,6 @@ bool Thread::remove() {
 		if (_state != TS_TERMINATED) {
 			return false;
 		}
-
 		_threadList.remove(this);
 		return true;
 	}
@@ -62,10 +64,10 @@ bool Thread::cleanup() {
 		}
 
 		NamedObject::remove((NamedObject*) this);
-		memory::deallocate(_stackBottom, _stackSize);
+		memory::deallocate(_stackBottom, _stackSizeBytes);
 
 		_stackBottom = 0UL;
-		_stackSize = 0;
+		_stackSizeBytes = 0;
 
 		delete this;
 		return true;
@@ -78,23 +80,25 @@ static void globalThreadEntry(Thread* t) {
 	// run the thread, and capture it's return code
 	t->_exitCode = t->_entryPoint();
 
-	// mark it as terminated
-	t->_state = TS_TERMINATED;
-
-	// remove from the list of running threads
-	t->remove();
-
-	// tidy up if it's an auto cleanup job...
-	if (t->_launchFlags & TLF_AUTO_CLEANUP) {
-		t->cleanup();
-
-	} else {
-		// ... or unblock anyone waiting to join()
-		Thread::unblock(TS_WAIT_TERM, (uint32_t) t);
-	}
+	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+		// mark it as terminated
+		t->_state = TS_TERMINATED;
 	
-	// clear this so that context won't be needlessly saved
-	_currentThread = 0UL;
+		// remove from the list of running threads
+		t->remove();
+	
+		// tidy up if it's an auto cleanup job...
+		if (t->_launchFlags & TLF_AUTO_CLEANUP) {
+			t->cleanup();
+	
+		} else {
+			// ... or unblock anyone waiting to join()
+			Thread::unblock(TS_WAIT_TERM, (uint32_t) t);
+		}
+		
+		// clear this so that context won't be needlessly saved
+		_currentThread = 0UL;
+	}
 
 	// this is the official end of a Thread,
 	// so time to schedule another one
@@ -116,7 +120,7 @@ void Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const bool e
 	stackEnd[-1] = ((uint16_t) globalThreadEntry) >> 8;
 
 	// set the stack pointer to the right place
-	_sp = (uint16_t) &stackEnd[-(REGISTER_COUNT + (PC_COUNT * 1))];
+	_sp = (uint16_t) &stackEnd[-(REGISTER_COUNT + PC_COUNT)];
 
 	// pass ourselves in as a parameter to the launch function
 	setParameter(0, (uint16_t) this);
@@ -138,7 +142,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 
 	// stack details
 	_stackBottom = stack;
-	_stackSize = stackSize;
+	_stackSizeBytes = stackSize;
 
 	// set up system data
 	_tid = _nextTid++;
@@ -152,7 +156,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 		_state = TS_PAUSED;
 	}
 
-	_quantumMs = TOT(quantumOverride, TIMESLICE_MS);
+	_quantumTicks = TOT(quantumOverride, TIMESLICE_MS);
 	_launchFlags = flags;
 	_blockInfo = 0UL;
 
@@ -163,11 +167,22 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 }
 
 
-Thread::Thread(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags) {
+// creates the idle thread, for running when nothing else wants to
+Thread* Thread::createIdleThread() {
+	return new Thread(_idleThreadName, 0, 5, [](){ while (1); return 0; }, TLF_READY | TLF_AUTO_CLEANUP);
+}
+
+
+// abridged ctor for QUAD threads
+Thread::Thread(const uint16_t stackSizeBytes, const ThreadEntryPoint entryPoint, const int flags) : Thread(0UL, stackSizeBytes, 0, entryPoint, flags) { }
+
+
+// main ctor
+Thread::Thread(const char* name, const uint16_t stackSizeBytes, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
 		uint16_t allocated = 0UL;
-		uint16_t requestedStackBytes = MAX(stackSize, THREAD_MIN_STACK_BYTES);
+		uint16_t requestedStackBytes = MAX(stackSizeBytes, THREAD_MIN_STACK_BYTES);
 		uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_STRATEGY);
 
 		configureThread(name, stackBottom, allocated, quantumOverride, entryPoint, flags);
@@ -236,10 +251,6 @@ Thread* Thread::me() {
 }
 
 
-// Are we allowing Thread swaps at the moment?
-static bool _ctxEnabled = false;
-
-
 // Prevents context switching
 void Thread::forbid() {
 	_ctxEnabled = false;
@@ -288,7 +299,7 @@ static inline void saveCurrentContext(Thread* destThread) {
 // Restores the context of the supplied Thread and resumes it's execution
 static inline void restoreContext(Thread* t) {
 	_currentThread = t;
-	_currentThread->_remainingTicks = _currentThread->_quantumMs;
+	_currentThread->_remainingTicks = _currentThread->_quantumTicks;
 	_currentThread->_state = TS_RUNNING;
 
 #ifdef RAMPZ
@@ -461,10 +472,6 @@ void Thread::unblock(const ThreadState state, const uint32_t blockInfo) {
 }
 
 
-// millisecond counter for things and stuff
-volatile uint32_t _milliseconds = 0UL;
-
-
 // triggers Timer2 COMPB ISR, which will do the switch
 static void triggerContextSwitch() {
 	if (Thread::isSwitchingEnabled()) {
@@ -479,11 +486,6 @@ ISR(TIMER2_COMPA_vect) {
 	cli();
 	_milliseconds++;
 
-	if (!_currentThread) {
-		triggerContextSwitch();
-		return;
-	}
-	
 #ifdef INSTRUMENTATION
 	_currentThread->_ticks++;
 	_currentThread->_lowestSp = MIN(_currentThread->_lowestSp, SP);

@@ -18,7 +18,7 @@
 
 
 #define ZERO_BUILD_VERSION 0
-#define ZERO_BUILD_REVISION 4
+#define ZERO_BUILD_REVISION 5
 
 static const uint8_t THREAD_MIN_STACK_BYTES = 48;
 
@@ -53,7 +53,8 @@ namespace zero {
 		static void init();
 
 		// Thread creation
-		Thread(const char* name, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags = TLF_READY | TLF_AUTO_CLEANUP);
+		Thread(const uint16_t stackSizeBytes, const ThreadEntryPoint entry, const int flags = TLF_READY | TLF_AUTO_CLEANUP);
+		Thread(const char* name, const uint16_t stackSizeBytes, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags = TLF_READY | TLF_AUTO_CLEANUP);
 
 		// general blocking and unblocking
 		static void block(const ThreadState newState, const uint32_t blockInfo);
@@ -76,7 +77,6 @@ namespace zero {
 		void waitUntil(const uint32_t untilMs);
 
 		// Properties (thread_info.cpp)
-		bool isDynamic();
 		uint16_t getThreadId();
 		uint16_t getStackBottom();
 		uint16_t getStackTop();
@@ -91,33 +91,32 @@ namespace zero {
 		// miscellaneous, but sort of related!
 		static uint32_t now();
 
-		// NamedObject must be first
-		NamedObject _systemData;
+		// ********* DATA *********
 
-		// This is for the system Thread Lists
-		Thread* _prev;
-		Thread* _next;
+		NamedObject _systemData;							// NamedObject must be first
+		Thread* _prev;										// Thread lists previous
+		Thread* _next;										// Thread lists next
 
-		// registers and other rememberables
-		uint8_t _sreg;
-		uint16_t _sp;
+		uint8_t _sreg;										// status register
+		uint16_t _sp;										// stack pointer
+
 	#ifdef RAMPZ
-		uint8_t _rampz;
+		uint8_t _rampz;										// RAMPZ
 	#endif
 
 		// main control block
-		uint16_t _tid;
-		ThreadState _state;
-		uint32_t _blockInfo;
-		int (*_entryPoint)();
-		uint8_t _quantumMs;
-		uint8_t _remainingTicks;
-		uint16_t _launchFlags;
-		int _exitCode;
+		uint16_t _tid;										// Thread ID
+		ThreadState _state;									// current state
+		uint32_t _blockInfo;								// info related to current state
+		int (*_entryPoint)();								// main entry for the Thread
+		uint8_t _quantumTicks;								// the size of this Thread's quantum
+		uint8_t _remainingTicks;							// time left in the current quantum
+		uint16_t _launchFlags;								// special flags
+		int _exitCode;										// return code upon termination
 
 	#ifdef INSTRUMENTATION
-		uint32_t _ticks;
-		uint16_t _lowestSp;
+		uint32_t _ticks;									// total ticks received
+		uint16_t _lowestSp;									// lowest stack pointer position seen
 	#endif
 
 	private:
@@ -125,8 +124,8 @@ namespace zero {
 		void prepareStack(uint8_t* stack, const uint16_t stackSize, const bool quick);
 		static Thread* createIdleThread();
 
-		uint8_t* _stackBottom;
-		uint16_t _stackSize;
+		uint8_t* _stackBottom;								// the address of the lowest end of the stack
+		uint16_t _stackSizeBytes;							// the size of the stack, in bytes
 	};
 
 }

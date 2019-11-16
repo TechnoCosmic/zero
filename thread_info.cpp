@@ -26,26 +26,19 @@ uint16_t Thread::getStackBottom() {
 
 // returns the address of the top of the Thread's stack
 uint16_t Thread::getStackTop() {
-	return ((uint16_t) _stackBottom) + _stackSize - 1;
+	return ((uint16_t) _stackBottom) + _stackSizeBytes - 1;
 }
 
 
 // returns the size of the Thread's stack, in bytes
 uint16_t Thread::getStackSizeBytes() {
-	return _stackSize;
-}
-
-
-// returns true if the Thread was created dyanmically, false if it was globally declared
-bool Thread::isDynamic() {
-	return ((uint16_t) this) == getStackBottom();
+	return _stackSizeBytes;
 }
 
 
 // returns the number of bytes of stack used at the last context switch
 uint16_t Thread::calcCurrentStackBytesUsed() {
-	int extra = isDynamic() ? sizeof(Thread) : 0;
-	return (getStackTop() - _sp) + extra;
+	return getStackTop() - _sp;
 }
 
 
@@ -54,8 +47,7 @@ uint16_t Thread::calcCurrentStackBytesUsed() {
 
 // returns the most number of bytes of stack used at any context switch
 uint16_t Thread::calcPeakStackBytesUsed() {
-	int extra = isDynamic() ? sizeof(Thread) : 0;
-	return (getStackTop() - _lowestSp) + extra;
+	return getStackTop() - _lowestSp;
 }
 
 
