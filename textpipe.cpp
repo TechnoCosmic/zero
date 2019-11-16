@@ -7,11 +7,17 @@
  */
 
 #include <stdint.h>
+#include <avr/pgmspace.h>
 #include "textpipe.h"
 #include "string.h"
 #include "iomanip.h"
 
 using namespace zero;
+
+static const PROGMEM char _reverseEsc[] = "\e[7m";
+static const PROGMEM char _resetEsc[] = "\e[0m";
+static const PROGMEM char _textColorEsc[] = "\e[3";
+static const PROGMEM char _backColorEsc[] = "\e[4";
 
 
 // ctor
@@ -30,7 +36,7 @@ void TextPipe::setTextColor(const Color color) {
 
         if (_outputType == OutputType::VT100) {
             // push the escape codes to the terminal
-            *this << "\e[3" << (char) ('0' + _textColor) << 'm';
+            *this << PGM(_textColorEsc) << (char) ('0' + _textColor) << 'm';
         }
     }
 }
@@ -49,7 +55,7 @@ void TextPipe::setBackColor(const Color color) {
 
         if (_outputType == OutputType::VT100) {
             // push the escape codes to the terminal
-            *this << "\e[4" << (char) ('0' + _backColor) << 'm';
+            *this << PGM(_backColorEsc) << (char) ('0' + _backColor) << 'm';
         }
     }
 }
@@ -129,9 +135,9 @@ void TextPipe::setReverse(const bool v) {
         if (_outputType == OutputType::VT100) {
             // push the escape codes to the terminal
             if (_reverse) {
-                *this << "\e[7m";
+                *this << PGM(_reverseEsc);
             } else {
-                *this << "\e[0m";
+                *this << PGM(_resetEsc);
             }
         }
     }
