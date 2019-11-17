@@ -166,14 +166,13 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 #endif
 }
 
-
 // creates the idle thread, for running when nothing else wants to
 Thread* Thread::createIdleThread() {
 	return new Thread(_idleThreadName, 0, 5, [](){ while (1); return 0; }, TLF_READY | TLF_AUTO_CLEANUP);
 }
 
 
-// abridged ctor for QUAD threads
+// abridged ctor for easier threads
 Thread::Thread(const uint16_t stackSizeBytes, const ThreadEntryPoint entryPoint, const int flags) : Thread(0UL, stackSizeBytes, 0, entryPoint, flags) { }
 
 
