@@ -19,6 +19,19 @@ int isupper(const char c) {
 }
 
 
+int isspace(const char c) {
+	switch (c) {
+		case '\t':
+		case ' ':
+			return 1;
+			break;
+
+		default:
+			return 0;
+			break;
+	}
+}
+
 int isdigit(const char c) {
 	return '0' <= c && c <= '9';
 }
@@ -59,10 +72,8 @@ void* memset(uint8_t* ptr, const uint8_t d, const uint16_t sz) {
 
 
 void* memcpy(uint8_t* dest, const uint8_t* src, const uint16_t count) {
-	uint16_t c = count;
-
-	while (c--) {
-		dest[count] = src[count];
+	for (uint16_t i = 0; i < count; i++) {
+		dest[i] = src[i];
 	}
 	return dest;
 }
