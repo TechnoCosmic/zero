@@ -25,7 +25,6 @@ Major things in the updates will be listed here. Bug fixes, refactoring, tidy up
 
 | Date | Ver | Comments |
 | ---- | ---:| -------- |
-2019-11-1x | 0.7 | 
 2019-11-17 | 0.6 | Single line command history added to CLI
 2019-11-16 | 0.5 | Idle thread set up code heavily cut. Prep for data structure footprint shrink
 2019-11-15 | 0.4 | Overhaul of how SRAM is handled - see the top of the `makefile` for info
