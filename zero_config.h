@@ -30,12 +30,16 @@ namespace zero {
     #define CLI_VT100
 
     // CLI RX Pipe buffer bytes
+
     // NOTE: CliCommand::execute() works by sending the
     // supplied command line into the CLI's RX Pipe.
     // If you use ::execute() from within another CLI
     // command, then you run the risk of deadlocking the
     // CLI on itself. To avoid this, increase the RX Pipe
     // size here so that the RX Pipe doesn't become full.
+
+    // This implementation will be deprecated shortly in
+    // favor of one that's not quite so silly!
     const uint16_t CLI_RX_PIPE_BYTES = 32;
 
     // CLI TX Pipe buffer bytes
