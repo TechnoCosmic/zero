@@ -22,11 +22,11 @@
 using namespace zero;
 
 
-const char BELL = 7;
-const char BACKSPACE = 8;
-const char TAB = 9;
-const char CR = 13;
-const char ESCAPE = 27;
+static const char BELL = 7;
+static const char BACKSPACE = 8;
+static const char TAB = 9;
+static const char CR = 13;
+static const char ESCAPE = 27;
 
 static const PROGMEM char _cliRxPipeName[] = "cli_rx";
 static const PROGMEM char _cliTxPipeName[] = "cli_tx";
@@ -69,6 +69,7 @@ static const PROGMEM char _bps[] = "bps";
 static const PROGMEM char _speed[] = "MHz system";
 
 
+// displays the 'startup' welcome message
 void displayWelcome(TextPipe* rx, TextPipe* tx) {
     *tx << dec << PGM(_welcomeText) << 'v' << ZERO_BUILD_VERSION << '.' << ZERO_BUILD_REVISION << endl;
     *tx << PGM(_cliOnUsart) << (int32_t) CLI_BAUD << PGM(_bps) << endl;
@@ -76,8 +77,13 @@ void displayWelcome(TextPipe* rx, TextPipe* tx) {
 }
 
 
-int tokenize(char* s, char* argv[]) {
-    int tokenCount = 0;
+// Turns a single command line string into individual arguments.
+// This happens in-place, turning whitespace (that is outside of
+// quoation marks) into nulls (\0), and setting up pointers to the
+// start of each argument as it goes.
+// Also, the first 'word' in the command line is forced lowercase.
+uint8_t tokenize(char* s, char* argv[]) {
+    uint8_t tokenCount = 0;
     bool lastWasSeparator = true;
     bool inQuotes = false;
 
@@ -88,47 +94,48 @@ int tokenize(char* s, char* argv[]) {
             lastWasSeparator = true;
 
         } else {
-            if (inQuotes || *s != ' ') {
+            if (inQuotes || !isspace(*s)) {
                 if (lastWasSeparator) {
                     argv[tokenCount++] = s;
                 }
+
                 lastWasSeparator = false;
 
-            } else if (*s == ' ') {
+            } else if (isspace(*s)) {
                 *s = 0;
                 lastWasSeparator = true;
             }
         }
+        
         if (tokenCount-1 == 0) {
             *s = tolower(*s);
         }
+
         s++;
     }
+
     return tokenCount;
 }
 
 
-const PROGMEM char _exitedWithReturnCode[] = "\' exited with return code ";
-const PROGMEM char _isNotCliCommand[] = "': is not a CLI command";
-const PROGMEM char _cmdNotFound[] = "': command not found";
+static const PROGMEM char _exitedWithReturnCode[] = "\' exited with return code ";
+static const PROGMEM char _isNotCliCommand[] = "': is not a CLI command";
+static const PROGMEM char _cmdNotFound[] = "': command not found";
 
+
+// Tokenizes and executes the given command line
 void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
     char* args[CLI_CMD_LINE_MAX_TOKENS];
-    int count = tokenize(commandLine, args);
+    uint8_t count = tokenize(commandLine, args);
 
     if (count) {
-        NamedObject* obj = NamedObject::find(args[0]);
+        NamedObject* obj = NamedObject::find(args[0], ZeroObjectType::CLICOMMAND);
 
         if (obj) {
-            if (obj->_objectType != ZeroObjectType::CLICOMMAND) {
-                *tx << '\'' << args[0] << PGM(_isNotCliCommand) << endl;
+            int returnCode = ((CliCommand*) obj)->execute(rx, tx, count, args);
 
-            } else {
-                int returnCode = ((CliCommand*) obj)->execute(rx, tx, count, args);
-
-                if (returnCode) {
-                    *tx << '\'' << args[0] << PGM(_exitedWithReturnCode) << (int) returnCode << endl;
-                }
+            if (returnCode) {
+                *tx << '\'' << args[0] << PGM(_exitedWithReturnCode) << (int32_t) returnCode << endl;
             }
         } else {
             *tx << '\'' << args[0] << PGM(_cmdNotFound) << endl;
@@ -171,16 +178,68 @@ void handleTabCompletion(TextPipe* cliInputPipe, char* commandLine, const int16_
 }
 
 
-static const PROGMEM char _bsCoel[] = "\010\e[K";
-static const PROGMEM char _clCr[] = "\e[2K\r";
+class SearchCapture {
+public:
 
+    SearchCapture(const char* string, memory::MemoryType source) {
+        _address = (uint16_t) string;
+        _source = source;
+        _cursor = 0;
+        _lastMatchIndex = -1;
+    }
+
+    void reset() {
+        _cursor = 0;
+        _lastMatchIndex = 1;
+    }
+
+    bool notifyCharacter(const char c) {
+        bool rc = false;
+        const char curChar =  memory::read((void*) (_address + _cursor), _source);
+        const char nextChar =  memory::read((void*) (_address + _cursor + 1), _source);
+
+        if (curChar == c) {
+            _cursor++;
+
+        } else {
+            _lastMatchIndex = _cursor - 1;
+            _cursor = 0;
+        }
+
+        if (nextChar == 0) {
+            rc = (_cursor != 0);
+
+            if (rc) {
+                reset();
+            }
+        }
+
+        return rc;
+    }
+
+    uint16_t _address;
+    memory::MemoryType _source;
+    uint8_t _cursor;
+    uint8_t _lastMatchIndex;
+
+};
+
+
+static const PROGMEM char _curUpEsc[] = "\e[A";
+static const PROGMEM char _bsCoelEsc[] = "\010\e[K";
+static const PROGMEM char _clCrEsc[] = "\e[2K\r";
+
+
+// The main entry point for the CLI Thread
 int cliMain() {
     TextPipe rx(_cliRxPipeName, CLI_RX_PIPE_BYTES);
     TextPipe tx(_cliTxPipeName, CLI_TX_PIPE_BYTES);
     Usart serial(CLI_BAUD, &rx, &tx);
 
+    char prevLine[CLI_CMD_LINE_BUFFER_BYTES];
     char cmdLine[CLI_CMD_LINE_BUFFER_BYTES];
     int16_t cursorPosition = 0L;
+    SearchCapture _curUp(_curUpEsc, memory::MemoryType::FLASH);
 
 #ifndef CLI_VT100
     tx.setOutputType(OutputType::TEXT_ONLY);
@@ -195,6 +254,22 @@ int cliMain() {
 
         // blocking call to read() to gather keystrokes from the USART
         if (rx.read(&input, true)) {
+            if (tx.getOutputType() == VT100 && _curUp.notifyCharacter(input)) {
+                // clear the current line and re-display the prompt
+                tx << PGM(_clCrEsc);
+                displayPrompt(&rx, &tx);
+
+                // restore the history to the command line
+                memcpy((uint8_t*) cmdLine, (uint8_t*) prevLine, CLI_CMD_LINE_BUFFER_BYTES);
+                cursorPosition = strlen(cmdLine);
+
+                // output the command line to the console
+                tx << cmdLine;
+
+                echo = false;
+                continue;
+            }
+
             switch (input) {
                 case TAB:
                     cmdLine[cursorPosition] = '*';
@@ -207,7 +282,7 @@ int cliMain() {
                     // clear the line and start fresh
                     if (cursorPosition > 0 && tx.getOutputType() == OutputType::VT100) {
                         // clear command line
-                        tx << PGM(_clCr);
+                        tx << PGM(_clCrEsc);
 
                         // begin again
                         memset((uint8_t*) cmdLine, 0, sizeof(cmdLine));
@@ -224,7 +299,7 @@ int cliMain() {
                         cmdLine[cursorPosition] = 0;
 
                         // backspace + clear to end of line
-                        tx << PGM(_bsCoel);
+                        tx << PGM(_bsCoelEsc);
 
                     } else {
                         tx << (char) BELL;
@@ -234,6 +309,10 @@ int cliMain() {
                 case CR:
                     echo = false;
                     tx << endl;
+
+                    // preserve the command line in the history, before
+                    // it gets in-place tokenized!
+                    memcpy((uint8_t*) prevLine, (uint8_t*) cmdLine, CLI_CMD_LINE_BUFFER_BYTES);
 
                     // send the command line off for processing
                     processCommandLine(&rx, &tx, cmdLine);
