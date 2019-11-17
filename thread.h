@@ -18,7 +18,7 @@
 
 
 #define ZERO_BUILD_VERSION 0
-#define ZERO_BUILD_REVISION 5
+#define ZERO_BUILD_REVISION 6
 
 static const uint8_t THREAD_MIN_STACK_BYTES = 48;
 
