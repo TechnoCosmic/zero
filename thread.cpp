@@ -45,7 +45,7 @@ static volatile uint64_t _milliseconds = 0ULL;
 // Removes the Thread from the scheduler. This does NOT
 // remove the Thread from the list of system objects.
 bool Thread::remove() {
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {		
+	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		if (_state != TS_TERMINATED) {
 			return false;
 		}
@@ -415,6 +415,9 @@ bool Thread::pause() {
 // to *this* Thread terminating for the join to be successful.
 int Thread::join() {
 	int rc = -1;
+
+	// can't join on yourself - DEADLOCK!
+	if (this == _currentThread) return rc;
 
 	// join can only occur on Threads
 	// that do NOT auto-cleanup
