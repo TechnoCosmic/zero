@@ -25,7 +25,7 @@ Major things in the updates will be listed here. Bug fixes, refactoring, tidy up
 
 | Date | Ver | Comments |
 | ---- | ---:| -------- |
-2019-11-19 | 0.8 | Reimplemented CliCommand::execute() as CliCommand::shell()
+2019-11-19 | 0.8 | Reimplemented `CliCommand::execute()` as `CliCommand::shell()`
 2019-11-18 | 0.7 | Bits and pieces, nothing super eventful
 2019-11-17 | 0.6 | Single line command history added to CLI
 2019-11-16 | 0.5 | Idle thread set up code heavily cut. Prep for data structure footprint shrink
