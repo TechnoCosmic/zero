@@ -34,7 +34,6 @@ static inline void restoreContext(Thread* t) __attribute__((always_inline));
 static inline Thread* selectNextThread() __attribute__((always_inline));
 static inline void yield() __attribute__((always_inline));
 
-static uint16_t _originalSp;
 static List<Thread> _threadList;
 static Thread* _currentThread = 0UL;
 static Thread* _idleThread = 0UL;
@@ -93,7 +92,7 @@ static void globalThreadEntry(Thread* t) {
 	
 		} else {
 			// ... or unblock anyone waiting to join()
-			Thread::unblock(TS_WAIT_TERM, (uint32_t) t);
+			Thread::unblock(TS_JOINING, (uint32_t) t);
 		}
 		
 		// clear this so that context won't be needlessly saved
@@ -116,8 +115,8 @@ void Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const bool e
 	}
 
 	// the entry point for the Thread
-	stackEnd[ 0] = ((uint16_t) globalThreadEntry) & 0xFF;
-	stackEnd[-1] = ((uint16_t) globalThreadEntry) >> 8;
+	stackEnd[ 0] = ((uint32_t) globalThreadEntry) & 0xFF;
+	stackEnd[-1] = ((uint32_t) globalThreadEntry) >> 8;
 
 	// set the stack pointer to the right place
 	_sp = (uint16_t) &stackEnd[-(REGISTER_COUNT + PC_COUNT)];
@@ -238,9 +237,6 @@ void Thread::init() {
 
 	// enable ISR switching at the Timer level
 	Thread::permit();									// enable context switching
-
-	// preserve our SP for context switch use
-	_originalSp = SP;
 }
 
 
@@ -279,7 +275,7 @@ static inline void saveCurrentContext(Thread* destThread) {
 #endif
 
 		// switch to the 'kernel' stack
-		SP = _originalSp;
+		SP = RAMEND;
 
 #ifdef INSTRUMENTATION
 		destThread->_lowestSp = MIN(destThread->_lowestSp, destThread->_sp);
@@ -426,7 +422,7 @@ int Thread::join() {
 
 		// block the *calling* Thread until *this* Thread terminates
 		if (_state != TS_TERMINATED) {
-			block(TS_WAIT_TERM, (uint32_t) this);
+			block(TS_JOINING, (uint32_t) this);
 		}
 
 		// the main Thread entry code deposits the
@@ -523,6 +519,8 @@ uint32_t Thread::now() {
 
 
 extern void startup_sequence();
+
+// int main() __attribute__((__naked__));
 
 // normal main() to start the system off
 int main() {

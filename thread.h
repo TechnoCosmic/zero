@@ -31,11 +31,11 @@ namespace zero {
 		TS_READY,
 		TS_PAUSED,
 		TS_WAITING,
+		TS_JOINING,
 		TS_TERMINATED,
-		TS_WAIT_TERM,
 		TS_WAIT_ATOMIC_WRITE,
-		TS_WAIT_READ,
-		TS_WAIT_WRITE,
+		TS_PIPE_READ,
+		TS_PIPE_WRITE,
 	};
 
 	// Thread Launch Flags - these control various aspects
