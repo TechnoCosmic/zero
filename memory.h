@@ -30,9 +30,16 @@ namespace zero {
 		uint8_t read(const void* address, const MemoryType memType);
 		bool write(const void* address, const uint8_t data, const MemoryType memType);
 
+		uint16_t getPageSizeBytes();
+
 		uint16_t getTotalPages();
 		uint16_t getTotalBytes();
-		uint16_t getPageSizeBytes();
+
+		uint16_t getUsedPages();
+		uint16_t getUsedBytes();
+
+		uint16_t getFreePages();
+		uint16_t getFreeBytes();
 
 		bool isPageAvailable(const uint16_t pageNumber);
 		uint16_t getAddressForPage(const uint16_t pageNumber);
