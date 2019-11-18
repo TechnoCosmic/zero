@@ -161,6 +161,7 @@ bool Pipe::read(uint8_t* data, const bool allowBlock) {
 	// order. A queue wouldn't solve this, unless the order within the
 	// queue could change based on... protocol? That's beyond the scope of
 	// a simple Pipe class to solve.
+
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		bool doIt = true;
 

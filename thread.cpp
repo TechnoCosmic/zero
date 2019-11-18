@@ -39,7 +39,7 @@ static Thread* _currentThread = 0UL;
 static Thread* _idleThread = 0UL;
 static uint16_t _nextTid = 1;
 static volatile bool _ctxEnabled = false;
-static volatile uint32_t _milliseconds = 0UL;
+static volatile uint64_t _milliseconds = 0UL;
 
 
 // Removes the Thread from the scheduler. This does NOT
@@ -511,7 +511,7 @@ ISR(TIMER2_COMPB_vect, ISR_NAKED) {
 
 
 // returns the number of milliseconds uptime since the scheduler started
-uint32_t Thread::now() {
+uint64_t Thread::now() {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		return _milliseconds;
 	}

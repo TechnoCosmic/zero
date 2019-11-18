@@ -89,7 +89,7 @@ namespace zero {
 		// end (thread_info.cpp)
 
 		// miscellaneous, but sort of related!
-		static uint32_t now();
+		static uint64_t now();
 
 		// ********* DATA *********
 
