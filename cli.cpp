@@ -71,7 +71,7 @@ static const PROGMEM char _speed[] = "MHz system";
 
 // displays the 'startup' welcome message
 void displayWelcome(TextPipe* rx, TextPipe* tx) {
-    *tx << dec << PGM(_welcomeText) << 'v' << ZERO_BUILD_VERSION << '.' << ZERO_BUILD_REVISION << endl;
+    *tx << dec << white << PGM(_welcomeText) << 'v' << ZERO_BUILD_VERSION << '.' << ZERO_BUILD_REVISION << endl;
     *tx << PGM(_cliOnUsart) << (int32_t) CLI_BAUD << PGM(_bps) << endl;
     *tx << (int) (F_CPU / 1000000UL) << PGM(_speed) << endl;
 }
@@ -178,6 +178,7 @@ void handleTabCompletion(TextPipe* cliInputPipe, char* commandLine, const int16_
 }
 
 
+// Simple byte search tracking class
 class SearchCapture {
 public:
 
@@ -206,12 +207,11 @@ public:
             _cursor = 0;
         }
 
+        // if we're at the end of the match string,
+        // see if we matched
         if (nextChar == 0) {
             rc = (_cursor != 0);
-
-            if (rc) {
-                reset();
-            }
+            reset();
         }
 
         return rc;
@@ -236,10 +236,10 @@ int cliMain() {
     TextPipe tx(_cliTxPipeName, CLI_TX_PIPE_BYTES);
     Usart serial(CLI_BAUD, &rx, &tx);
 
+    SearchCapture _curUp(_curUpEsc, memory::MemoryType::FLASH);
     char prevLine[CLI_CMD_LINE_BUFFER_BYTES];
     char cmdLine[CLI_CMD_LINE_BUFFER_BYTES];
     int16_t cursorPosition = 0L;
-    SearchCapture _curUp(_curUpEsc, memory::MemoryType::FLASH);
 
 #ifndef CLI_VT100
     tx.setOutputType(OutputType::TEXT_ONLY);
@@ -254,7 +254,10 @@ int cliMain() {
 
         // blocking call to read() to gather keystrokes from the USART
         if (rx.read(&input, true)) {
+
+            // see if it was a cursor up
             if (tx.getOutputType() == VT100 && _curUp.notifyCharacter(input)) {
+
                 // clear the current line and re-display the prompt
                 tx << PGM(_clCrEsc);
                 displayPrompt(&rx, &tx);
@@ -310,12 +313,15 @@ int cliMain() {
                     echo = false;
                     tx << endl;
 
-                    // preserve the command line in the history, before
-                    // it gets in-place tokenized!
-                    memcpy((uint8_t*) prevLine, (uint8_t*) cmdLine, CLI_CMD_LINE_BUFFER_BYTES);
+                    // only rememeber the command line if there is something on it
+                    if (cursorPosition) {
+                        // preserve the command line in the history, before
+                        // it gets in-place tokenized!
+                        memcpy((uint8_t*) prevLine, (uint8_t*) cmdLine, CLI_CMD_LINE_BUFFER_BYTES);
 
-                    // send the command line off for processing
-                    processCommandLine(&rx, &tx, cmdLine);
+                        // send the command line off for processing
+                        processCommandLine(&rx, &tx, cmdLine);
+                    }
 
                     // begin again
                     memset((uint8_t*) cmdLine, 0, sizeof(cmdLine));
