@@ -9,6 +9,7 @@
 #include <avr/io.h>
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
+#include <util/atomic.h>
 #include "zero_config.h"
 #include "memory.h"
 #include "thread.h"
@@ -28,19 +29,6 @@ uint8_t _memoryArea[DYNAMIC_BYTES] __attribute__((section(".heap")));
 
 // The bit mapped page manager
 PageManager<SRAM_PAGES> _sram;
-
-
-// Returns the address for the start of a given page
-uint16_t memory::getAddressForPage(const uint16_t pageNumber) {
-    return ((uint16_t) _memoryArea) + (pageNumber * PAGE_BYTES);
-}
-
-
-// Return the page number for the given SRAM memory address
-uint16_t memory::getPageForAddress(const uint16_t address) {
-
-    return ((address) - ((uint16_t) _memoryArea)) / PAGE_BYTES;
-}
 
 
 // Returns the number of pages needed to store the supplied number of bytes
@@ -99,7 +87,7 @@ void* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedByte
 // a check to see if the memory was even allocated in the first place.
 void memory::deallocate(const void* address, const uint16_t numBytes) {
     if (!numBytes) return;
-    
+
 	uint16_t numPages = getNumPagesForBytes(numBytes);
 	uint16_t startPage = getPageForAddress((uint16_t) address);
 
@@ -129,6 +117,11 @@ void* memory::reallocate(   const void* oldMemory,       // the old memory previ
                             const uint16_t newNumBytes,     // new amount of memory needed
                             uint16_t* allocatedBytes,       // a pointer to how big the new memory is
                             const SearchStrategy strategy) {
+
+    // if this is effectively an ::allocate(), then ::allocate()
+    if (oldMemory == 0UL) {
+        return memory::allocate(newNumBytes, allocatedBytes, strategy);
+    }
 
     // critical section, no context switching
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
@@ -171,45 +164,16 @@ exit:
 }
 
 
-// Reads a byte from one of the three main on-board memory areas
-uint8_t memory::read(const void* address, const MemoryType memType) {
-	uint8_t rc = 0;
-
-	switch (memType) {
-		case MemoryType::SRAM:
-			rc = *((uint8_t*) address);
-		break;
-
-		case MemoryType::FLASH:
-			rc = pgm_read_byte(address);
-		break;
-		
-		case MemoryType::EEPROM:
-			rc = eeprom_read_byte((uint8_t*) address);
-		break;
-		
-	}
-	return rc;
+// Returns the address for the start of a given page
+uint16_t memory::getAddressForPage(const uint16_t pageNumber) {
+    return ((uint16_t) _memoryArea) + (pageNumber * PAGE_BYTES);
 }
 
 
-// Writes a byte to one of the two main on-board writable memory areas
-bool memory::write(const void* address, const uint8_t data, const MemoryType memType) {
-	switch (memType) {
-		case MemoryType::SRAM:
-			*((uint8_t*) address) = data;
-			return true;
-		break;
+// Return the page number for the given SRAM memory address
+uint16_t memory::getPageForAddress(const uint16_t address) {
 
-		case MemoryType::FLASH:
-			return false;
-		break;
-
-		case MemoryType::EEPROM:
-			eeprom_write_byte((uint8_t*) address, data);
-			return true;
-		break;
-	}
+    return ((address) - ((uint16_t) _memoryArea)) / PAGE_BYTES;
 }
 
 
@@ -252,4 +216,48 @@ uint16_t memory::getFreeBytes() {
 // Returns the page size, in bytes
 uint16_t memory::getPageSizeBytes() {
     return PAGE_BYTES;
+}
+
+
+// Reads a byte from one of the three main on-board memory areas
+uint8_t memory::read(const void* address, const MemoryType memType) {
+	uint8_t rc = 0;
+
+	switch (memType) {
+		case MemoryType::SRAM:
+			rc = *((uint8_t*) address);
+		break;
+
+		case MemoryType::FLASH:
+			rc = pgm_read_byte(address);
+		break;
+		
+		case MemoryType::EEPROM:
+			rc = eeprom_read_byte((uint8_t*) address);
+		break;
+		
+	}
+	return rc;
+}
+
+
+// Writes a byte to one of the two main on-board writable memory areas
+bool memory::write(const void* address, const uint8_t data, const MemoryType memType) {
+	switch (memType) {
+		case MemoryType::SRAM:
+			*((uint8_t*) address) = data;
+			return true;
+		break;
+
+		case MemoryType::FLASH:
+			return false;
+		break;
+
+		case MemoryType::EEPROM:
+            ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+                eeprom_write_byte((uint8_t*) address, data);
+                return true;
+            }
+		break;
+	}
 }
