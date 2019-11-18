@@ -17,7 +17,8 @@
 
 using namespace zero;
 
-
+// these let the code with single UART devices without
+// needing to 'special case' it
 #ifndef USART_RX_vect
 #define USART_RX_vect USART0_RX_vect
 #endif
@@ -26,10 +27,11 @@ using namespace zero;
 #define USART_UDRE_vect USART0_UDRE_vect
 #endif
 
+
 static Usart* _usart = 0UL;
 
 
-bool writeFilter(uint8_t* data) {
+bool writeFilter(Pipe* p, uint8_t* data) {
     UCSR0B |= (1 << UDRIE0);
     return true;
 }

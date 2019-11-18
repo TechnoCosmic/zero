@@ -107,7 +107,7 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 		bool doIt = true;
 
 		if (_onWrite) {
-			doIt = _onWrite(&dataToWrite);
+			doIt = _onWrite(this, &dataToWrite);
 		}
 	
 		if (doIt) {
@@ -168,7 +168,7 @@ bool Pipe::read(uint8_t* data, const bool allowBlock) {
 		*data = _buffer[_start];
 
 		if (_onRead) {
-			doIt = _onRead(data);
+			doIt = _onRead(this, data);
 		}
 	
 		if (doIt) {

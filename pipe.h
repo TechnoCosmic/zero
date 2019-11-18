@@ -18,7 +18,9 @@
 
 namespace zero {
 
-    typedef bool (*PipeFilter)(uint8_t* data);
+	class Pipe;
+	
+    typedef bool (*PipeFilter)(Pipe* p, uint8_t* data);
 
 	class Pipe {
 	public:
