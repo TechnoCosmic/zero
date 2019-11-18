@@ -65,11 +65,11 @@ static const PROGMEM char STATE_RUNNING[] = "running";
 static const PROGMEM char STATE_READY[] = "ready";
 static const PROGMEM char STATE_PAUSED[] = "paused";
 static const PROGMEM char STATE_WAITING[] = "waiting";
+static const PROGMEM char STATE_JOINING[] = "joining";
 static const PROGMEM char STATE_TERMINATED[] = "terminated";
-static const PROGMEM char STATE_WAITTERM[] = "wait term";
 static const PROGMEM char STATE_WAITATOMICWR[] = "wait lock";
-static const PROGMEM char STATE_WAITRD[] = "wait read";
-static const PROGMEM char STATE_WAITWR[] = "wait write";
+static const PROGMEM char STATE_PIPEREAD[] = "pipe read";
+static const PROGMEM char STATE_PIPEWRITE[] = "pipe write";
 
 
 static const char* _stateString[] = {
@@ -77,11 +77,11 @@ static const char* _stateString[] = {
 	STATE_READY,
     STATE_PAUSED,
     STATE_WAITING,
+    STATE_JOINING,
 	STATE_TERMINATED,
-    STATE_WAITTERM,
     STATE_WAITATOMICWR,
-	STATE_WAITRD,
-	STATE_WAITWR,
+	STATE_PIPEREAD,
+	STATE_PIPEWRITE,
 };
 
 
@@ -90,8 +90,8 @@ static const Color _stateColor[] = {
     Color::WHITE,
     Color::YELLOW,
     Color::YELLOW,
-    Color::RED,
     Color::YELLOW,
+    Color::RED,
     Color::YELLOW,
     Color::CYAN,
     Color::MAGENTA,
