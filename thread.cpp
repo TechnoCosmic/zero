@@ -181,7 +181,7 @@ Thread::Thread(const char* name, const uint16_t stackSizeBytes, const uint8_t qu
 
 		uint16_t allocated = 0UL;
 		uint16_t requestedStackBytes = MAX(stackSizeBytes, THREAD_MIN_STACK_BYTES);
-		uint8_t* stackBottom = memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_STRATEGY);
+		uint8_t* stackBottom = (uint8_t*) memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_STRATEGY);
 
 		configureThread(name, stackBottom, allocated, quantumOverride, entryPoint, flags);
 

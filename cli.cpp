@@ -44,15 +44,6 @@ CliCommand::CliCommand(const char* name, const CliEntryPoint entry) {
 }
 
 
-void CliCommand::execute(const char* commandLine) {
-    Pipe* rx = (Pipe*) Pipe::find("cli_rx");
-
-    if (rx) {
-        *((TextPipe*) rx) << commandLine;
-    }
-}
-
-
 int CliCommand::execute(TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
     return _entryPoint(rx, tx, argc, argv);
 }
@@ -141,6 +132,21 @@ void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
             *tx << '\'' << args[0] << PGM(_cmdNotFound) << endl;
         }
     }
+}
+
+
+void CliCommand::shell(const char* commandLine) {
+    uint16_t allocated = 0UL;
+    const uint16_t len = strlen(commandLine);
+    char* cmdLine = (char*) memory::allocate(len, &allocated, memory::SearchStrategy::BottomUp);
+    Pipe* rx = (Pipe*) Pipe::find("cli_rx");
+    Pipe* tx = (Pipe*) Pipe::find("cli_tx");
+
+    if (cmdLine && rx && tx) {
+        memcpy((uint8_t*) cmdLine, (uint8_t*) commandLine, len);
+        processCommandLine((TextPipe*) rx, (TextPipe*) tx, cmdLine);
+    }
+    memory::deallocate(cmdLine, allocated);
 }
 
 

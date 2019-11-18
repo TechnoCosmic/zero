@@ -51,7 +51,7 @@ static constexpr uint16_t getNumPagesForBytes(const uint16_t bytes) {
 
 // Allocates some memory. The amount of memory actually allocated is optionally
 // returned in allocatedBytes, which will always be a multiple of the page size.
-uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedBytes, const SearchStrategy strategy) {
+void* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedBytes, const SearchStrategy strategy) {
 
     // critical section - one Thread allocating at a time, thank you
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
@@ -97,7 +97,9 @@ uint8_t* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedB
 // Frees up a chunk of previously allocated memory. In the interests of performance,
 // there is no checking that the Thread 'owns' the memory being freed, nor is there
 // a check to see if the memory was even allocated in the first place.
-void memory::deallocate(const uint8_t* address, const uint16_t numBytes) {
+void memory::deallocate(const void* address, const uint16_t numBytes) {
+    if (!numBytes) return;
+    
 	uint16_t numPages = getNumPagesForBytes(numBytes);
 	uint16_t startPage = getPageForAddress((uint16_t) address);
 
@@ -122,7 +124,7 @@ void memory::deallocate(const uint8_t* address, const uint16_t numBytes) {
 //   required and see if the difference is available at the end of the current chunk
 //   before resorting to the full alloc/copy/dealloc sequence
 
-uint8_t* memory::reallocate(const uint8_t* oldMemory,       // the old memory previously allocated
+void* memory::reallocate(   const void* oldMemory,       // the old memory previously allocated
                             const uint16_t oldNumBytes,     // the size of oldMemory
                             const uint16_t newNumBytes,     // new amount of memory needed
                             uint16_t* allocatedBytes,       // a pointer to how big the new memory is
@@ -131,7 +133,7 @@ uint8_t* memory::reallocate(const uint8_t* oldMemory,       // the old memory pr
     // critical section, no context switching
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
         uint16_t allocated = 0UL;
-        uint8_t* newMemory = 0UL;
+        void* newMemory = 0UL;
 
         // nothing to do, clean up and exit
         if (newNumBytes == oldNumBytes) {
@@ -150,7 +152,7 @@ uint8_t* memory::reallocate(const uint8_t* oldMemory,       // the old memory pr
 
         if (oldMemory) {
             // copy the old data to the new place
-            memcpy(newMemory, oldMemory, MIN(oldNumBytes, allocated));
+            memcpy((uint8_t*) newMemory, (uint8_t*) oldMemory, MIN(oldNumBytes, allocated));
 
             // free up the old memory
             memory::deallocate(oldMemory, oldNumBytes);

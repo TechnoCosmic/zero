@@ -25,7 +25,7 @@ namespace zero {
     public:
         CliCommand(const char* name, const CliEntryPoint entryPoint);
         int execute(TextPipe* rx, TextPipe* tx, int argc, char* argv[]);
-        static void execute(const char* commandLine);
+        static void shell(const char* commandLine);
 
     private:
 		// NamedObject must be first

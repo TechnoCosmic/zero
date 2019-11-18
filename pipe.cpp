@@ -20,7 +20,7 @@ using namespace zero;
 Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
 	uint16_t allocated = 0UL;
 
-	_buffer = memory::allocate(bufferSize, &allocated, memory::SearchStrategy::BottomUp);
+	_buffer = (uint8_t*) memory::allocate(bufferSize, &allocated, memory::SearchStrategy::BottomUp);
 	_allocatedBytes = allocated;
 
 	if (strictSize) {
