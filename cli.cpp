@@ -137,16 +137,21 @@ void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
 
 void CliCommand::shell(const char* commandLine) {
     uint16_t allocated = 0UL;
-    const uint16_t len = strlen(commandLine);
+    const uint16_t len = strlen(commandLine) + 1;
     char* cmdLine = (char*) memory::allocate(len, &allocated, memory::SearchStrategy::BottomUp);
-    Pipe* rx = (Pipe*) Pipe::find("cli_rx");
-    Pipe* tx = (Pipe*) Pipe::find("cli_tx");
 
-    if (cmdLine && rx && tx) {
-        memcpy((uint8_t*) cmdLine, (uint8_t*) commandLine, len);
-        processCommandLine((TextPipe*) rx, (TextPipe*) tx, cmdLine);
+    if (cmdLine) {
+        Pipe* rx = (Pipe*) Pipe::find("cli_rx");
+        Pipe* tx = (Pipe*) Pipe::find("cli_tx");
+
+        if (rx && tx) {
+            memcpy((uint8_t*) cmdLine, (uint8_t*) commandLine, len);
+            processCommandLine((TextPipe*) rx, (TextPipe*) tx, cmdLine);
+        }
+
+        memory::deallocate(cmdLine, allocated);
+        cmdLine = 0UL;
     }
-    memory::deallocate(cmdLine, allocated);
 }
 
 
