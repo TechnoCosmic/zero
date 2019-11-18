@@ -22,26 +22,26 @@ using namespace zero;
 using namespace zero::memory;
 
 
-static const uint32_t STACK_WARN_PERCENTAGE = 80UL;
-static const uint32_t STACK_SCREAM_PERCENTAGE = 100UL;
+static const uint32_t STACK_WARN_PERCENTAGE = 75UL;
+static const uint32_t STACK_SCREAM_PERCENTAGE = 95UL;
 
 
 // format a millisecond input as hr:mn:ss.mmm
 // directly into a supplied Pipe
-static void displayTime(TextPipe* tx, uint32_t ms) {
+static void displayTime(TextPipe* tx, uint64_t ms) {
 	*tx << setfill('0') << dec;
 
 	// hours
-	*tx << setw(2) << right << (int) (ms / 3600000L) << ':';
+	*tx << setw(2) << right << (int32_t) (ms / 3600000ULL) << ':';
 
 	// minutes
-	*tx << setw(2) << right << (int) ((ms / 60000) % 60) << ':';
+	*tx << setw(2) << right << (int32_t) ((ms / 60000ULL) % 60) << ':';
 
 	// seconds
-	*tx << setw(2) << right << (int) ((ms / 1000) % 60) << '.';
+	*tx << setw(2) << right << (int32_t) ((ms / 1000ULL) % 60) << '.';
 
 	// milliseconds
-	*tx << setw(3) << right << (int) (ms % 1000);
+	*tx << setw(3) << right << (int32_t) (ms % 1000ULL);
 }
 
 

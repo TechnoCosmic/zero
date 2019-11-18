@@ -39,7 +39,7 @@ static Thread* _currentThread = 0UL;
 static Thread* _idleThread = 0UL;
 static uint16_t _nextTid = 1;
 static volatile bool _ctxEnabled = false;
-static volatile uint64_t _milliseconds = 0UL;
+static volatile uint64_t _milliseconds = 0ULL;
 
 
 // Removes the Thread from the scheduler. This does NOT
