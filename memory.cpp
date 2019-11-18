@@ -229,6 +229,24 @@ uint16_t memory::getTotalBytes() {
 }
 
 
+// Returns the number of used pages
+uint16_t memory::getUsedPages() {
+	return _sram.getUsedPageCount();
+}
+
+
+// Returns the number of free pages
+uint16_t memory::getUsedBytes() {
+	return _sram.getUsedPageCount() * PAGE_BYTES;
+}
+
+
+// Returns the number of free pages
+uint16_t memory::getFreeBytes() {
+	return _sram.getFreePageCount() * PAGE_BYTES;
+}
+
+
 // Returns the page size, in bytes
 uint16_t memory::getPageSizeBytes() {
     return PAGE_BYTES;
