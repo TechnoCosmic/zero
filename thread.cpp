@@ -32,7 +32,7 @@ static const PROGMEM char _idleThreadName[] = "idle";
 static inline void saveCurrentContext(Thread* destThread) __attribute__((always_inline));
 static inline void restoreContext(Thread* t) __attribute__((always_inline));
 static inline Thread* selectNextThread() __attribute__((always_inline));
-static inline void yield() __attribute__((always_inline));
+static void yield() __attribute__((__naked__));
 
 static List<Thread> _threadList;
 static Thread* _currentThread = 0UL;
@@ -308,7 +308,7 @@ static inline void restoreContext(Thread* t) {
 
 // halts the calling thread and transfers MCU control
 // over to another Thread of the scheduler's choosing
-static inline void yield() {
+static void yield() {
 	saveCurrentContext(_currentThread);
 	TIMSK2 &= ~(1 << OCIE2B);					// switch off context switch ISR
 	restoreContext(selectNextThread());
