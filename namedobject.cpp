@@ -10,7 +10,6 @@
 #include "namedobject.h"
 #include "string.h"
 #include "thread.h"
-#include "atomic.h"
 #include "list.h"
 
 using namespace zero;

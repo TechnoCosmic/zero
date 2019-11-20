@@ -60,7 +60,7 @@ namespace zero {
 		static void block(const ThreadState newState, const uint32_t blockInfo);
 		static void unblock(const ThreadState state, const uint32_t blockInfo);
 
-		// for applications to find the current Thread
+		// for applications to find themselves
 		static Thread* me();
 
 		// Thread management
@@ -129,6 +129,25 @@ namespace zero {
 	};
 
 }
+
+
+// Funky little ATOMIC_BLOCK macro clones for context switching
+static __inline__ uint8_t __iForbidRetVal() {
+	zero::Thread::forbid();
+	return 1;
+}
+
+
+static __inline__ void __iZeroRestore(const uint8_t* __tmr_save) {
+	if (*__tmr_save) {
+		zero::Thread::permit();
+	}
+}
+
+
+#define ZERO_ATOMIC_BLOCK(t) for ( t, __ToDo = __iForbidRetVal(); __ToDo ; __ToDo = 0 )
+#define ZERO_ATOMIC_RESTORESTATE uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t)(zero::Thread::isSwitchingEnabled())
+#define ZERO_ATOMIC_FORCEON uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t) 1)
 
 
 #define delay(ms) { Thread::me()->waitUntil(Thread::now() + (ms)); }

@@ -15,7 +15,6 @@
 #include "zero_config.h"
 #include "thread_macros.h"
 #include "thread.h"
-#include "atomic.h"
 #include "list.h"
 #include "string.h"
 #include "memory.h"
@@ -79,6 +78,7 @@ static void globalThreadEntry(Thread* t) {
 	// run the thread, and capture it's return code
 	t->_exitCode = t->_entryPoint();
 
+	// tidy up after the Thread
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		// mark it as terminated
 		t->_state = TS_TERMINATED;

@@ -13,7 +13,6 @@
 #include "usart.h"
 #include "pipe.h"
 #include "thread.h"
-#include "atomic.h"
 
 using namespace zero;
 

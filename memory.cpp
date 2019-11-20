@@ -13,7 +13,6 @@
 #include "zero_config.h"
 #include "memory.h"
 #include "thread.h"
-#include "atomic.h"
 #include "string.h"
 #include "util.h"
 
@@ -45,7 +44,6 @@ void* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedByte
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
         const uint16_t numPages = getNumPagesForBytes(numBytesRequested);
-
         int16_t startPage = _sram.findFreePages(numPages, strategy);
 
         // make sure we've covered all the angles

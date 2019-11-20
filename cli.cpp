@@ -28,8 +28,11 @@ static const char TAB = 9;
 static const char CR = 13;
 static const char ESCAPE = 27;
 
-static const PROGMEM char _cliRxPipeName[] = "cli_rx";
-static const PROGMEM char _cliTxPipeName[] = "cli_tx";
+#define CLI_RX "cli_rx"
+#define CLI_TX "cli_tx"
+
+static const PROGMEM char _cliRxPipeName[] = CLI_RX;
+static const PROGMEM char _cliTxPipeName[] = CLI_TX;
 
 
 CliCommand::CliCommand(const char* name, const CliEntryPoint entry) {
@@ -135,14 +138,15 @@ void processCommandLine(TextPipe* rx, TextPipe* tx, char* commandLine) {
 }
 
 
+// executes a given CLI command line
 void CliCommand::shell(const char* commandLine) {
     uint16_t allocated = 0UL;
     const uint16_t len = strlen(commandLine) + 1;
     char* cmdLine = (char*) memory::allocate(len, &allocated, memory::SearchStrategy::BottomUp);
 
     if (cmdLine) {
-        Pipe* rx = (Pipe*) Pipe::find("cli_rx");
-        Pipe* tx = (Pipe*) Pipe::find("cli_tx");
+        Pipe* rx = (Pipe*) Pipe::find(CLI_RX);
+        Pipe* tx = (Pipe*) Pipe::find(CLI_TX);
 
         if (rx && tx) {
             memcpy((uint8_t*) cmdLine, (uint8_t*) commandLine, len);
@@ -189,119 +193,73 @@ void handleTabCompletion(TextPipe* cliInputPipe, char* commandLine, const int16_
 }
 
 
-// Simple byte search tracking class
-class SearchCapture {
-public:
-
-    SearchCapture(const char* string, memory::MemoryType source) {
-        _address = (uint16_t) string;
-        _source = source;
-        _cursor = 0;
-        _lastMatchIndex = -1;
-    }
-
-    void reset() {
-        _cursor = 0;
-        _lastMatchIndex = 1;
-    }
-
-    bool notifyCharacter(const char c) {
-        bool rc = false;
-        const char curChar =  memory::read((void*) (_address + _cursor), _source);
-        const char nextChar =  memory::read((void*) (_address + _cursor + 1), _source);
-
-        if (curChar == c) {
-            _cursor++;
-
-        } else {
-            _lastMatchIndex = _cursor - 1;
-            _cursor = 0;
-        }
-
-        // if we're at the end of the match string,
-        // see if we matched
-        if (nextChar == 0) {
-            rc = (_cursor != 0);
-            reset();
-        }
-
-        return rc;
-    }
-
-    uint16_t _address;
-    memory::MemoryType _source;
-    uint8_t _cursor;
-    uint8_t _lastMatchIndex;
-
-};
-
-
-static const PROGMEM char _curUpEsc[] = "\e[A";
 static const PROGMEM char _bsCoelEsc[] = "\010\e[K";
 static const PROGMEM char _clCrEsc[] = "\e[2K\r";
 
+extern bool cliRxEscapeFilter(Pipe* p, uint8_t* data);
 
 // The main entry point for the CLI Thread
 int cliMain() {
-    TextPipe rx(_cliRxPipeName, CLI_RX_PIPE_BYTES);
-    TextPipe tx(_cliTxPipeName, CLI_TX_PIPE_BYTES);
-    Usart serial(CLI_BAUD, &rx, &tx);
+    TextPipe rxObj(_cliRxPipeName, CLI_RX_PIPE_BYTES);
+    TextPipe txObj(_cliTxPipeName, CLI_TX_PIPE_BYTES);
 
-    SearchCapture _curUp(_curUpEsc, memory::MemoryType::FLASH);
+    TextPipe* rx = &rxObj;
+    TextPipe* tx = &txObj;
+    
+    Usart serial(CLI_BAUD, rx, tx);
+
     char prevLine[CLI_CMD_LINE_BUFFER_BYTES];
     char cmdLine[CLI_CMD_LINE_BUFFER_BYTES];
     int16_t cursorPosition = 0L;
 
 #ifndef CLI_VT100
-    tx.setOutputType(OutputType::TEXT_ONLY);
+    tx->setOutputType(OutputType::TEXT_ONLY);
+#else
+    rx->setReadFilter(cliRxEscapeFilter);
 #endif
 
-    displayWelcome(&rx, &tx);
-    displayPrompt(&rx, &tx);
+    displayWelcome(rx, tx);
+    displayPrompt(rx, tx);
 
     while (true) {
         bool echo = true;
         uint8_t input = 0;
 
         // blocking call to read() to gather keystrokes from the USART
-        if (rx.read(&input, true)) {
-
-            // see if it was a cursor up
-            if (tx.getOutputType() == VT100 && _curUp.notifyCharacter(input)) {
-
-                // clear the current line and re-display the prompt
-                tx << PGM(_clCrEsc);
-                displayPrompt(&rx, &tx);
-
-                // restore the history to the command line
-                memcpy((uint8_t*) cmdLine, (uint8_t*) prevLine, CLI_CMD_LINE_BUFFER_BYTES);
-                cursorPosition = strlen(cmdLine);
-
-                // output the command line to the console
-                tx << cmdLine;
-
-                echo = false;
-                continue;
-            }
+        if (rx->read(&input, true)) {
 
             switch (input) {
+                case 0xEF:              // cursor up
+                    // clear the current line and re-display the prompt
+                    *tx << PGM(_clCrEsc);
+                    displayPrompt(rx, tx);
+
+                    // restore the history to the command line
+                    memcpy((uint8_t*) cmdLine, (uint8_t*) prevLine, CLI_CMD_LINE_BUFFER_BYTES);
+                    cursorPosition = strlen(cmdLine);
+
+                    // output the command line to the console
+                    *tx << cmdLine;
+                    echo = false;
+                break;
+
                 case TAB:
                     cmdLine[cursorPosition] = '*';
-                    handleTabCompletion(&rx, cmdLine, cursorPosition);
+                    handleTabCompletion(rx, cmdLine, cursorPosition);
                     cmdLine[cursorPosition] = 0;
                     echo = false;
                 break;
 
                 case ESCAPE:
                     // clear the line and start fresh
-                    if (cursorPosition > 0 && tx.getOutputType() == OutputType::VT100) {
+                    if (cursorPosition > 0 && tx->getOutputType() == OutputType::VT100) {
                         // clear command line
-                        tx << PGM(_clCrEsc);
+                        *tx << PGM(_clCrEsc);
 
                         // begin again
                         memset((uint8_t*) cmdLine, 0, sizeof(cmdLine));
                         cursorPosition = 0;
-                        displayPrompt(&rx, &tx);
+                        displayPrompt(rx, tx);
                     }
                     echo = false;
                 break;
@@ -313,16 +271,16 @@ int cliMain() {
                         cmdLine[cursorPosition] = 0;
 
                         // backspace + clear to end of line
-                        tx << PGM(_bsCoelEsc);
+                        *tx << PGM(_bsCoelEsc);
 
                     } else {
-                        tx << (char) BELL;
+                        *tx << (char) BELL;
                     }
                 break;
 
                 case CR:
                     echo = false;
-                    tx << endl;
+                    *tx << endl;
 
                     // only rememeber the command line if there is something on it
                     if (cursorPosition) {
@@ -331,13 +289,13 @@ int cliMain() {
                         memcpy((uint8_t*) prevLine, (uint8_t*) cmdLine, CLI_CMD_LINE_BUFFER_BYTES);
 
                         // send the command line off for processing
-                        processCommandLine(&rx, &tx, cmdLine);
+                        processCommandLine(rx, tx, cmdLine);
                     }
 
                     // begin again
                     memset((uint8_t*) cmdLine, 0, sizeof(cmdLine));
                     cursorPosition = 0;
-                    displayPrompt(&rx, &tx);
+                    displayPrompt(rx, tx);
                 break;
 
                 default:
@@ -347,17 +305,27 @@ int cliMain() {
 
                     } else {
                         echo = false;
-                        tx << (char) BELL;
+                        *tx << (char) BELL;
                     }
                 break;
             }
 
             if (echo) {
-                tx << (char) input;
+                *tx << (char) input;
             }
         }
     }
 
+    // even though these will never be called,
+    // if that changes, it's good to have this
+    // here to avoid leaks
+    delete tx;
+    tx = 0UL;
+
+    delete rx;
+    rx = 0UL;
+
+    // bail
     return 0;
 }
 
