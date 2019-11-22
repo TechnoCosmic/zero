@@ -19,7 +19,6 @@
 
 
 using namespace zero;
-using namespace zero::memory;
 
 
 static const uint32_t STACK_WARN_PERCENTAGE = 75UL;
@@ -66,10 +65,10 @@ static const PROGMEM char STATE_READY[] = "ready";
 static const PROGMEM char STATE_PAUSED[] = "paused";
 static const PROGMEM char STATE_WAITING[] = "waiting";
 static const PROGMEM char STATE_JOINING[] = "joining";
-static const PROGMEM char STATE_TERMINATED[] = "terminated";
 static const PROGMEM char STATE_WAITATOMICWR[] = "wait lock";
 static const PROGMEM char STATE_PIPEREAD[] = "pipe read";
 static const PROGMEM char STATE_PIPEWRITE[] = "pipe write";
+static const PROGMEM char STATE_TERMINATED[] = "terminated";
 
 
 static const char* _stateString[] = {
@@ -78,10 +77,10 @@ static const char* _stateString[] = {
     STATE_PAUSED,
     STATE_WAITING,
     STATE_JOINING,
-	STATE_TERMINATED,
     STATE_WAITATOMICWR,
 	STATE_PIPEREAD,
 	STATE_PIPEWRITE,
+	STATE_TERMINATED,
 };
 
 
@@ -91,10 +90,10 @@ static const Color _stateColor[] = {
     Color::YELLOW,
     Color::YELLOW,
     Color::YELLOW,
-    Color::RED,
     Color::YELLOW,
     Color::CYAN,
     Color::MAGENTA,
+    Color::RED,
 };
 
 

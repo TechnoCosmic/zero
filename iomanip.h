@@ -38,6 +38,7 @@ namespace zero {
         uint8_t _base;
     };
 
+    #define bin setbase(2)
     #define oct setbase(8)
     #define dec setbase(10)
     #define hex setbase(16)

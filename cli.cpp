@@ -28,9 +28,6 @@ static const char TAB = 9;
 static const char CR = 13;
 static const char ESCAPE = 27;
 
-#define CLI_RX "cli_rx"
-#define CLI_TX "cli_tx"
-
 static const PROGMEM char _cliRxPipeName[] = CLI_RX;
 static const PROGMEM char _cliTxPipeName[] = CLI_TX;
 

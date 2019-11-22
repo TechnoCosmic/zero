@@ -10,7 +10,6 @@
 #include "pagemanager.h"
 
 using namespace zero;
-using namespace zero::memory;
 
 
 // bit-field manipulation macros
@@ -139,7 +138,7 @@ static int16_t (*_strategies[])(const uint16_t, const uint16_t) = {
 // This is the main workhorse for the memory allocator. Using only the search strategy supplied,
 // find a supplied number of continguously available pages.
 template <uint16_t PAGE_COUNT>
-int16_t PageManager<PAGE_COUNT>::findFreePages(const uint16_t numPagesRequired, const SearchStrategy strat) {
+int16_t PageManager<PAGE_COUNT>::findFreePages(const uint16_t numPagesRequired, const memory::SearchStrategy strat) {
     int16_t startPage = -1;
     uint16_t pageCount = 0;
 

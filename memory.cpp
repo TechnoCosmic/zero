@@ -17,7 +17,6 @@
 #include "util.h"
 
 using namespace zero;
-using namespace zero::memory;
 
 
 // We use this to let the compiler reserve the SRAM for us.

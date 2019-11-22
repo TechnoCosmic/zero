@@ -14,11 +14,15 @@
 #include "textpipe.h"
 
 
+// this is the Thread entry point for the CLI itself, should you wish to launch the CLI
 extern int cliMain();
 
+#define CLI_RX "cli_rx"
+#define CLI_TX "cli_tx"
 
 namespace zero {
 
+    // This is the function signature for a CLI command
     typedef int (*CliEntryPoint)(TextPipe* rx, TextPipe* tx, int argc, char* argv[]);
 
     class CliCommand {
@@ -39,7 +43,7 @@ namespace zero {
 		const PROGMEM char _cmdName_##v[] = #v;	                	\
 		CliCommand v(_cmdName_##v,[]fn)
 #else
-    #define clicommand(v,fn) ;                                       
+    #define clicommand(v,fn) ;
 #endif
 
 }
