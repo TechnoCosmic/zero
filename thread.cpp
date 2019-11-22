@@ -87,7 +87,7 @@ static void globalThreadEntry(Thread* t) {
 		t->remove();
 	
 		// tidy up if it's an auto cleanup job...
-		if (t->_launchFlags & TLF_AUTO_CLEANUP) {
+		if (t->_flags & TF_AUTO_CLEANUP) {
 			t->cleanup();
 	
 		} else {
@@ -129,7 +129,7 @@ void Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const bool e
 // configure the Thread object ready for the execution of a new Thread
 void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const uint16_t flags) {
 	// prepare the stack and registers
-	Thread::prepareStack(stack, stackSize, !(flags & TLF_QUICK));
+	Thread::prepareStack(stack, stackSize, !(flags & TF_QUICK));
 
 	_sreg = 0;
 #ifdef RAMPZ
@@ -149,14 +149,14 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 	_systemData._objectName = TOT(name, DEFAULT_THREAD_NAME);
 
 	// initial housekeeping data
-	if (flags & TLF_READY) {
+	if (flags & TF_READY) {
 		_state = TS_READY;
 	} else {
 		_state = TS_PAUSED;
 	}
 
 	_quantumTicks = TOT(quantumOverride, TIMESLICE_MS);
-	_launchFlags = flags;
+	_flags = flags;
 	_blockInfo = 0UL;
 
 #ifdef INSTRUMENTATION
@@ -167,7 +167,7 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 
 // creates the idle thread, for running when nothing else wants to
 Thread* Thread::createIdleThread() {
-	return new Thread(_idleThreadName, 0, 5, [](){ while (1); return 0; }, TLF_READY | TLF_AUTO_CLEANUP);
+	return new Thread(_idleThreadName, 0, 5, [](){ while (1); return 0; }, TF_READY | TF_AUTO_CLEANUP);
 }
 
 
@@ -214,22 +214,14 @@ bool Thread::setParameter(const uint8_t parameterNumber, const uint16_t v) {
 #define SCALE(x) ((F_CPU * (x)) / 16000000UL)
 
 // Initializes and starts the pre-emptive scheduler
-
-// NOTE: Timer2 is used here, because on most ATmega MCUs, that's an
-// 8-bit timer with a /128 pre-scalar option. This pre-scalar is used
-// because it has the resolution to scale up and down with the chosen
-// clock speed, without needing to use a 16-bit timer.
-// Feel free to relocate this to another timer if you need to. Just
-// make sure it ticks every millisecond at your chosen MCU frequency.
-
 void Thread::init() {
-	// 8-bit Timer/Counter2
-	power_timer2_enable();
-	TCNT2 = 0;											// reset counter to 0
-	TCCR2A = (1 << WGM21);								// CTC
-	TCCR2B = (1 << CS22) | (1 << CS20);					// /128 prescalar
-	OCR2A = SCALE(125UL)-1;								// 1ms
-	TIMSK2 |= (1 << OCIE2A);							// enable ISR
+	// 8-bit Timer/Counter0
+	power_timer0_enable();
+	TCNT0 = 0;											// reset counter to 0
+	TCCR0A = (1 << WGM01);								// CTC
+	TCCR0B = (1 << CS02);								// /256 prescalar
+	OCR0A = SCALE(63UL)-1;								// 1ms
+	TIMSK0 |= (1 << OCIE0A);							// enable ISR
 
 	// set up the idle Thread
 	_idleThread = Thread::createIdleThread();
@@ -310,7 +302,7 @@ static inline void restoreContext(Thread* t) {
 // over to another Thread of the scheduler's choosing
 static void yield() {
 	saveCurrentContext(_currentThread);
-	TIMSK2 &= ~(1 << OCIE2B);					// switch off context switch ISR
+	TIMSK0 &= ~(1 << OCIE0B);					// switch off context switch ISR
 	restoreContext(selectNextThread());
 }
 
@@ -421,7 +413,7 @@ int Thread::join() {
 
 	// join can only occur on Threads
 	// that do NOT auto-cleanup
-	if (!(_launchFlags & TLF_AUTO_CLEANUP)) {
+	if (!(_flags & TF_AUTO_CLEANUP)) {
 
 		// block the *calling* Thread until *this* Thread terminates
 		if (_state != TS_TERMINATED) {
@@ -470,17 +462,17 @@ void Thread::unblock(const ThreadState state, const uint32_t blockInfo) {
 }
 
 
-// triggers Timer2 COMPB ISR, which will do the switch
+// triggers Timer0 COMPB ISR, which will do the switch
 static void triggerContextSwitch() {
 	if (Thread::isSwitchingEnabled()) {
-		OCR2B = TCNT2;
-		TIMSK2 |= (1 << OCIE2B);
+		OCR0B = TCNT0;
+		TIMSK0 |= (1 << OCIE0B);
 	}
 }
 
 
 // millisecond timer ISR
-ISR(TIMER2_COMPA_vect) {
+ISR(TIMER0_COMPA_vect) {
 	cli();
 	_milliseconds++;
 
@@ -489,26 +481,23 @@ ISR(TIMER2_COMPA_vect) {
 	_currentThread->_lowestSp = MIN(_currentThread->_lowestSp, SP);
 #endif
 
-	if (Thread::isSwitchingEnabled()) {
-		// subtract from the time remaining in the quantum
-		if (_currentThread->_remainingTicks > 0) {
-			_currentThread->_remainingTicks--;
-		}
+	// subtract from the time remaining in the quantum
+	if (_currentThread->_remainingTicks > 0) {
+		_currentThread->_remainingTicks--;
+	}
 
-		// if the Thread is OUTATIME...
-		if (_currentThread->_remainingTicks == 0) {
-			triggerContextSwitch();
-		}
+	if (Thread::isSwitchingEnabled() && _currentThread->_remainingTicks == 0) {
+		triggerContextSwitch();
 	}
 
 	// we don't have to re-enable ISRs here, because
-	// this *is* an ISR, meaning it will finish with
-	// 'reti', which will re-enable ISRs for us
+	// this *is* an ISR, meaning GCC will finish it
+	// with 'reti', which will re-enable ISRs for us
 }
 
 
 // context switch ISR
-ISR(TIMER2_COMPB_vect, ISR_NAKED) {
+ISR(TIMER0_COMPB_vect, ISR_NAKED) {
 	yield();
 }
 
@@ -522,8 +511,6 @@ uint64_t Thread::now() {
 
 
 extern void startup_sequence();
-
-// int main() __attribute__((__naked__));
 
 // normal main() to start the system off
 int main() {
