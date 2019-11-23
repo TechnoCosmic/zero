@@ -36,7 +36,7 @@ namespace zero {
     const uint16_t CLI_TX_PIPE_BYTES = 96;
 
     // CLI stack size
-    const uint16_t CLI_STACK_BYTES = 512;
+    const uint16_t CLI_STACK_BYTES = 576;
 
     // CLI command line buffer size
     const uint16_t CLI_CMD_LINE_BUFFER_BYTES = 80;
