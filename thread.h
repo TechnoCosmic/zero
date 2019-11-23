@@ -18,13 +18,14 @@
 
 
 #define ZERO_BUILD_VERSION 0
-#define ZERO_BUILD_REVISION 9
+#define ZERO_BUILD_REVISION 10
 
 static const uint8_t THREAD_MIN_STACK_BYTES = 48;
 
 namespace zero {
 
 	typedef int (*ThreadEntryPoint)();
+	typedef uint16_t SignalMask;
 
 	enum ThreadState {
 		TS_RUNNING,								// Thread is currently executing. Only one Thread can have this state at a time
@@ -32,9 +33,6 @@ namespace zero {
 		TS_PAUSED,								// Thread is suspended and must be programmatically made ready via ::run()
 		TS_WAITING,								// Thread is blocked until a specific time
 		TS_JOINING,								// Thread is blocked waiting for another Thread to terminate
-		TS_WAIT_ATOMIC_WRITE,					// Thread is blocked, waiting for exclusive write access to a Pipe
-		TS_PIPE_READ,							// Thread is blocked, waiting for a Pipe to contain data to read
-		TS_PIPE_WRITE,							// Thread is blocked, waiting to room to be created in a Pipe so it can write to it
 		TS_TERMINATED,							// Thread is terminated, will not run again, and is awaiting cleanup
 	};
 
@@ -43,8 +41,6 @@ namespace zero {
 
 	const uint16_t TF_READY = 1;				// Thread is ready to run as soon as the scheduler allows
 	const uint16_t TF_AUTO_CLEANUP = 2;			// Thread will clean up after itself upon termination
-	const uint16_t TF_QUICK = 4;				// Quick launch - bypass niceties like clearing stack memory
-	const uint16_t TF_POOL = 8;					// Thread is part of a Thread Pool. Tells the cleanup to recycle.
 
 	// Thread class
 	class Thread {
@@ -74,6 +70,14 @@ namespace zero {
 		bool remove();							// removes a Thread from the readylist
 		bool cleanup();							// cleans up memory after a Thread is terminated
 		void waitUntil(const uint32_t untilMs);	// blocks a Thread until a given time
+
+		// Signalling (thread_signals.cpp)
+		uint8_t allocateSignal();				// finds and allocates a spare signal
+		void freeSignal(const uint8_t sigNum);	// frees up a signal for re-use
+		SignalMask wait(const SignalMask sigs);	// blocks for certain signals
+		void signal(const SignalMask sigs);		// signal the Thread
+		SignalMask getCurrentSignals();			// get the current signals
+		SignalMask getWaitingSignals();			// get the signals that the Thread is currently waiting on
 
 		// Properties (thread_info.cpp)
 		uint16_t getThreadId();					// returns the Thread's unique ID
@@ -125,10 +129,14 @@ namespace zero {
 		void configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const uint16_t flags);
 
 		// prepares the stack of the Thread with the Thread's entry point and default register/parameter values
-		void prepareStack(uint8_t* stack, const uint16_t stackSize, const bool quick);
+		void prepareStack(uint8_t* stack, const uint16_t stackSize);
 
 		uint8_t* _stackBottom;					// the address of the lowest end of the stack
 		uint16_t _stackSizeBytes;				// the size of the stack, in bytes
+
+		SignalMask _allocatedSignals;			// the signals currently allocated for the Thread
+		SignalMask _waitingSignals;				// the signals that the Thread is currently blocked on
+		SignalMask _currentSignals;				// the signals that the Thread has been woken up for
 	};
 
 }

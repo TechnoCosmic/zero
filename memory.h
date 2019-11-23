@@ -31,7 +31,7 @@ namespace zero {
 		void* reallocate(const void* oldMemory, const uint16_t oldNumBytes, const uint16_t newNumBytes, uint16_t* allocatedBytes, const SearchStrategy strategy);
 
 		// free up a previously allocated chunk of memory
-		void deallocate(const void* address, uint16_t numBytes);
+		void free(const void* address, uint16_t numBytes);
 
 		// reads a byte from a given memory type
 		uint8_t read(const void* address, const MemoryType memType);

@@ -23,22 +23,28 @@ EFUSE = 0xFF
 # remainder to the dynamic allocator.
 # change these as you need
 
-# amtForAllocator = HEAP_END_HEX - 0x100 (HEAP_START_HEX)
+# memory for allocator = HEAP_END_HEX - 0x100 (HEAP_START_HEX)
 HEAP_START_HEX = 0100
+
 
 ifeq ($(AVRDUDE_PART),m328p)
 	MCU = atmega328p
-	HEAP_END_HEX = 0500
+	HEAP_END_HEX = 0700
 endif
 
 ifeq ($(AVRDUDE_PART),m644p)
 	MCU = atmega644p
-	HEAP_END_HEX = 0D00
+	HEAP_END_HEX = 1E00
 endif
 
 ifeq ($(AVRDUDE_PART),m1284p)
 	MCU = atmega1284p
-	HEAP_END_HEX = 3D00
+	HEAP_END_HEX = 3E00
+endif
+
+ifeq ($(AVRDUDE_PART),m2560)
+	MCU = atmega2560
+	HEAP_END_HEX = 1E00
 endif
 
 

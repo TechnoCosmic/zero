@@ -62,7 +62,9 @@ static const PROGMEM char _speed[] = "MHz system";
 
 // displays the 'startup' welcome message
 void displayWelcome(TextPipe* rx, TextPipe* tx) {
-    *tx << dec << white << PGM(_welcomeText) << 'v' << ZERO_BUILD_VERSION << '.' << ZERO_BUILD_REVISION << endl;
+    *tx << setreverse(false) << settextcolor(Color::WHITE) << setbackcolor(Color::BLACK) << dec;
+
+    *tx << PGM(_welcomeText) << 'v' << ZERO_BUILD_VERSION << '.' << ZERO_BUILD_REVISION << endl;
     *tx << PGM(_cliOnUsart) << (int32_t) CLI_BAUD << PGM(_bps) << endl;
     *tx << (int) (F_CPU / 1000000UL) << PGM(_speed) << endl;
 }
@@ -150,7 +152,7 @@ void CliCommand::shell(const char* commandLine) {
             processCommandLine((TextPipe*) rx, (TextPipe*) tx, cmdLine);
         }
 
-        memory::deallocate(cmdLine, allocated);
+        memory::free(cmdLine, allocated);
         cmdLine = 0UL;
     }
 }
@@ -161,7 +163,7 @@ void handleTabCompletion(TextPipe* cliInputPipe, char* commandLine, const int16_
 
     // step to the previous whitespace
     while (--pos) {
-        if (commandLine[pos] == ' ') {
+        if (isspace(commandLine[pos])) {
             pos++;
             break;
         }

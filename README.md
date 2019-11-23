@@ -23,15 +23,16 @@ zero is very much an active project. Some of the more impactful features planned
 
 Major things in the updates will be listed here. Bug fixes, refactoring, tidy ups are all implied in every update, so they won't be mentioned.
 
-| Date | Ver | Comments |
-| ---- | ---:| -------- |
-2019-11-23 | 0.9 | Back to Timer0 because reasons
-2019-11-19 | 0.8 | Reimplemented `CliCommand::execute()` as `CliCommand::shell()`
-2019-11-18 | 0.7 | Bits and pieces, nothing super eventful
-2019-11-17 | 0.6 | Single line command history added to CLI
-2019-11-16 | 0.5 | Idle thread set up code heavily cut. Prep for data structure footprint shrink
-2019-11-15 | 0.4 | Overhaul of how SRAM is handled - see the top of the `makefile` for info
-2019-11-14 | 0.3 | Initial implementation of `Thread::waitUntil()` for a blocking `delay()`
+| Date     |  Ver | Comments |
+| -------- | ----:| -------- |
+2019-11-24 | 0.10 | Initial implementation of Amiga Exec style Signals
+2019-11-23 |  0.9 | Back to Timer0 because reasons
+2019-11-19 |  0.8 | Reimplemented `CliCommand::execute()` as `CliCommand::shell()`
+2019-11-18 |  0.7 | Bits and pieces, nothing super eventful
+2019-11-17 |  0.6 | Single line command history added to CLI
+2019-11-16 |  0.5 | Idle thread set up code heavily cut. Prep for data structure footprint shrink
+2019-11-15 |  0.4 | Overhaul of how SRAM is handled - see the top of the `makefile` for info
+2019-11-14 |  0.3 | Initial implementation of `Thread::waitUntil()` for a blocking `delay()`
 
 ## Licensing
 
@@ -224,7 +225,7 @@ After accounting for zero page memory and room for your globals at the front of 
 
 When your program calls `memory::allocate()`, zero searches a very small bit array that keeps track of which of these pages are available, and which are currently in use. If zero finds the number of continguous bytes you asked for, it returns you the address of the start of that block, similar to `malloc()`.
 
-When you're done using that memory, your program is expected to call `memory::deallocate()` to make it available again. Unlike some other memory management systems, zero does not track what pages *each thread* currently owns. This means that when you call `memory::deallocate()`, you must also tell zero how much SRAM to make available again.
+When you're done using that memory, your program is expected to call `memory::free()` to make it available again. Unlike some other memory management systems, zero does not track what pages *each thread* currently owns. This means that when you call `memory::free()`, you must also tell zero how much SRAM to make available again.
 
 There is also a `memory::reallocate()` function that behaves similarly to POSIX `realloc()` insofar as it will find a new chunk of memory of a new size, copy whatever fits from the old chunk to the new chunk, and then free the old chunk. There are plans afoot to make the reallocation algorithm smarter and faster in certain circumstances.
 
@@ -429,7 +430,7 @@ I like a tidy screen, and `clear` does that. :)
 
 ### Gremlins
 
-The very first thing on troubleshooting - if it looks weird and unexplainable, perhaps even supernatural, then check you've given EVERYTHING plenty of memory - stacks, pipes, allowances for the dynamic allocator and so forth (all found in `zero_config.h`). A great portion of the time, code that used to work and now suddenly doesn't (especially code you'd swear up and down was unrelated) is usually the result of too small a stack, or something along those lines.
+The very first thing on troubleshooting - if it looks weird and unexplainable, perhaps even supernatural, then check you've given EVERYTHING plenty of memory - stacks, pipes, allowances for the dynamic allocator and so forth (all found in `zero_config.h`). A great portion of the time, code that used to work and now suddenly doesn't (especially code you'd swear up and down was unrelated) is usually the result of too small a stack, or something along those lines. See the section below about the dynamic memory system and how to adjust the SRAM usage.
 
 ### Garbage with text on USART with CLI
 
@@ -446,19 +447,19 @@ zero has a properly pre-emptive scheduler, providing full context save and resto
 
 ### Thread Control Block Structure
 
-A `Thread` in zero is a handful of bytes of information regarding it's name (a pointer into Flash memory, not precious SRAM), it's entry point, it's current state, launch flags, stack information, and so on. Details can be found in `thread.h`. One main piece of information is how much of it's quantum is left before it will be booted out in favour of another Thread, `_remainingTicks`. When this reaches 0, the Thread will be pre-empted. One tick is currently one (1) millisecond. By default, zero Threads have a 15ms quantum. You can change the default in `zero_config.h`. You can also give each Thread it's own timeslice setting, by supplying a non-zero value to the `quantumOverride` argument.
+A `Thread` in zero is a handful of bytes of information regarding it's name (a pointer into Flash memory, not precious SRAM), it's entry point, it's current state, launch flags, stack information, and so on. Details can be found in `thread.h`. One main piece of information is how much of it's quantum is left before it will be booted out in favour of another Thread, `_remainingTicks`. When this reaches 0, the Thread will be pre-empted. One tick is currently one (1) millisecond. By default, zero Threads have a 15ms quantum. You can change the default in `zero_config.h`. You can even give each Thread it's own timeslice setting, by supplying a non-zero value to the `quantumOverride` argument in the constructor to the Thread class.
 
 ### Scheduler Operation
 
-The scheduler maintains a solitary doubly-linked list of Threads, be they ready, running, blocked, or otherwise. This will change to a more optimal mechanism in the not-too-distant future. Whether triggered by the ISR, or via `::block()`, a context switch is started by a call to `yield()` or `yield_to()` (implemented in `thread.cpp`). A context switch consists of three main steps...
+The scheduler maintains a solitary doubly-linked list of Threads, be they ready, running, blocked, or otherwise. This will change to a more optimal mechanism in the not-too-distant future. Whether triggered by the ISR, or via `::block()`, a context switch is started by a call to `yield()` (implemented in `thread.cpp`). A context switch consists of three main steps...
 
-- Preserve the current contents of all registers onto the current Thread's stack. This is implemented by an inline assembly language macro found in `thread_macros.h`. zero also preserves the contents of the SP, SREG, and RAMPZ (if applicable). Some kernels save SREG on the Thread's stack, others in the Thread object. zero stores it in the Thread object. This is done in `saveCurrentContext()`.
+1) Preserve the current contents of all registers on the current Thread's stack. This is implemented by an inline assembly language macro found in `thread_macros.h`. zero also preserves the contents of the SP, SREG, and RAMPZ (if applicable). Some kernels save SREG on the Thread's stack, others in the Thread object. zero stores it in the Thread object. This is done in `saveCurrentContext()`.
 
-**NOTE:** As part of this step, the SP is temporarily updated to the original SP that was in place when the main initialisation of the kernel occurred (just prior to starting the scheduler). This is considered the kernel stack, and is the stack used by the next step. This is so that individual Thread stacks don't need to account for any extra kernel overhead.
+**NOTE:** As part of this step, the SP is temporarily updated to the original SP that was in place when the main initialisation of the kernel occurred (just prior to starting the scheduler). This is considered the kernel stack, and is the stack used by the next step. This is so that individual Thread stacks don't need to account for any extra kernel overhead. This so-called kernel stack is always at the end of the SRAM address space.
 
-- Choose the next Thread to resume. This is done via a call to `selectNextThread()`. It simply steps through the Thread list, stopping when it comes to a Thread that is ready to run, looping back to the head of the list if necessary.
+2) Choose the next Thread to resume. This is done via a call to `selectNextThread()`. It simply steps through the Thread list, stopping when it comes to a Thread that is ready to run, looping back to the head of the list if necessary.
 
-- Restore the context of the newly chosen Thread. This is done in `restoreContext()`.
+3) Restore the context of the newly chosen Thread. This is done in `restoreContext()`. This consists mainly of reversing the smaller steps taken back in step one of this process, but for the newly selected Thread.
 
 At this point, the yield finishes with a `reti` instruction, which pops the new Thread's PC off the Thread's own stack, re-enables ISRs, and the chosen Thread's execution resumes immediately.
 
@@ -494,7 +495,28 @@ The possibilities are...
 
 In typical memory allocators, the search for free space usually begins at regions towards the lower end of address space, proceeeding upwards. The `BottomUp` strategy is this same method, beginning it's search at page 0, proceeding upwards into higher pages.
 
-**NOTE:** Page 0 is NOT page zero in the MCU. Page 0, as far the PageManager is concerned, is the first page in whatever physical area of SRAM the compiler assigned to the `uint8_t` array that is used. This array is called `_memoryArea` found in `memory.cpp`. It is this array that is the reason that GCC will show a huge amount of data used.
+**TANGENT:** Page 0 is NOT page zero in the MCU. Page 0, as far as zero's `PageManager` is concerned, is the first page in whatever physical area of SRAM the compiler assigned to the `uint8_t` array that is used. This array is called `_memoryArea` found in `memory.cpp`. The positioning and size of the chunk of SRAM assigned to the allocator is changed in the `makefile` itself. The section looks something similar to this...
+
+```
+# memory for allocator = HEAP_END_HEX - 0x100 (HEAP_START_HEX)
+HEAP_START_HEX = 0100
+
+
+ifeq ($(AVRDUDE_PART),m328p)
+	MCU = atmega328p
+	HEAP_END_HEX = 0600
+endif
+
+ifeq ($(AVRDUDE_PART),m644p)
+	MCU = atmega644p
+	HEAP_END_HEX = 1E00
+endif
+```
+There are more sections, one for each MCU currently supported or in testing. The `_memoryArea` array mentioned above has attributes that GCC will use to place this array in a different section of the ELF file, called `.heap`. These sections in the makefile serve to control where in SRAM the `.heap` will be sized and situated. By default, the heap area starts at `0x100`, which is immediately after the AVR's 256-byte I/O page. You can adjust `HEAP_START_HEX` and `HEAP_END_HEX` as you need, striking a balance between SRAM available for global variables and kernel stack versus SRAM available to the allocator for dynamic assignment.
+
+**TANGENT NOTE:** The `.heap` array does not show up in the output of `avr-size` (run towards the end of the build in the default makefile), as the summary only shows the sizes of the `.data` + `.bss` + `.noinit` sections. Therefore, the size shown in `avr-size` is an accurate reflection of the amount of SRAM your program needs for globals. Add about 64 bytes or so onto that to allow for kernel stack space, and the remainder can then be assigned to the dynamic allocator.
+
+For example, at the time of writing this section of the documentation, the 328P reference build (with all the yucky private testing CLI commands and awesome as-yet-unreleased extras) shows 422 bytes of `.data` + `.bss` + `.noinit`. Add on a handful of bytes to allow for kernel stack, and I need to keep about 480 bytes of SRAM available. Let's call it 512, just to be sure. The remaining 1536 bytes (2K - 512 bytes) can be given to the heap. As the real start of SRAM is `0100` because of the I/O space below that, I should set `HEAP_END_HEX` to `0700` (`0100` + 1536 bytes).
 
 `TopDown`
 

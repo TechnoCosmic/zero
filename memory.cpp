@@ -69,8 +69,12 @@ void* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedByte
                 *allocatedBytes = numPages * PAGE_BYTES;
             }
 
+            // clear the memory
+            const uint16_t startAddress = getAddressForPage(startPage);
+            memset((uint8_t*) startAddress, 0, numPages * PAGE_BYTES);
+
             // outta here
-            return (uint8_t*) getAddressForPage(startPage);
+            return (uint8_t*) startAddress;
         }
 
         // outta here
@@ -82,7 +86,7 @@ void* memory::allocate(const uint16_t numBytesRequested, uint16_t* allocatedByte
 // Frees up a chunk of previously allocated memory. In the interests of performance,
 // there is no checking that the Thread 'owns' the memory being freed, nor is there
 // a check to see if the memory was even allocated in the first place.
-void memory::deallocate(const void* address, const uint16_t numBytes) {
+void memory::free(const void* address, const uint16_t numBytes) {
     if (!numBytes) return;
 
 	uint16_t numPages = getNumPagesForBytes(numBytes);
@@ -145,7 +149,7 @@ void* memory::reallocate(   const void* oldMemory,       // the old memory previ
             memcpy((uint8_t*) newMemory, (uint8_t*) oldMemory, MIN(oldNumBytes, allocated));
 
             // free up the old memory
-            memory::deallocate(oldMemory, oldNumBytes);
+            memory::free(oldMemory, oldNumBytes);
         }
 
 exit:

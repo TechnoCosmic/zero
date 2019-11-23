@@ -24,6 +24,8 @@ using namespace zero;
 static const uint32_t STACK_WARN_PERCENTAGE = 75UL;
 static const uint32_t STACK_SCREAM_PERCENTAGE = 95UL;
 
+static const PROGMEM char _dblSpace[] = "  ";
+
 
 // format a millisecond input as hr:mn:ss.mmm
 // directly into a supplied Pipe
@@ -65,9 +67,6 @@ static const PROGMEM char STATE_READY[] = "ready";
 static const PROGMEM char STATE_PAUSED[] = "paused";
 static const PROGMEM char STATE_WAITING[] = "waiting";
 static const PROGMEM char STATE_JOINING[] = "joining";
-static const PROGMEM char STATE_WAITATOMICWR[] = "wait lock";
-static const PROGMEM char STATE_PIPEREAD[] = "pipe read";
-static const PROGMEM char STATE_PIPEWRITE[] = "pipe write";
 static const PROGMEM char STATE_TERMINATED[] = "terminated";
 
 
@@ -77,9 +76,6 @@ static const char* _stateString[] = {
     STATE_PAUSED,
     STATE_WAITING,
     STATE_JOINING,
-    STATE_WAITATOMICWR,
-	STATE_PIPEREAD,
-	STATE_PIPEWRITE,
 	STATE_TERMINATED,
 };
 
@@ -90,9 +86,6 @@ static const Color _stateColor[] = {
     Color::YELLOW,
     Color::YELLOW,
     Color::YELLOW,
-    Color::YELLOW,
-    Color::CYAN,
-    Color::MAGENTA,
     Color::RED,
 };
 
@@ -113,7 +106,7 @@ void outputThread(Thread* t, TextPipe* tx) {
     *tx << setfill(' ');
 
     // Thread ID
-    *tx << setw(6) << right << (int32_t) t->getThreadId() << "  ";
+    *tx << setw(6) << right << (int32_t) t->getThreadId() << PGM(_dblSpace);
 
     // name
     *tx << setw(24) << PGM(t->_systemData._objectName);
@@ -170,13 +163,14 @@ void outputThread(Thread* t, TextPipe* tx) {
 
 #ifdef INSTRUMENTATION
 
-    *tx << "  ";
+    *tx << PGM(_dblSpace);
 
     // thread tick count
     displayTime(tx, t->_ticks);
 
 #endif
 
+    // finish the row
     *tx << nouppercase;
     *tx << endl;
 }

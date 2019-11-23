@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include "namedobject.h"
+#include "thread.h"
 #include "memory.h"
 #include "util.h"
 
@@ -53,6 +54,12 @@ namespace zero {
 
         PipeFilter _onRead;
         PipeFilter _onWrite;
+
+		Thread* _currentReader;
+		SignalMask _readSignals;
+
+		Thread* _currentWriter;
+		SignalMask _writeSignals;
 	};
 
 	struct PGM {

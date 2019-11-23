@@ -62,10 +62,7 @@ bool Thread::cleanup() {
 		}
 
 		NamedObject::remove((NamedObject*) this);
-		memory::deallocate(_stackBottom, _stackSizeBytes);
-
-		_stackBottom = 0UL;
-		_stackSizeBytes = 0;
+		memory::free(_stackBottom, _stackSizeBytes);
 
 		delete this;
 		return true;
@@ -106,13 +103,8 @@ static void globalThreadEntry(Thread* t) {
 
 
 // Configure a chunk of memory so it can be used as a stack for a Thread
-void Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const bool erase) {
+void Thread::prepareStack(uint8_t* stack, const uint16_t stackSize) {
 	uint8_t* stackEnd = &stack[stackSize-1];
-
-	if (erase) {
-		// clear the stack space in case it's recycled memory
-		memset(stack, 0, stackSize);
-	}
 
 	// the entry point for the Thread
 	stackEnd[ 0] = ((uint32_t) globalThreadEntry) & 0xFF;
@@ -129,12 +121,7 @@ void Thread::prepareStack(uint8_t* stack, const uint16_t stackSize, const bool e
 // configure the Thread object ready for the execution of a new Thread
 void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const uint16_t flags) {
 	// prepare the stack and registers
-	Thread::prepareStack(stack, stackSize, !(flags & TF_QUICK));
-
-	_sreg = 0;
-#ifdef RAMPZ
-	_rampz = 0;
-#endif
+	Thread::prepareStack(stack, stackSize);
 
 	// so that globalThreadEntry knows what to call
 	_entryPoint = entryPoint;
@@ -157,10 +144,8 @@ void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t st
 
 	_quantumTicks = TOT(quantumOverride, TIMESLICE_MS);
 	_flags = flags;
-	_blockInfo = 0UL;
 
 #ifdef INSTRUMENTATION
-	_ticks = 0UL;
 	_lowestSp = _sp;
 #endif
 }

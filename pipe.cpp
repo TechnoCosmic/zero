@@ -43,7 +43,7 @@ Pipe::Pipe(const char* name, const uint16_t bufferSize, const bool strictSize) {
 Pipe::~Pipe() {
 	if (_buffer) {
 		NamedObject::remove((NamedObject*) this);
-		memory::deallocate((uint8_t*) _buffer, _allocatedBytes);
+		memory::free((uint8_t*) _buffer, _allocatedBytes);
 		
 		_buffer = 0UL;
 		_bufferLength = 0;
@@ -85,12 +85,23 @@ uint16_t Pipe::calcFirstFreeIndex() {
 // in the Pipe. Return true if the data was successfully written to the
 // Pipe, false otherwise.
 bool Pipe::write(const uint8_t data, const bool allowBlock) {
-	if (!allowBlock && isFull()) {
+	bool reallyAllowBlock = allowBlock != 0UL && _currentWriter == 0UL;
+
+	if (!reallyAllowBlock && isFull()) {
 		return false;
 	}
 	
-	while (allowBlock && isFull()) {
-		Thread::block(ThreadState::TS_PIPE_WRITE, (uint32_t) this);
+	while (reallyAllowBlock && isFull()) {
+		_currentWriter = Thread::me();
+
+		// block using the supplied signal mask
+		const uint8_t tempSignalNumber = _currentWriter->allocateSignal();
+
+		_writeSignals = 1L << tempSignalNumber;
+		_currentWriter->wait(_writeSignals);
+		_currentWriter->freeSignal(tempSignalNumber);
+		_writeSignals = 0UL;
+		_currentWriter = 0UL;
 	}
 
 	// NOTE: There is potentially a race condition here if multiple
@@ -113,9 +124,12 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 		if (doIt) {
 			_buffer[calcFirstFreeIndex()] = dataToWrite;
 			_length++;
+
 			// unblock any Thread that was blocked
 			// waiting for data to become available.
-			Thread::unblock(ThreadState::TS_PIPE_READ, (uint32_t) this);
+			if (_currentReader) {
+				_currentReader->signal(_readSignals);
+			}
 		}
 	}
 	
@@ -145,12 +159,23 @@ bool Pipe::write(const char* s, memory::MemoryType source) {
 
 // Reads a byte of data from the Pipe. 
 bool Pipe::read(uint8_t* data, const bool allowBlock) {
-	if (!allowBlock && isEmpty()) {
+	bool reallyAllowBlock = allowBlock != 0UL && _currentReader == 0UL;
+
+	if (!reallyAllowBlock && isEmpty()) {
 		return false;
 	}
 	
-	while (allowBlock && isEmpty()) {
-		Thread::block(ThreadState::TS_PIPE_READ, (uint32_t) this);
+	while (reallyAllowBlock && isEmpty()) {
+		_currentReader = Thread::me();
+
+		// block using the supplied signal mask
+		const uint8_t tempSignalNumber = _currentReader->allocateSignal();
+
+		_readSignals = 1L << tempSignalNumber;
+		_currentReader->wait(_readSignals);
+		_currentReader->freeSignal(tempSignalNumber);
+		_readSignals = 0UL;
+		_currentReader = 0UL;
 	}
 
 	// NOTE: There is potentially a race condition here if multiple
@@ -179,7 +204,11 @@ bool Pipe::read(uint8_t* data, const bool allowBlock) {
 				_start = 0;
 			}
 
-			Thread::unblock(ThreadState::TS_PIPE_WRITE, (uint32_t) this);
+			// unblock the Thread that was waiting for room
+			if (_currentWriter) {
+				_currentWriter->signal(_writeSignals);
+			}
+
 			return true;
 		}
 	}

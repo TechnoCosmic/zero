@@ -20,7 +20,6 @@
 
 
 using namespace zero;
-using namespace zero::memory;
 
 
 const PROGMEM char _unnamedDefault[] = "*** UNNAMED ***";
