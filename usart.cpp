@@ -102,13 +102,3 @@ ISR(USART_UDRE_vect) {
         UDR0 = data; 
     }
 }
-
-Usart& operator<<(Usart& out, const char c) {
-	out.getTxPipe()->write(c, true);
-	return out;
-}
-
-Usart& operator<<(Usart& out, const char* s) {
-	out.getTxPipe()->write(s);
-	return out;
-}

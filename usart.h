@@ -27,7 +27,4 @@ namespace zero {
 
 }
 
-zero::Usart& operator<<(zero::Usart& out, const char c);
-zero::Usart& operator<<(zero::Usart& out, const char* s);
-
 #endif
