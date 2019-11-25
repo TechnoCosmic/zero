@@ -71,27 +71,27 @@ bool Thread::cleanup() {
 
 
 // all threads start in here, so we can clean up after them easily
-static void globalThreadEntry(Thread* t) {
+static void globalThreadEntry(Thread* t, const ThreadEntryPoint entryPoint) {
 	// run the thread, and capture it's return code
-	t->_exitCode = t->_entryPoint();
+	t->_exitCode = entryPoint();
 
 	// tidy up after the Thread
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		// mark it as terminated
-		t->_state = TS_TERMINATED;
+		t->setState(TS_TERMINATED);
 	
 		// remove from the list of running threads
 		t->remove();
-	
+
 		// tidy up if it's an auto cleanup job...
-		if (t->_flags & TF_AUTO_CLEANUP) {
+		if (t->_parent == 0UL || t->_parentJoinSignalNumber == 0) {
 			t->cleanup();
 	
 		} else {
-			// ... or unblock anyone waiting to join()
-			Thread::unblock(TS_JOINING, (uint32_t) t);
+			// ... or unblock our parent waiting to join()
+			t->_parent->signal(1L << t->_parentJoinSignalNumber);
 		}
-		
+
 		// clear this so that context won't be needlessly saved
 		_currentThread = 0UL;
 	}
@@ -102,73 +102,63 @@ static void globalThreadEntry(Thread* t) {
 }
 
 
-// Configure a chunk of memory so it can be used as a stack for a Thread
-void Thread::prepareStack(uint8_t* stack, const uint16_t stackSize) {
-	uint8_t* stackEnd = &stack[stackSize-1];
-
-	// the entry point for the Thread
-	stackEnd[ 0] = ((uint32_t) globalThreadEntry) & 0xFF;
-	stackEnd[-1] = ((uint32_t) globalThreadEntry) >> 8;
-
-	// set the stack pointer to the right place
-	_sp = (uint16_t) &stackEnd[-(REGISTER_COUNT + PC_COUNT)];
-
-	// pass ourselves in as a parameter to the launch function
-	setParameter(0, (uint16_t) this);
-}
-
-
-// configure the Thread object ready for the execution of a new Thread
-void Thread::configureThread(const char* name, uint8_t* stack, const uint16_t stackSize, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const uint16_t flags) {
-	// prepare the stack and registers
-	Thread::prepareStack(stack, stackSize);
-
-	// so that globalThreadEntry knows what to call
-	_entryPoint = entryPoint;
-
-	// stack details
-	_stackBottom = stack;
-	_stackSizeBytes = stackSize;
-
-	// set up system data
-	_tid = _nextTid++;
-	_systemData._objectType = THREAD;
-	_systemData._objectName = TOT(name, DEFAULT_THREAD_NAME);
-
-	// initial housekeeping data
-	if (flags & TF_READY) {
-		_state = TS_READY;
-	} else {
-		_state = TS_PAUSED;
-	}
-
-	_quantumTicks = TOT(quantumOverride, TIMESLICE_MS);
-	_flags = flags;
-
-#ifdef INSTRUMENTATION
-	_lowestSp = _sp;
-#endif
-}
-
-// creates the idle thread, for running when nothing else wants to
-Thread* Thread::createIdleThread() {
-	return new Thread(_idleThreadName, 0, 5, [](){ while (1); return 0; }, TF_READY | TF_AUTO_CLEANUP);
-}
-
-
-// abridged ctor for easier threads
-Thread::Thread(const uint16_t stackSizeBytes, const ThreadEntryPoint entryPoint, const int flags) : Thread(0UL, stackSizeBytes, 0, entryPoint, flags) { }
-
-
 // main ctor
-Thread::Thread(const char* name, const uint16_t stackSizeBytes, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const int flags) {
+Thread::Thread(const char* name, const uint16_t stackSizeBytes, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const ThreadFlags flags) {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
 		uint16_t allocated = 0UL;
 		uint16_t requestedStackBytes = MAX(stackSizeBytes, THREAD_MIN_STACK_BYTES);
-		uint8_t* stackBottom = (uint8_t*) memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_STRATEGY);
+		
+		_stackBottom = (uint8_t*) memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_STRATEGY);
+		_stackSizeBytes = allocated;
 
-		configureThread(name, stackBottom, allocated, quantumOverride, entryPoint, flags);
+		// prepare the stack and registers
+		uint8_t* stackEnd = &_stackBottom[_stackSizeBytes-1];
+
+		// the entry point for the Thread
+		stackEnd[ 0] = ((uint32_t) globalThreadEntry) & 0xFF;
+		stackEnd[-1] = ((uint32_t) globalThreadEntry) >> 8;
+
+		// set the stack pointer to the right place
+		_sp = (uint16_t) &stackEnd[-(REGISTER_COUNT + PC_COUNT)];
+
+		// pass ourselves in as a parameter to the launch function
+		setParameter(0, (uint16_t) this);
+
+		// pass the entry point in as a parameter to the launch function
+		setParameter(1, (uint16_t) entryPoint);
+
+		// pre-allocate the reserved Signals.
+		// at this point in the Thread's life,
+		// these calls are guaranteed to work
+		allocateSignal(SIGNUM_TIMEOUT);
+
+		// set up system data
+		_tid = _nextTid++;
+		_systemData._objectType = THREAD;
+		_systemData._objectName = TOT(name, DEFAULT_THREAD_NAME);
+		_parent = _currentThread;
+
+		// allocate a Signal that this Thread will use
+		// to tell us when it's finished.
+		_parentJoinSignalNumber = -1;
+
+		if (!(flags & TF_AUTO_CLEANUP)) {
+			_parentJoinSignalNumber = _parent->allocateSignal();
+		}
+
+		// initial housekeeping data
+		if (flags & TF_READY) {
+			_state = TS_READY;
+		} else {
+			_state = TS_PAUSED;
+		}
+
+		_quantumTicks = TOT(quantumOverride, TIMESLICE_MS);
+
+#ifdef INSTRUMENTATION
+		_lowestSp = _sp;
+#endif
 
 		// add ourselves to the list of system objects
 		NamedObject::add((NamedObject*) this);
@@ -179,10 +169,21 @@ Thread::Thread(const char* name, const uint16_t stackSizeBytes, const uint8_t qu
 }
 
 
-#define REG_FOR_PARAM(p) (24-((p)*2))
-#define OFFSET_FOR_REG(r) ((r)+1)
+// abridged ctor for easier threads
+Thread::Thread(const uint16_t stackSizeBytes, const ThreadEntryPoint entryPoint, const ThreadFlags flags) : Thread(0UL, stackSizeBytes, 0, entryPoint, flags) { }
 
+
+// creates the idle thread, for running when nothing else wants to
+Thread* Thread::createIdleThread() {
+	return new Thread(_idleThreadName, 0, 5, [](){ while (1); return 0; }, TF_READY | TF_AUTO_CLEANUP);
+}
+
+
+// sets a parameter to the globalThreadEntry function by modifying the prepared stack
 bool Thread::setParameter(const uint8_t parameterNumber, const uint16_t v) {
+	#define REG_FOR_PARAM(p) (24-((p)*2))
+	#define OFFSET_FOR_REG(r) ((r)+1)
+
 	if (parameterNumber >= 0 && parameterNumber <= 8) {
 		const int8_t offset = OFFSET_FOR_REG(REG_FOR_PARAM(parameterNumber));
 		((uint8_t*)0)[_sp+offset+0] = v & 0xFF;
@@ -261,8 +262,8 @@ static inline void saveCurrentContext(Thread* destThread) {
 
 	// reschedule the thread to run again if it simply ran out of time
 	if (destThread) {
-		if (destThread->_state == TS_RUNNING) {
-			destThread->_state = TS_READY;
+		if (destThread->getState() == TS_RUNNING) {
+			destThread->setState(TS_READY);
 		}
 	}
 }
@@ -272,7 +273,7 @@ static inline void saveCurrentContext(Thread* destThread) {
 static inline void restoreContext(Thread* t) {
 	_currentThread = t;
 	_currentThread->_remainingTicks = _currentThread->_quantumTicks;
-	_currentThread->_state = TS_RUNNING;
+	_currentThread->setState(TS_RUNNING);
 
 #ifdef RAMPZ
 	RAMPZ = _currentThread->_rampz;
@@ -302,12 +303,7 @@ static inline Thread* getNextThread(Thread* firstToCheck) {
 	// while we have something to check...
 	while (cur) {
 		// if it's ready to run, we're done!
-		if (cur->_state == TS_READY) {
-			rc = cur;
-			break;
-		}
-
-		if (cur->_state == TS_WAITING && now >= cur->_blockInfo) {
+		if (cur->getState() == TS_READY) {
 			rc = cur;
 			break;
 		}
@@ -348,7 +344,9 @@ static inline Thread* selectNextThread() {
 void Thread::waitUntil(const uint32_t untilMs) {
 	// Threads can only sleep themselves, they can't be forced
 	if (_currentThread != this) return;
-	Thread::block(TS_WAITING, untilMs);
+
+	_wakeUpTime = untilMs;
+	wait(SIGMSK_TIMEOUT);
 }
 
 
@@ -372,7 +370,7 @@ bool Thread::run() {
 bool Thread::pause() {
 	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 		
-		if (_state != TS_RUNNING && _state != TS_READY && _state != TS_WAITING) {
+		if (_state != TS_RUNNING && _state != TS_READY) {
 			return false;
 		}
 		this->_state = TS_PAUSED;
@@ -392,18 +390,19 @@ bool Thread::pause() {
 // to *this* Thread terminating for the join to be successful.
 int Thread::join() {
 	int rc = -1;
-
-	// can't join on yourself - DEADLOCK!
-	if (this == _currentThread) return rc;
+	
+	// parents can join on their children, that's it
+	if (_currentThread != _parent) return rc;
 
 	// join can only occur on Threads
 	// that do NOT auto-cleanup
-	if (!(_flags & TF_AUTO_CLEANUP)) {
+	if (_parent != 0UL && _parentJoinSignalNumber != 0) {
+		// block the parent/current Thread until *this* Thread terminates
+		SignalMask sigs = _parent->wait(1L << _parentJoinSignalNumber);
 
-		// block the *calling* Thread until *this* Thread terminates
-		if (_state != TS_TERMINATED) {
-			block(TS_JOINING, (uint32_t) this);
-		}
+		// free up the allocate Signal number
+		freeSignal(_parentJoinSignalNumber);
+		_parentJoinSignalNumber = -1;
 
 		// the main Thread entry code deposits the
 		// Thread's exit code into the TCB for us
@@ -421,29 +420,10 @@ int Thread::join() {
 
 
 // Blocks the calling Thread, setting a new state and blockInfo
-void Thread::block(const ThreadState newState, uint32_t blockInfo) {
+void Thread::block(const ThreadState newState) {
 	cli();
 	_currentThread->_state = newState;
-	_currentThread->_blockInfo = blockInfo;
 	yield();
-}
-
-
-// Unblock any/all Threads matching a given state and blockInfo
-void Thread::unblock(const ThreadState state, const uint32_t blockInfo) {
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		Thread* cur = _threadList.getHead();
-
-		while (cur) {
-			Thread* next = cur->_next;
-
-			if (cur->_state == state && cur->_blockInfo == blockInfo) {
-				cur->_state = TS_READY;
-				cur->_blockInfo = 0UL;
-			}
-			cur = next;
-		}
-	}
 }
 
 

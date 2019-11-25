@@ -18,6 +18,30 @@ uint16_t Thread::getThreadId() {
 }
 
 
+// sets the new state of the Thread
+void Thread::setState(const ThreadState newState) {
+	_state = newState;
+}
+
+
+// gets the current state of the Thread
+ThreadState Thread::getState() {
+	ThreadState rc = _state;
+
+	// we had a timeout set, and it has expired, we are ready to run
+	if (rc == TS_PAUSED && _wakeUpTime > 0 && Thread::now() >= _wakeUpTime) {
+		_wakeUpTime = 0;
+		signal(SIGMSK_TIMEOUT);
+	}
+
+	// if anything is signalled to us that we care about, we are ready to run!
+	if (rc == TS_PAUSED && getActiveSignals()) {
+		_state = rc = TS_READY;
+	}
+
+	return rc;
+}
+
 // returns the address of the bottom of the Thread's stack
 uint16_t Thread::getStackBottom() {
 	return (uint16_t) _stackBottom;

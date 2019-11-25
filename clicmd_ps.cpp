@@ -21,7 +21,7 @@
 using namespace zero;
 
 
-static const uint32_t STACK_WARN_PERCENTAGE = 75UL;
+static const uint32_t STACK_WARN_PERCENTAGE = 80UL;
 static const uint32_t STACK_SCREAM_PERCENTAGE = 95UL;
 
 static const PROGMEM char _dblSpace[] = "  ";
@@ -65,8 +65,6 @@ clicommand(uptime, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {
 static const PROGMEM char STATE_RUNNING[] = "running";
 static const PROGMEM char STATE_READY[] = "ready";
 static const PROGMEM char STATE_PAUSED[] = "paused";
-static const PROGMEM char STATE_WAITING[] = "waiting";
-static const PROGMEM char STATE_JOINING[] = "joining";
 static const PROGMEM char STATE_TERMINATED[] = "terminated";
 
 
@@ -74,8 +72,6 @@ static const char* _stateString[] = {
 	STATE_RUNNING,
 	STATE_READY,
     STATE_PAUSED,
-    STATE_WAITING,
-    STATE_JOINING,
 	STATE_TERMINATED,
 };
 
@@ -83,8 +79,6 @@ static const char* _stateString[] = {
 static const Color _stateColor[] = {
     Color::GREEN,
     Color::WHITE,
-    Color::YELLOW,
-    Color::YELLOW,
     Color::YELLOW,
     Color::RED,
 };
@@ -112,8 +106,8 @@ void outputThread(Thread* t, TextPipe* tx) {
     *tx << setw(24) << PGM(t->_systemData._objectName);
 
     // state
-    tx->setTextColor(_stateColor[t->_state]);
-    *tx << setw(13) << (PGM) _stateString[t->_state] << white;
+    tx->setTextColor(_stateColor[t->getState()]);
+    *tx << setw(13) << (PGM) _stateString[t->getState()] << white;
 
     // stack stuff
     *tx << hex << uppercase;

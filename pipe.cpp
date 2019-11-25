@@ -85,7 +85,7 @@ uint16_t Pipe::calcFirstFreeIndex() {
 // in the Pipe. Return true if the data was successfully written to the
 // Pipe, false otherwise.
 bool Pipe::write(const uint8_t data, const bool allowBlock) {
-	bool reallyAllowBlock = allowBlock != 0UL && _currentWriter == 0UL;
+	bool reallyAllowBlock = allowBlock && _currentWriter == 0UL;
 
 	if (!reallyAllowBlock && isFull()) {
 		return false;
@@ -95,12 +95,10 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 		_currentWriter = Thread::me();
 
 		// block using the supplied signal mask
-		const uint8_t tempSignalNumber = _currentWriter->allocateSignal();
-
-		_writeSignals = 1L << tempSignalNumber;
-		_currentWriter->wait(_writeSignals);
-		_currentWriter->freeSignal(tempSignalNumber);
-		_writeSignals = 0UL;
+		_writeSignalNumber = _currentWriter->allocateSignal();
+		_currentWriter->wait(1L << _writeSignalNumber);
+		_currentWriter->freeSignal(_writeSignalNumber);
+		_writeSignalNumber = 0UL;
 		_currentWriter = 0UL;
 	}
 
@@ -128,7 +126,7 @@ bool Pipe::write(const uint8_t data, const bool allowBlock) {
 			// unblock any Thread that was blocked
 			// waiting for data to become available.
 			if (_currentReader) {
-				_currentReader->signal(_readSignals);
+				_currentReader->signal(1L << _readSignalNumber);
 			}
 		}
 	}
@@ -159,7 +157,7 @@ bool Pipe::write(const char* s, memory::MemoryType source) {
 
 // Reads a byte of data from the Pipe. 
 bool Pipe::read(uint8_t* data, const bool allowBlock) {
-	bool reallyAllowBlock = allowBlock != 0UL && _currentReader == 0UL;
+	bool reallyAllowBlock = allowBlock && _currentReader == 0UL;
 
 	if (!reallyAllowBlock && isEmpty()) {
 		return false;
@@ -169,12 +167,10 @@ bool Pipe::read(uint8_t* data, const bool allowBlock) {
 		_currentReader = Thread::me();
 
 		// block using the supplied signal mask
-		const uint8_t tempSignalNumber = _currentReader->allocateSignal();
-
-		_readSignals = 1L << tempSignalNumber;
-		_currentReader->wait(_readSignals);
-		_currentReader->freeSignal(tempSignalNumber);
-		_readSignals = 0UL;
+		_readSignalNumber = _currentReader->allocateSignal();
+		_currentReader->wait(1L << _readSignalNumber);
+		_currentReader->freeSignal(_readSignalNumber);
+		_readSignalNumber = 0UL;
 		_currentReader = 0UL;
 	}
 
@@ -206,7 +202,7 @@ bool Pipe::read(uint8_t* data, const bool allowBlock) {
 
 			// unblock the Thread that was waiting for room
 			if (_currentWriter) {
-				_currentWriter->signal(_writeSignals);
+				_currentWriter->signal(1L << _writeSignalNumber);
 			}
 
 			return true;

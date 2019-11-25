@@ -25,6 +25,7 @@ Major things in the updates will be listed here. Bug fixes, refactoring, tidy up
 
 | Date     |  Ver | Comments |
 | -------- | ----:| -------- |
+2019-11-25 | 0.11 | Significant Thread clean up, plus Signals bug fixes
 2019-11-24 | 0.10 | Initial implementation of Amiga Exec style Signals
 2019-11-23 |  0.9 | Back to Timer0 because reasons
 2019-11-19 |  0.8 | Reimplemented `CliCommand::execute()` as `CliCommand::shell()`
@@ -465,7 +466,7 @@ At this point, the yield finishes with a `reti` instruction, which pops the new 
 
 ## Under the Hood - Memory Allocator
 
-The dynamic memory allocator in zero is fairly simple. Using some constants in `zero_config,h` to figure out how much of the MCU's SRAM you want to give to the allocator to hand out, zero conceptually divides this into pages of `PAGE_BYTES`. These pages are tracked using a small bitmapped array. Although even simpler methods exist to track free space using the free space itself (essentially costing no memory to track), such a method wouldn't translate well into slower access external memories, such as SPI SRAM/EEPROM. The finding of free space and the marking of it as allocated/free would be forced through that serial access mechanism, slowing the allocation/deallocation process down. This is even more true if the communications mechanism, such as SPI, has many devices on the bus, forcing the allocator to wait it's turn to even begin the allocation process.
+The dynamic memory allocator in zero is fairly simple. Using some constants in the `makefile` to figure out how much of the MCU's SRAM you want to give to the allocator to hand out, zero conceptually divides this into pages of `PAGE_BYTES`. These pages are tracked using a small bitmapped array. Although even simpler methods exist to track free space using the free space itself (essentially costing no memory to track), such a method wouldn't translate well into slower access external memories, such as SPI SRAM/EEPROM. The finding of free space and the marking of it as allocated/free would be forced through that serial access mechanism, slowing the allocation/deallocation process down. This is even more true if the communications mechanism, such as SPI, has many devices on the bus, forcing the allocator to wait it's turn to even begin the allocation process.
 
 **NOTE:** Despite the underlying mechanism for the allocator being page-based, all API calls for the allocator are in bytes, as you'd hope. The allocator internally translates this into the correct number of pages and back again, as required.
 

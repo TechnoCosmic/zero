@@ -15,60 +15,97 @@ using namespace zero;
 const uint8_t SIGNAL_BITS = sizeof(SignalMask) * 8;
 
 
-// reserves a signal number for use
-uint8_t Thread::allocateSignal() {
-    for (uint8_t i = 0; i < SIGNAL_BITS; i++) {
-        const SignalMask m = 1L << i;
+// tries to allocate the given signal number, returns true if it was available
+bool Thread::tryAllocSignal(const int8_t sigNum) {
+    const SignalMask m = 1L << sigNum;
 
-        if (!(_allocatedSignals & m)) {
-            _allocatedSignals |= m;
-            return i;
+    // if it isn't yet allocated
+    if (!(_allocatedSignals & m)) {
+        // allocate it
+        _allocatedSignals |= m;
+
+        // and return the signal NUMBER (not the mask)
+        return true;
+    }
+
+    return false;
+}
+
+
+// reserves a signal number for use
+int8_t Thread::allocateSignal(const int8_t reqdSignal) {
+    if (reqdSignal == -1) {
+        // search each possible bit
+        for (int8_t i = 0; i < SIGNAL_BITS; i++) {
+            if (tryAllocSignal(i)) {
+                return i;
+            }
+        }
+
+    } else {
+        if (tryAllocSignal(reqdSignal)) {
+            return reqdSignal;
         }
     }
+
+    // this is the "no available signals" return code
     return -1;
 }
 
 
 // frees up (deallocates) a previously allocated signal
 void Thread::freeSignal(const uint8_t signalNumber) {
+    // no point in checking if it's allocated or not, just free it
     _allocatedSignals &= ~(1L << signalNumber);
+
+    // make sure the deallocated signal is removed from other places
+    _waitingSignals &= _allocatedSignals;
+    _currentSignals &= _allocatedSignals;
 }
 
 
+// A Thread calls this to block itself until certain
+// signals are received
 SignalMask Thread::wait(const SignalMask signals) {
-    // clear the current signals
-    _currentSignals = 0UL;
+    SignalMask rc = 0;
 
-    // make sure we only wait on allocated signals
-    _waitingSignals = signals & _allocatedSignals;
+    // Threads can only wait on their own signals
+    if (Thread::me() != this) return 0;
+
+    // santise the signals
+    const SignalMask sanitsedSignals = signals & _allocatedSignals;
+
+    // add these signals into the ones we're waiting on
+    _waitingSignals = sanitsedSignals;
 
     // only block if we're actually waiting on something
-    if (_waitingSignals) {
-        block(TS_PAUSED, 0UL);
+    // that we haven't received yet
+    if (!getActiveSignals()) {
+        block(TS_PAUSED);
     }
 
+    // return the portion of the waiting signals
+    // that we actually received.
+    
+    // NOTE: Do *NOT* optimize this away by caching
+    // the result of getActiveSignals() above. If we
+    // blocked, then that cached value would (and
+    // should) be out-of-date by this point
+    rc = getActiveSignals();
+
+    // remove those signals from the
+    // currently unhandled signals
+    _currentSignals &= ~rc;
+
     // return the signals that woke us up
-    return _currentSignals;
+    return rc;
 }
 
 
-// Signals the Thread
-void Thread::signal(const SignalMask receivedSignals) {
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-        if (_state == TS_PAUSED) {
-            // clean signals = whatever was sent us that were also allocated
-            const SignalMask cleanSignals = receivedSignals & _allocatedSignals;
-
-            // if we were waiting on any of those signals
-            if (cleanSignals & _waitingSignals) {
-                // set the signals
-                _currentSignals |= cleanSignals;
-
-                // wake up
-                _state = TS_READY;
-            }
-        }
-    }
+// Signals the Thread - all this does is set the signals - it does NOT change states
+void Thread::signal(const SignalMask newSignals) {
+    const SignalMask sanitizedSignals = newSignals & _allocatedSignals;
+    _currentSignals |= sanitizedSignals;
 }
 
 
@@ -81,4 +118,10 @@ SignalMask Thread::getCurrentSignals() {
 // returns the signals the Thread is waiting on
 SignalMask Thread::getWaitingSignals() {
     return _waitingSignals;
+}
+
+
+// see which signals that we care about are currently active
+SignalMask Thread::getActiveSignals() {
+    return _waitingSignals & _currentSignals & _allocatedSignals;
 }

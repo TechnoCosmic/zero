@@ -56,10 +56,10 @@ namespace zero {
         PipeFilter _onWrite;
 
 		Thread* _currentReader;
-		SignalMask _readSignals;
+		int8_t _readSignalNumber;
 
 		Thread* _currentWriter;
-		SignalMask _writeSignals;
+		int8_t _writeSignalNumber;
 	};
 
 	struct PGM {

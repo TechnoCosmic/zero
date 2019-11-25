@@ -36,10 +36,10 @@ namespace zero {
     const uint16_t CLI_TX_PIPE_BYTES = 96;
 
     // CLI stack size
-    const uint16_t CLI_STACK_BYTES = 576;
+    const uint16_t CLI_STACK_BYTES = 512;
 
     // CLI command line buffer size
-    const uint16_t CLI_CMD_LINE_BUFFER_BYTES = 80;
+    const uint16_t CLI_CMD_LINE_BUFFER_BYTES = 40;
 
     // Maximum number of tokens on a CLI command line
     const uint16_t CLI_CMD_LINE_MAX_TOKENS = 16;
