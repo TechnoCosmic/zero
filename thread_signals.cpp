@@ -34,17 +34,28 @@ bool Thread::tryAllocSignal(const int8_t sigNum) {
 
 // reserves a signal number for use
 int8_t Thread::allocateSignal(const int8_t reqdSignal) {
-    if (reqdSignal == -1) {
-        // search each possible bit
-        for (int8_t i = 0; i < SIGNAL_BITS; i++) {
-            if (tryAllocSignal(i)) {
-                return i;
-            }
-        }
+    // Threads and their parents can allocate signals
+    if (Thread::me() != this && Thread::me() != _parent) return 0;
 
-    } else {
-        if (tryAllocSignal(reqdSignal)) {
-            return reqdSignal;
+    // The only reason that this is a critical section is because
+    // a Thread and it's parent could theoretically call in at the
+    // same time on the child Thread.
+
+	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+        // if we're not trying to allocate a specific signal number
+        if (reqdSignal == -1) {
+            // search each possible bit
+            for (int8_t i = 0; i < SIGNAL_BITS; i++) {
+                if (tryAllocSignal(i)) {
+                    return i;
+                }
+            }
+    
+        } else {
+            // the caller wants a specific number, so check it
+            if (tryAllocSignal(reqdSignal)) {
+                return reqdSignal;
+            }
         }
     }
 
@@ -55,6 +66,12 @@ int8_t Thread::allocateSignal(const int8_t reqdSignal) {
 
 // frees up (deallocates) a previously allocated signal
 void Thread::freeSignal(const uint8_t signalNumber) {
+    // No need to make this a critical section as there's
+    // no conditional here - deallocated is deallocated
+
+    // Threads and their parents can deallocate signals
+    if (Thread::me() != this && Thread::me() != _parent) return;
+
     // no point in checking if it's allocated or not, just free it
     _allocatedSignals &= ~(1L << signalNumber);
 
@@ -64,8 +81,8 @@ void Thread::freeSignal(const uint8_t signalNumber) {
 }
 
 
-// A Thread calls this to block itself until certain
-// signals are received
+// A Thread calls this to block itself
+// until certain signals are received
 SignalMask Thread::wait(const SignalMask signals) {
     SignalMask rc = 0;
 
@@ -86,7 +103,7 @@ SignalMask Thread::wait(const SignalMask signals) {
 
     // return the portion of the waiting signals
     // that we actually received.
-    
+
     // NOTE: Do *NOT* optimize this away by caching
     // the result of getActiveSignals() above. If we
     // blocked, then that cached value would (and

@@ -45,7 +45,7 @@ namespace zero {
 	const int8_t SIGNUM_TIMEOUT = 0x0;
 
 	// reserved Signal masks (take from above)
-	const SignalMask SIGMSK_TIMEOUT = (1L << (SIGNUM_TIMEOUT));
+	const SignalMask SIGMSK_TIMEOUT = (1L << SIGNUM_TIMEOUT);
 
 	// Thread class
 	class Thread {
