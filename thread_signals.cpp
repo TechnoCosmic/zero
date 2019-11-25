@@ -89,11 +89,8 @@ SignalMask Thread::wait(const SignalMask signals) {
     // Threads can only wait on their own signals
     if (Thread::me() != this) return 0;
 
-    // santise the signals
-    const SignalMask sanitsedSignals = signals & _allocatedSignals;
-
     // add these signals into the ones we're waiting on
-    _waitingSignals = sanitsedSignals;
+    _waitingSignals = signals & _allocatedSignals;
 
     // only block if we're actually waiting on something
     // that we haven't received yet
@@ -139,6 +136,6 @@ SignalMask Thread::getWaitingSignals() {
 
 
 // see which signals that we care about are currently active
-SignalMask Thread::getActiveSignals() {
+volatile SignalMask Thread::getActiveSignals() {
     return _waitingSignals & _currentSignals & _allocatedSignals;
 }

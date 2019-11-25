@@ -81,7 +81,7 @@ namespace zero {
 		void signal(const SignalMask sigs);			// signal the Thread
 		SignalMask getCurrentSignals();				// get the current signals
 		SignalMask getWaitingSignals();				// get the signals that the Thread is currently waiting on
-		SignalMask getActiveSignals();				// get the currenly active signals
+		volatile SignalMask getActiveSignals();		// get the currenly active signals
 
 		// Properties (thread_info.cpp)
 		ThreadState getState();						// gets the current state of the Thread
