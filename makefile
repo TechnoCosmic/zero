@@ -3,63 +3,75 @@
 #  Techno Cosmic Research Institute		Dirk Mahoney			dirk@tcri.com.au
 #  Catchpole Robotics					Christian Catchpole		christian@catchpole.net
 
-# adjust these to suit your needs
 
-OUTPUT = demo
-AVRDUDE_PART = m328p
+#######################################################################################
+########################## DEVELOPER-ADJUSTABLE SETTINGS HERE #########################
+#######################################################################################
+
+
+# output file and project name
+OUTPUT = zero
+
+# flashing settings
+AVRDUDE_PART = m1284p
 AVRDUDE_CFG = pi
-F_CPU = 16000000UL
 
+# general kernel settings
+F_CPU = 20'000'000
+QUANTUM_TICKS = 15
+PAGE_BYTES = 16
 
 # some standard MCU settings
-
 LFUSE = 0xFF
 HFUSE = 0xD9
 EFUSE = 0xFF
 
 
-# the default HEAP_HEX_END values give 1K
-# to the globals/kernel stack, and the
-# remainder to the dynamic allocator.
-# change these as you need
-
-# memory for allocator = HEAP_END_HEX - 0x100 (HEAP_START_HEX)
-HEAP_START_HEX = 0100
-
-
 ifeq ($(AVRDUDE_PART),m328p)
+	# 1.5KB for allocator
 	MCU = atmega328p
-	HEAP_END_HEX = 0700
+	DYNAMIC_BYTES = 1536
 endif
 
 ifeq ($(AVRDUDE_PART),m644p)
+	# 3KB for allocator
 	MCU = atmega644p
-	HEAP_END_HEX = 1E00
+	DYNAMIC_BYTES = 3172
 endif
 
 ifeq ($(AVRDUDE_PART),m1284p)
+	# 15KB for allocator
 	MCU = atmega1284p
-	HEAP_END_HEX = 3E00
+	DYNAMIC_BYTES = 15360
 endif
 
-ifeq ($(AVRDUDE_PART),m2560)
-	MCU = atmega2560
-	HEAP_END_HEX = 1E00
-endif
+
+#######################################################################################
+######################### END OF DEVELOPER-ADJUSTABLE SETTINGS ########################
+#######################################################################################
+
+
+PC_COUNT = 2
 
 
 # probably don't adjust these so much :)
-FLAGS += -Os
 FLAGS += -g
+FLAGS += -Os
 FLAGS += --std=c++17
 FLAGS += -mmcu=$(MCU)
-FLAGS += -DF_CPU=$(F_CPU)
-FLAGS += -DDYNAMIC_BYTES="(0x$(HEAP_END_HEX)-0x$(HEAP_START_HEX))"
+FLAGS += -fshort-enums
+
+# #define pass-throughs
+FLAGS += -DF_CPU=$(F_CPU)ULL
+FLAGS += -DPC_COUNT=$(PC_COUNT)
+FLAGS += -DPAGE_BYTES=$(PAGE_BYTES)
+FLAGS += -DDYNAMIC_BYTES=$(DYNAMIC_BYTES)
 FLAGS += -DPROJ_NAME=\"$(OUTPUT)\"
+FLAGS += -DQUANTUM_TICKS=$(QUANTUM_TICKS)
+
 
 CC = avr-gcc
 OBJ := $(patsubst %.cpp,%.o,$(wildcard *.cpp))
-LDFLAGS := -Wl,--section-start=.heap=0x80$(HEAP_START_HEX),--section-start=.data=0x80$(HEAP_END_HEX)
 
 
 .PHONY: push fuses upload clean gettools
@@ -71,33 +83,32 @@ LDFLAGS := -Wl,--section-start=.heap=0x80$(HEAP_START_HEX),--section-start=.data
 	@echo " done"
 
 
-$(OUTPUT).hex: $(OBJ)
+$(OUTPUT).elf: $(OBJ)
 	@echo -n "Linking..."
-	@$(CC) $(FLAGS) $(LDFLAGS) -o $(OUTPUT).elf $^
+	@$(CC) $(FLAGS) $(LDFLAGS) -o $@ $^
 	@echo " done"
-	@avr-objcopy -j .text -j .data -O ihex $(OUTPUT).elf $(OUTPUT).hex
-	@avr-size -C --mcu=$(MCU) $(OUTPUT).elf
-	@rm -f *.elf *.gch
+	@avr-size -A -x --mcu=$(MCU) $@
+	@avr-size -C -x --mcu=$(MCU) $@
 
 
-upload: $(OUTPUT).hex
-	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U flash:w:$(OUTPUT).hex
+upload: $(OUTPUT).elf
+	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U flash:w:$(OUTPUT).elf
 
 
 fuses:
 	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U lfuse:w:$(LFUSE):m -U hfuse:w:$(HFUSE):m -U efuse:w:$(EFUSE):m
 
 
-push: $(OUTPUT).hex
+push: $(OUTPUT).elf
 	@echo -n "Pushing files to RPi..."
-	@rsync -avr --exclude '.git' ~/dev/zero/ pi:dev/zero/ > /dev/null
-	@rm -f *.o *.elf *.hex *.gch
+	@rsync -avr --exclude '.git' ~/dev/$(OUTPUT)/ pi:dev/$(OUTPUT)/ > /dev/null
+	@rm -f *.o *.elf *.hex
 	@echo " done"
 
 
 clean:
 	@echo -n "Cleaning up..."
-	@rm -f *.o *.elf *.hex *.gch
+	@rm -f *.o *.elf *.hex
 	@echo " done"
 
 

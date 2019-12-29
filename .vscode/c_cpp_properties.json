@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "AVR",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/avr-gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64",
+            "compilerArgs": [
+                "-mmcu=atmega1284p"
+            ]
+        }
+    ],
+    "version": 4
+}

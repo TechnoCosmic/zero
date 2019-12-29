@@ -1,13 +1,16 @@
-/*
- * zero - pre-emptive multitasking kernel for AVR
- *
- *  Techno Cosmic Research Institute	Dirk Mahoney			dirk@tcri.com.au
- *  Catchpole Robotics					Christian Catchpole		christian@catchpole.net
- * 
- */
+//
+// zero - pre-emptive multitasking kernel for AVR
+//
+// Techno Cosmic Research Institute	    Dirk Mahoney			dirk@tcri.com.au
+// Catchpole Robotics					Christian Catchpole		christian@catchpole.net
+//
 
-#include "zero_config.h"
+
+#include <string.h>
+
 #include "pagemanager.h"
+#include "util.h"
+
 
 using namespace zero;
 
@@ -77,8 +80,6 @@ uint16_t PageManager<PAGE_COUNT>::getUsedPageCount() {
 
 
 // search strategy function prototypes
-static int16_t getPageForSearchStep_MiddleDown(const uint16_t step, const uint16_t totalPages);
-static int16_t getPageForSearchStep_MiddleUp(const uint16_t step, const uint16_t totalPages);
 static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t totalPages);
 static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t totalPages);
 
@@ -95,43 +96,10 @@ static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t 
 }
 
 
-// search strategy - MiddleDown starts searching the allocation table at the midpoint and works down.
-// NOTE: This does NOT wrap around or do anything weird like that - therefore IT ONLY SEARCHES HALF
-// OF THE AVAILABLE SPACE. Use this in conjuction with other strategies if you don't want attempts to
-// allocate fail when there is in fact some available in a different area.
-static int16_t getPageForSearchStep_MiddleDown(const uint16_t step, const uint16_t totalPages) {
-    const int16_t midPoint = totalPages / 2;
-    const int16_t rev = totalPages - (step + 1);
-    const int16_t page = rev - midPoint;
-
-    if (page < 0) {
-        return -1;
-    }
-    return page;
-}
-
-
-// search strategy - MiddleUp starts searching the allocation table at the midpoint and works up.
-// NOTE: This does NOT wrap around or do anything weird like that - therefore IT ONLY SEARCHES HALF
-// OF THE AVAILABLE SPACE. Use this in conjuction with other strategies if you don't want attempts to
-// allocate fail when there is in fact some available in a different area.
-static int16_t getPageForSearchStep_MiddleUp(const uint16_t step, const uint16_t totalPages) {
-    const int16_t midPoint = totalPages / 2;
-    const int16_t page = step + midPoint;
-
-    if (page >= totalPages) {
-        return -1;
-    }
-    return page;
-}
-
-
 // set up the vector table for the search strategies
 static int16_t (*_strategies[])(const uint16_t, const uint16_t) = {
     getPageForSearchStep_TopDown,
     getPageForSearchStep_BottomUp,
-    getPageForSearchStep_MiddleDown,
-    getPageForSearchStep_MiddleUp,
 };
 
 
@@ -143,10 +111,10 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(const uint16_t numPagesRequired, 
     uint16_t pageCount = 0;
 
     for (uint16_t curStep = 0; curStep < PAGE_COUNT; curStep++) {
-        const uint16_t curPage =  _strategies[strat](curStep, PAGE_COUNT);
+        const uint16_t curPage = _strategies[strat](curStep, PAGE_COUNT);
 
         // if the search strategy no longer
-        // has any more pages in it's scope
+        // has any more pages in its scope
         if (curPage == -1) {
             break;
         }

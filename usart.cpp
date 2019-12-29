@@ -1,25 +1,35 @@
-/*
- * zero - pre-emptive multitasking kernel for AVR
- *
- *  Techno Cosmic Research Institute	Dirk Mahoney			dirk@tcri.com.au
- *  Catchpole Robotics					Christian Catchpole		christian@catchpole.net
- * 
- */
+//
+// zero - pre-emptive multitasking kernel for AVR
+//
+// Techno Cosmic Research Institute		Dirk Mahoney			dirk@tcri.com.au
+// Catchpole Robotics					Christian Catchpole		christian@catchpole.net
+//
+
 
 #include <stdint.h>
+
 #include <avr/io.h>
-#include <avr/power.h>
 #include <avr/interrupt.h>
-#include "usart.h"
-#include "pipe.h"
+
+
+#ifdef UCSR0B
+
+
 #include "thread.h"
+#include "memory.h"
+#include "doublebuffer.h"
+#include "usart.h"
+
 
 using namespace zero;
 
-// these let the code with single UART devices without
-// needing to 'special case' it
+
 #ifndef USART_RX_vect
 #define USART_RX_vect USART0_RX_vect
+#endif
+
+#ifndef USART_TX_vect
+#define USART_TX_vect USART0_TX_vect
 #endif
 
 #ifndef USART_UDRE_vect
@@ -27,78 +37,235 @@ using namespace zero;
 #endif
 
 
-static Usart* _usart = 0UL;
+volatile uint8_t* _UCSRB_base = &UCSR0B;
+volatile uint8_t* _UCSRC_base = &UCSR0C;
+volatile uint8_t* _UBRRH_base = &UBRR0H;
+volatile uint8_t* _UBRRL_base = &UBRR0L;
+volatile uint8_t* _UDR_base = &UDR0;
+
+#define UCSRB(p) *((volatile uint8_t*) (_UCSRB_base+(p*8)))
+#define UCSRC(p) *((volatile uint8_t*) (_UCSRC_base+(p*8)))
+#define UBRRH(p) *((volatile uint8_t*) (_UBRRH_base+(p*8)))
+#define UBRRL(p) *((volatile uint8_t*) (_UBRRL_base+(p*8)))
+#define UDR(p) *((volatile uint8_t*) (_UDR_base+(p*8)))
 
 
-bool writeFilter(Pipe* p, uint8_t* data) {
-    UCSR0B |= (1 << UDRIE0);
+namespace {
+    UsartTx* _usartTx[2];
+    UsartRx* _usartRx[2];
+} 
+
+
+UsartTx::UsartTx(const uint8_t deviceNum) {
+    if (deviceNum < 2) {
+        _deviceNum = deviceNum;
+        _usartTx[deviceNum] = this;
+    }
+}
+
+
+UsartTx::~UsartTx() {
+    disable();
+    _usartTx[_deviceNum] = 0UL;
+}
+
+
+void UsartTx::setCommsParams(const uint32_t baud) {
+    const uint16_t pre = (F_CPU / (16UL * baud)) - 1;
+
+    // 8-none-1
+    UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
+
+    // speed
+    UBRRH(_deviceNum) = (uint8_t) pre >> 8;
+    UBRRL(_deviceNum) = (uint8_t) pre;
+}
+
+
+#define TX_BITS ((1 << TXEN0) | (1 << TXCIE0))
+
+
+bool UsartTx::enable(const Synapse txCompleteSyn) {
+    _txCompleteSyn = txCompleteSyn;
+    UCSRB(_deviceNum) |= TX_BITS;
     return true;
 }
 
 
-Usart::Usart(const uint32_t baud, Pipe* rx, Pipe* tx) {
-    // set up the USART hardware
+void UsartTx::disable() {
+    UCSRB(_deviceNum) &= ~TX_BITS;
+}
+
+
+bool UsartTx::transmit(const void* buffer, const uint16_t sz) {
+    if (_txBuffer) return false;
+    if (!buffer) return false;
+    if (!sz) return false;
+
+    // prime the buffer data
+    _txBuffer = (uint8_t*) buffer;
+    _txSize = sz;
+
+    // enable the ISR that starts the transmission
+    UCSRB(_deviceNum) |= (1 << UDRIE0);
+
+    return true;
+}
+
+
+bool UsartTx::getNextTxByte(uint8_t& data) {
+    bool rc = false;
+
+    data = 0;
+
+    if (_txSize) {
+        data = *_txBuffer++;
+        _txSize--;
+
+        rc = true;
+    }
+
+    return rc;
+}
+
+
+UsartRx::UsartRx(const uint8_t deviceNum) {
+    if (deviceNum < 2) {
+        _deviceNum = deviceNum;
+        _usartRx[deviceNum] = this;
+    }
+}
+
+
+UsartRx::~UsartRx() {
+    disable();
+    _usartRx[_deviceNum] = 0UL;
+}
+
+
+void UsartRx::setCommsParams(const uint32_t baud) {
     const uint16_t pre = (F_CPU / (16UL * baud)) - 1;
 
-    power_usart0_enable();
+    // 8-none-1
+    UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
 
-    _rx = rx;
-    _tx = tx;
+    // speed
+    UBRRH(_deviceNum) = (uint8_t) pre >> 8;
+    UBRRL(_deviceNum) = (uint8_t) pre;
+}
 
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-        if (_rx) {
-            // setup for receiving data
-            UCSR0B |= (1 << RXEN0) | (1 << RXCIE0);
-        }
-        if (_tx) {
-            // setup for transmitting data
-            UCSR0B |= (1 << TXEN0) | (1 << UDRIE0);
+
+#define RX_BITS ((1 << RXEN0) | (1 << RXCIE0))
+
+
+bool UsartRx::enable(const uint16_t bufferSize, const Synapse rxSyn, const Synapse ovfSyn) {
+    bool rc = false;
+
+    _rxDataReceivedSyn.clear();
+    _rxOverflowSyn.clear();
+
+    delete _rxBuffer;
+    _rxBuffer = 0UL;
+
+    if (_rxBuffer = new DoubleBuffer(bufferSize)) {
+        rc = true;
+
+        _rxDataReceivedSyn = rxSyn;
+        _rxOverflowSyn = ovfSyn;
+
+        UCSRB(_deviceNum) |= RX_BITS;
+    }
     
-            // hook into the transmit Pipe's write() filter so we
-            // can enable and disable the USART TX ISR when needed
-            _tx->setWriteFilter(writeFilter);
-        }
-    
-        // 8-none-1
-        UCSR0C |= (1 << UCSZ01) | (1 << UCSZ00);
-    
-        // speed
-        UBRR0H = (uint8_t) pre >> 8;
-        UBRR0L = (uint8_t) pre;
-    
-        // remember who we are for the ISRs
-        _usart = this;
+    return rc;
+}
+
+
+void UsartRx::disable() {
+    UCSRB(_deviceNum) &= ~RX_BITS;
+
+    _rxDataReceivedSyn.clear();
+    _rxOverflowSyn.clear();
+}
+
+
+uint8_t* UsartRx::getCurrentBuffer(uint16_t& numBytes) {
+    return _rxBuffer->getCurrentBuffer(numBytes);
+}
+
+
+ISR(USART_TX_vect) {
+    // last byte complete
+    if (!_usartTx[0]->_txSize && _usartTx[0]->_txBuffer != 0UL) {
+        _usartTx[0]->_txCompleteSyn.signal();
+        _usartTx[0]->_txBuffer = 0UL;
     }
 }
 
-Pipe* Usart::getRxPipe() {
-    return _rx;
-}
-
-Pipe* Usart::getTxPipe() {
-    return _tx;
-}
-
-ISR(USART_RX_vect) {
-    cli();
-
-    // write the incoming byte to the Pipe
-    if (!_usart->getRxPipe()->write(UDR0, false)) {
-        // TODO: Error - buffer full
-    }
-}
 
 ISR(USART_UDRE_vect) {
-    cli();
+    // need more data
+    uint8_t nextByte;
 
-    Pipe* tx = _usart->getTxPipe();
-
-    if (tx->isEmpty()) {
+    if (!_usartTx[0]->getNextTxByte(nextByte)) {
         UCSR0B &= ~(1 << UDRIE0);
 
     } else {
-        uint8_t data;
-        tx->read(&data, false);
-        UDR0 = data; 
+        UDR0 = nextByte;
     }
 }
+
+
+ISR(USART_RX_vect) {
+    register volatile uint8_t newByte = UDR0;
+
+    // received data
+    if (_usartRx[0]->_rxBuffer->write(newByte)) {
+        _usartRx[0]->_rxDataReceivedSyn.signal();
+
+    } else {
+        _usartRx[0]->_rxOverflowSyn.signal();
+    }
+}
+
+
+#ifdef UCSR1B
+
+
+ISR(USART1_TX_vect) {
+    // last byte complete
+    if (!_usartTx[1]->_txSize && _usartTx[1]->_txBuffer != 0UL) {
+        _usartTx[1]->_txCompleteSyn.signal();
+        _usartTx[1]->_txBuffer = 0UL;
+    }
+}
+
+
+ISR(USART1_UDRE_vect) {
+    // need more data
+    uint8_t nextByte;
+
+    if (!_usartTx[1]->getNextTxByte(nextByte)) {
+        UCSR1B &= ~(1 << UDRIE1);
+
+    } else {
+        UDR1 = nextByte;
+    }
+}
+
+
+ISR(USART1_RX_vect) {
+    register volatile uint8_t newByte = UDR1;
+
+    // received data
+    if (_usartRx[1]->_rxBuffer->write(newByte)) {
+        _usartRx[1]->_rxDataReceivedSyn.signal();
+
+    } else {
+        _usartRx[1]->_rxOverflowSyn.signal();
+    }
+}
+
+
+#endif
+
+#endif

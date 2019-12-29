@@ -1,8 +1,4 @@
-*.swp
-*.hex
 *.o
+*.hex
 *.elf
 *.gch
-clicmd_pvt_*
-.vscode/*
-!.vscode/zero.*

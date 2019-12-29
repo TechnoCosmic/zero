@@ -1,25 +1,31 @@
-/*
- * zero - pre-emptive multitasking kernel for AVR
- *
- *  Techno Cosmic Research Institute	Dirk Mahoney			dirk@tcri.com.au
- *  Catchpole Robotics					Christian Catchpole		christian@catchpole.net
- * 
- */
+//
+// zero - pre-emptive multitasking kernel for AVR
+//
+// Techno Cosmic Research Institute	    Dirk Mahoney			dirk@tcri.com.au
+// Catchpole Robotics					Christian Catchpole		christian@catchpole.net
+//
+
 
 #ifndef TCRI_ZERO_PAGEMANAGER_H
 #define TCRI_ZERO_PAGEMANAGER_H
 
+
 #include <stdint.h>
-#include "util.h"
+
+
+#define ROUND_UP(v,r) ((((v)-1)|((r)-1))+1)
+
+
+const uint16_t SRAM_PAGES = DYNAMIC_BYTES / PAGE_BYTES;
+
 
 namespace zero {
 
     namespace memory {
+
         enum SearchStrategy {
             TopDown = 0,
             BottomUp,
-            MiddleDown,
-            MiddleUp,
         };
     }
 

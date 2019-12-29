@@ -17,23 +17,41 @@
 		],
 	},
 
+	"zero Signals Block": {
+		"prefix": [ "zero-signals", "zero-signals-block" ],
+		"body": [
+			"ZERO_SIGNAL(${1:name}) {",
+			"\tset${2:sender}Synapse(${1:name});",
+			"",
+			"\t$0",
+			"}",
+		],
+	},
+
 	"Source file beginning": {
 		"prefix": "begin",
 		"body": [
-			"/*",
-			" * zero - pre-emptive multitasking kernel for AVR",
-			" *",
-			" *  Techno Cosmic Research Institute\tDirk Mahoney\t\t\tdirk@tcri.com.au",
-			" *  Catchpole Robotics\t\t\t\t\tChristian Catchpole\t\tchristian@catchpole.net",
-			" * ",
-			" */",
-			"",
-			"#include \"zero_config.h\"",
-			"",
-			"using namespace zero;",
+			"//",
+			"// zero - pre-emptive multitasking kernel for AVR",
+			"//",
+			"// Techno Cosmic Research Institute\t\tDirk Mahoney\t\t\tdirk@tcri.com.au",
+			"// Catchpole Robotics\t\t\t\t\tChristian Catchpole\t\tchristian@catchpole.net",
+			"//",
 			"",
 			"",
 			"$0",
+		]
+	},
+
+	"Save/restore INTs": {
+		"prefix": "oldsreg",
+		"body": [
+			"const uint8_t oldSreg = SREG;",
+			"cli();",
+			"",
+			"$0",
+			"",
+			"SREG = oldSreg;",
 		]
 	},
 
@@ -43,7 +61,18 @@
 			"#ifndef ${2:TCRI_ZERO}_${1:${TM_FILENAME_BASE/(.*)/${1:/upcase}/}}_H",
 			"#define ${2:TCRI_ZERO}_${1:${TM_FILENAME_BASE/(.*)/${1:/upcase}/}}_H",
 			"",
-			"$0",
+			"",
+			"#include <stdint.h>",
+			"",
+			"",
+			"namespace zero {",
+			"",
+			"",
+			"\t$0",
+			"",
+			"",
+			"}",
+			"",
 			"",
 			"#endif"
 		]
@@ -54,26 +83,4 @@
 		"body": "static const PROGMEM char _${1:variable}[] = \"${2:text}\";",
 	},
 
-	"CLI Command": {
-		"prefix": [ "clicmd", "cli-command"],
-		"body": [
-			"clicommand(${1:name}, (TextPipe* rx, TextPipe* tx, int argc, char* argv[]) {",
-			"\t$0",
-			"\treturn 0;",
-			"});",
-		],
-	},
-
-	"NamedObject iteration": {
-		"prefix": "noit",
-		"body": [
-			"NamedObject::iterate(${1:handInObject}, [](void* data, NamedObject* obj) {",
-			"\t${2:handInType}* ${3:handInName} = (${2:handInType}*) data;",
-			"",
-			"\t$0",
-			"",
-			"\treturn true;",
-			"});",
-		],
-	},
 }

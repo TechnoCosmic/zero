@@ -1,497 +1,631 @@
-/*
- * zero - pre-emptive multitasking kernel for AVR
- *
- *  Techno Cosmic Research Institute	Dirk Mahoney			dirk@tcri.com.au
- *  Catchpole Robotics					Christian Catchpole		christian@catchpole.net
- * 
- */
+//
+// zero - pre-emptive multitasking kernel for AVR
+//
+// Techno Cosmic Research Institute		Dirk Mahoney			dirk@tcri.com.au
+// Catchpole Robotics					Christian Catchpole		christian@catchpole.net
+//
 
-#include <avr/io.h>
-#include <avr/power.h>
+
+#include <stdint.h>
 #include <avr/interrupt.h>
-#include <util/atomic.h>
+#include <avr/pgmspace.h>
+#include <avr/power.h>
 #include <util/delay.h>
+#include <util/atomic.h>
 
-#include "zero_config.h"
-#include "thread_macros.h"
 #include "thread.h"
-#include "list.h"
-#include "string.h"
 #include "memory.h"
+#include "list.h"
 #include "util.h"
+
 
 using namespace zero;
 
-static const int REGISTER_COUNT = 32;
-static const int PC_COUNT = 2;
 
-static const PROGMEM char DEFAULT_THREAD_NAME[] = "noname";
-static const PROGMEM char _idleThreadName[] = "idle";
-
-static inline void saveCurrentContext(Thread* destThread) __attribute__((always_inline));
-static inline void restoreContext(Thread* t) __attribute__((always_inline));
-static inline Thread* selectNextThread() __attribute__((always_inline));
-static void yield() __attribute__((__naked__));
-
-static List<Thread> _threadList;
-static Thread* _currentThread = 0UL;
-static Thread* _idleThread = 0UL;
-static uint16_t _nextTid = 1;
-static volatile bool _ctxEnabled = false;
-static volatile uint64_t _milliseconds = 0ULL;
+#define INLINE __attribute__((always_inline))
+#define NAKED __attribute__((__naked__))
 
 
-// Removes the Thread from the scheduler. This does NOT
-// remove the Thread from the list of system objects.
-bool Thread::remove() {
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		if (_state != TS_TERMINATED) {
-			return false;
-		}
-		_threadList.remove(this);
-		return true;
-	}
+namespace {
+    // globals
+    List<Thread> _readyLists[2];             // the threads that will run
+    Thread* _currentThread = 0UL;            // the currently executing thread
+    Thread* _idleThread = 0UL;               // to run when there's nothing else to do, and only then
+    volatile uint8_t _activeListNum = 0;     // which of the two ready lists are we using as the active list?
+    volatile uint64_t _ms = 0;               // elapsed milliseconds
+    volatile bool _switchingEnabled = true;  // context switching ISR enabled?
+
+    // constants
+    const uint8_t SIGNAL_BITS = sizeof(SignalField) * 8;
+    const uint16_t REGISTER_COUNT = 32;
+
+    #ifdef RAMPZ
+        const uint16_t EXTRAS_COUNT = 2;
+    #else
+        const uint16_t EXTRAS_COUNT = 1;
+    #endif
+
+    // the offsets from the stack top (as seen AFTER all the registers have been pushed onto the stack already)
+    // of each of the nine (9) parameters that are register-passed by GCC
+    const PROGMEM uint8_t _paramOffsets[] = { 24, 26, 28, 30, 2, 4, 6, 8, 10 };
 }
 
 
-// Frees the Thread's memory and removes it from the system objects list
-bool Thread::cleanup() {
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		if (_state != TS_TERMINATED) {
-			return false;
-		}
+// Ready list helpers, to make list accessing and swapping easy and QUICK
+#define ACTIVE_LIST_NUM     (_activeListNum)
+#define EXPIRED_LIST_NUM    (_activeListNum ^ 1)
+#define SWAP_LISTS          _activeListNum ^= 1;
 
-		NamedObject::remove((NamedObject*) this);
-		memory::free(_stackBottom, _stackSizeBytes);
+#define ACTIVE_LIST         _readyLists[ACTIVE_LIST_NUM]
+#define EXPIRED_LIST        _readyLists[EXPIRED_LIST_NUM]
 
-		delete this;
-		return true;
-	}
+
+// 'naked' means 'no save/restore of regs' but it will still
+// put the caller's PC on the stack because it's not inline,
+// and that is crucial for yield() to work correctly
+static void NAKED yield();
+
+// these ones are inline because we specifically don't want
+// any stack/register shenanigans because that's what these
+// functions are here to do, but in our own controlled way
+static void INLINE saveInitialContext();
+static void INLINE saveExtendedContext();
+static void INLINE restoreInitialContext();
+static void INLINE restoreExtendedContext();
+
+
+// Returns the currently executing Thread
+Thread& Thread::getCurrentThread() {
+    return *_currentThread;
 }
 
 
-// all threads start in here, so we can clean up after them easily
-static void globalThreadEntry(Thread* t, const ThreadEntryPoint entryPoint) {
-	// run the thread, and capture it's return code
-	t->_exitCode = entryPoint();
-
-	// tidy up after the Thread
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		// mark it as terminated
-		t->setState(TS_TERMINATED);
-	
-		// remove from the list of running threads
-		t->remove();
-
-		// tidy up if it's an auto cleanup job...
-		if (t->_parent == 0UL || t->_parentJoinSignalNumber == 0) {
-			t->cleanup();
-	
-		} else {
-			// ... or unblock our parent waiting to join()
-			t->_parent->signal(1L << t->_parentJoinSignalNumber);
-		}
-
-		// clear this so that context won't be needlessly saved
-		_currentThread = 0UL;
-	}
-
-	// this is the official end of a Thread,
-	// so time to schedule another one
-	yield();
-}
-
-
-// main ctor
-Thread::Thread(const char* name, const uint16_t stackSizeBytes, const uint8_t quantumOverride, const ThreadEntryPoint entryPoint, const ThreadFlags flags) {
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-
-		uint16_t allocated = 0UL;
-		uint16_t requestedStackBytes = MAX(stackSizeBytes, THREAD_MIN_STACK_BYTES);
-		
-		_stackBottom = (uint8_t*) memory::allocate(requestedStackBytes, &allocated, THREAD_MEMORY_SEARCH_STRATEGY);
-		_stackSizeBytes = allocated;
-
-		// prepare the stack and registers
-		uint8_t* stackEnd = &_stackBottom[_stackSizeBytes-1];
-
-		// the entry point for the Thread
-		stackEnd[ 0] = ((uint32_t) globalThreadEntry) & 0xFF;
-		stackEnd[-1] = ((uint32_t) globalThreadEntry) >> 8;
-
-		// set the stack pointer to the right place
-		_sp = (uint16_t) &stackEnd[-(REGISTER_COUNT + PC_COUNT)];
-
-		// pass ourselves in as a parameter to the launch function
-		setParameter(0, (uint16_t) this);
-
-		// pass the entry point in as a parameter to the launch function
-		setParameter(1, (uint16_t) entryPoint);
-
-		// pre-allocate the reserved Signals.
-		// at this point in the Thread's life,
-		// these calls are guaranteed to work
-		allocateSignal(SIGNUM_TIMEOUT);
-
-		// set up system data
-		_tid = _nextTid++;
-		_systemData._objectType = THREAD;
-		_systemData._objectName = TOT(name, DEFAULT_THREAD_NAME);
-		_parent = _currentThread;
-
-		// allocate a Signal that this Thread will use
-		// to tell us when it's finished.
-		_parentJoinSignalNumber = -1;
-
-		if (!(flags & TF_AUTO_CLEANUP)) {
-			_parentJoinSignalNumber = _parent->allocateSignal();
-		}
-
-		// initial housekeeping data
-		if (flags & TF_READY) {
-			_state = TS_READY;
-		} else {
-			_state = TS_PAUSED;
-		}
-
-		_quantumTicks = TOT(quantumOverride, TIMESLICE_MS);
-
-#ifdef INSTRUMENTATION
-		_lowestSp = _sp;
-#endif
-
-		// add ourselves to the list of system objects
-		NamedObject::add((NamedObject*) this);
-
-		// and to the thread list
-		_threadList.append(this);
-	}
-}
-
-
-// abridged ctor for easier threads
-Thread::Thread(const uint16_t stackSizeBytes, const ThreadEntryPoint entryPoint, const ThreadFlags flags) : Thread(0UL, stackSizeBytes, 0, entryPoint, flags) { }
-
-
-// creates the idle thread, for running when nothing else wants to
-Thread* Thread::createIdleThread() {
-	return new Thread(_idleThreadName, 0, 5, [](){ while (1); return 0; }, TF_READY | TF_AUTO_CLEANUP);
-}
-
-
-// sets a parameter to the globalThreadEntry function by modifying the prepared stack
-bool Thread::setParameter(const uint8_t parameterNumber, const uint16_t v) {
-	#define REG_FOR_PARAM(p) (24-((p)*2))
-	#define OFFSET_FOR_REG(r) ((r)+1)
-
-	if (parameterNumber >= 0 && parameterNumber <= 8) {
-		const int8_t offset = OFFSET_FOR_REG(REG_FOR_PARAM(parameterNumber));
-		((uint8_t*)0)[_sp+offset+0] = v & 0xFF;
-		((uint8_t*)0)[_sp+offset+1] = v >> 8;
-
-		return true;
-	}
-
-	return false;
-}
-
-// so that the millisecond timer automatically
-// scales with your chosen MCU speed
-#define SCALE(x) ((F_CPU * (x)) / 16000000UL)
-
-// Initializes and starts the pre-emptive scheduler
-void Thread::init() {
-	// 8-bit Timer/Counter0
-	power_timer0_enable();
-	TCNT0 = 0;											// reset counter to 0
-	TCCR0A = (1 << WGM01);								// CTC
-	TCCR0B = (1 << CS02);								// /256 prescalar
-	OCR0A = SCALE(63UL)-1;								// 1ms
-	TIMSK0 |= (1 << OCIE0A);							// enable ISR
-
-	// set up the idle Thread
-	_idleThread = Thread::createIdleThread();
-	NamedObject::add((NamedObject*) _idleThread);
-
-	// enable ISR switching at the Timer level
-	Thread::permit();									// enable context switching
-}
-
-
-// Who am I?
-Thread* Thread::me() {
-	return _currentThread;
-}
-
-
-// Prevents context switching
-void Thread::forbid() {
-	_ctxEnabled = false;
-}
-
-
-// Enables context switching
-void Thread::permit() {
-	_ctxEnabled = true;
-}
-
-
-// Determines if context switching is on
-bool Thread::isSwitchingEnabled() {
-	return _ctxEnabled;
-}
-
-
-// Saves the current state of the MCU to _currentThread
-static inline void saveCurrentContext(Thread* destThread) {
-	SAVE_REGS;
-	if (destThread) {
-		destThread->_sreg = SREG;
-		destThread->_sp = SP;
-#ifdef RAMPZ
-		destThread->_rampz = RAMPZ;
-#endif
-
-		// switch to the 'kernel' stack
-		SP = RAMEND;
-
-#ifdef INSTRUMENTATION
-		destThread->_lowestSp = MIN(destThread->_lowestSp, destThread->_sp);
-#endif
-	}
-
-	// reschedule the thread to run again if it simply ran out of time
-	if (destThread) {
-		if (destThread->getState() == TS_RUNNING) {
-			destThread->setState(TS_READY);
-		}
-	}
-}
-
-
-// Restores the context of the supplied Thread and resumes it's execution
-static inline void restoreContext(Thread* t) {
-	_currentThread = t;
-	_currentThread->_remainingTicks = _currentThread->_quantumTicks;
-	_currentThread->setState(TS_RUNNING);
-
-#ifdef RAMPZ
-	RAMPZ = _currentThread->_rampz;
-#endif
-	SP = _currentThread->_sp;
-	SREG = _currentThread->_sreg;
-	RESTORE_REGS;
-}
-
-
-// halts the calling thread and transfers MCU control
-// over to another Thread of the scheduler's choosing
-static void yield() {
-	saveCurrentContext(_currentThread);
-	TIMSK0 &= ~(1 << OCIE0B);					// switch off context switch ISR
-	restoreContext(selectNextThread());
-}
-
-
-// main decision maker for the round-robin scheduler
-static inline Thread* getNextThread(Thread* firstToCheck) {
-	const uint32_t now = Thread::now();
-	Thread* rc = 0UL;
-	Thread* cur = firstToCheck;
-	Thread* startedAt = firstToCheck;
-
-	// while we have something to check...
-	while (cur) {
-		// if it's ready to run, we're done!
-		if (cur->getState() == TS_READY) {
-			rc = cur;
-			break;
-		}
-
-		// otherwise get the next Thread
-		cur = cur->_next;
-
-		// if we got to the end of the list,
-		// start again at the head
-		if (!cur) {
-			cur = _threadList.getHead();
-		}
-
-		// if we've come full circle, escape,
-		// we didn't find anything to run
-		if (cur == startedAt) {
-			break;
-		}
-	}
-
-	// return either the Thread we found,
-	// or the idle thread if nothing was found
-	return TOT(rc, _idleThread);
-}
-
-
-static inline Thread* selectNextThread() {
-	Thread* firstToCheck = TTT(_currentThread, _currentThread->_next);
-
-	if (!firstToCheck || firstToCheck == _idleThread) {
-		firstToCheck = _threadList.getHead();
-	}
-
-	return getNextThread(firstToCheck);
-}
-
-
-void Thread::waitUntil(const uint32_t untilMs) {
-	// Threads can only sleep themselves, they can't be forced
-	if (_currentThread != this) return;
-
-	_wakeUpTime = untilMs;
-	wait(SIGMSK_TIMEOUT);
-}
-
-
-// Starts a PAUSED Thread executing by allowing it to be scheduled.
-// Returns false if the Thread was not PAUSED at the time of the call.
-bool Thread::run() {
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		
-		if (_state != TS_PAUSED) {
-			return false;
-		}
-
-		this->_state = TS_READY;
-		return true;
-	}
-}
-
-
-// Pauses a running/ready Thread. Blocks if the caller is pausing itself.
-// Returns false if the Thread was not RUNNING/READY at the time of the call.
-bool Thread::pause() {
-	ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-		
-		if (_state != TS_RUNNING && _state != TS_READY) {
-			return false;
-		}
-		this->_state = TS_PAUSED;
-	}
-
-	// block immediately if the thread paused itself
-	if (this == _currentThread) {
-		yield();
-	}
-
-	return true;
-}
-
-
-// Blocks the *calling* Thread until *this* Thread terminates.
-// NOTE: autoCleanup against *this* Thread must be set to FALSE prior
-// to *this* Thread terminating for the join to be successful.
-int Thread::join() {
-	int rc = -1;
-	
-	// parents can join on their children, that's it
-	if (_currentThread != _parent) return rc;
-
-	// join can only occur on Threads
-	// that do NOT auto-cleanup
-	if (_parent != 0UL && _parentJoinSignalNumber != 0) {
-		// block the parent/current Thread until *this* Thread terminates
-		SignalMask sigs = _parent->wait(1L << _parentJoinSignalNumber);
-
-		// free up the allocate Signal number
-		freeSignal(_parentJoinSignalNumber);
-		_parentJoinSignalNumber = -1;
-
-		// the main Thread entry code deposits the
-		// Thread's exit code into the TCB for us
-		// to return here
-		rc = this->_exitCode;
-
-		// cleanup the Thread properly now
-		if (!cleanup()) {
-			rc = -1;
-		}
-	}
-	
-	return rc;
-}
-
-
-// Blocks the calling Thread, setting a new state and blockInfo
-void Thread::block(const ThreadState newState) {
-	cli();
-	_currentThread->_state = newState;
-	yield();
-}
-
-
-// triggers Timer0 COMPB ISR, which will do the switch
-static void triggerContextSwitch() {
-	if (Thread::isSwitchingEnabled()) {
-		OCR0B = TCNT0;
-		TIMSK0 |= (1 << OCIE0B);
-	}
-}
-
-
-// millisecond timer ISR
-ISR(TIMER0_COMPA_vect) {
-	cli();
-	_milliseconds++;
-
-#ifdef INSTRUMENTATION
-	_currentThread->_ticks++;
-	_currentThread->_lowestSp = MIN(_currentThread->_lowestSp, SP);
-#endif
-
-	// subtract from the time remaining in the quantum
-	if (_currentThread->_remainingTicks > 0) {
-		_currentThread->_remainingTicks--;
-	}
-
-	if (Thread::isSwitchingEnabled() && _currentThread->_remainingTicks == 0) {
-		triggerContextSwitch();
-	}
-
-	// we don't have to re-enable ISRs here, because
-	// this *is* an ISR, meaning GCC will finish it
-	// with 'reti', which will re-enable ISRs for us
-}
-
-
-// context switch ISR
-ISR(TIMER0_COMPB_vect, ISR_NAKED) {
-	yield();
-}
-
-
-// returns the number of milliseconds uptime since the scheduler started
+// Returns the elapse milliseconds since startup
 uint64_t Thread::now() {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		return _milliseconds;
-	}
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        return _ms;
+    }
 }
 
 
-extern void startup_sequence();
+// Prevent context switching
+void Thread::forbid() {
+    _switchingEnabled = false;
+}
 
-// normal main() to start the system off
+
+// Enable context switching
+void Thread::permit() {
+    _switchingEnabled = true;
+}
+
+
+// Determines if context switching is on or not
+bool Thread::isSwitchingEnabled() {
+    return _switchingEnabled;
+}
+
+
+// Determine where in the stack the registers are for a given parameter number
+// NOTE: This is GCC-specific. Different compilers may pass parameters differently.
+static int getOffsetForParameter(const uint8_t parameterNumber) {
+    if (parameterNumber < 9) {
+        return pgm_read_byte((uint16_t) _paramOffsets + parameterNumber);
+    }
+    return 0;
+}
+
+
+// All threads start life here
+static void globalThreadEntry(Thread& t, const uint32_t entry, const ThreadFlags flags, Synapse notifySyn, uint16_t* exitCode) {
+    // run the thread and get its exit code
+    uint16_t ec = ((ThreadEntry) entry)();
+
+    // we don't want to be disturbed while cleaning up
+    cli();
+
+    // return the exit code if the parent wants it
+    if (exitCode) {
+        *exitCode = ec;
+    }
+
+    // if the parent wanted to be signalled upon
+    // this Thread's termination, signal them
+    notifySyn.signal();
+
+    // remove from the list of Threads
+    ACTIVE_LIST.remove(t);
+
+    // forget us so that no context is remembered
+    // superfluously in the yield() below
+    _currentThread = 0UL;
+
+    // tidy up, maybe
+    if (flags & TF_SELF_DESTRUCT) {
+        // Like garbage collection, this means the Thread
+        // wants us to deallocate everything. The stack
+        // will be deallocated in the Thread's dtor
+        delete &t;
+    }
+
+    // NEXT!
+    yield();
+}
+
+
+// ctor
+Thread::Thread(const uint16_t stackSize, const ThreadEntry entry, const ThreadFlags flags, const SignalField termSigs, uint16_t* exitCode) {    
+    // allocate a stack from the heap
+    _stackBottom = memory::allocate(MAX(stackSize, 96), &_stackSize, memory::SearchStrategy::TopDown);
+
+    const uint16_t stackTop = (uint16_t) _stackBottom + _stackSize - 1;
+    const uint16_t newStackTop = stackTop - (PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT);
+
+    // little helper for stack manipulation - yes, we're
+    // going to deliberately index through a null pointer!
+    #define SRAM ((uint8_t*) 0)
+
+    // clear the stack
+    for (uint16_t i = newStackTop + 1; i <= stackTop; i++) {
+        SRAM[i] = 0;
+    }
+    
+    // 'push' the program counter onto the stack
+    SRAM[stackTop - 0] = (((uint32_t) globalThreadEntry) >>  0) & 0xFF;
+    SRAM[stackTop - 1] = (((uint32_t) globalThreadEntry) >>  8) & 0xFF;
+
+#if PC_COUNT >= 3
+    SRAM[stackTop - 2] = (((uint32_t) globalThreadEntry) >> 16) & 0xFF;
+#endif
+
+#if PC_COUNT >= 4
+    SRAM[stackTop - 3] = (((uint32_t) globalThreadEntry) >> 24) & 0xFF;
+#endif
+
+    // set the Thread object into parameter 0 (first parameter)
+    SRAM[newStackTop + getOffsetForParameter(0) - 0] = (((uint16_t) this) >> 0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(0) - 1] = (((uint16_t) this) >> 8) & 0xFF;
+
+    // set the real entry point into parameters 2/1 - this will be called by globalThreadEntry()
+    SRAM[newStackTop + getOffsetForParameter(2) - 0] = (((uint32_t) entry) >>  0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(2) - 1] = (((uint32_t) entry) >>  8) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(1) - 0] = (((uint32_t) entry) >> 16) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(1) - 1] = (((uint32_t) entry) >> 24) & 0xFF;
+
+    // set the flags
+    SRAM[newStackTop + getOffsetForParameter(3) - 0] = (((uint16_t) flags) >> 0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(3) - 1] = (((uint16_t) flags) >> 8) & 0xFF;
+
+    // set the Synapse for notifying the parent of the Thread's termination
+    SRAM[newStackTop + getOffsetForParameter(5) - 0] = (((uint16_t) _currentThread) >> 0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(5) - 1] = (((uint16_t) _currentThread) >> 8) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(4) - 0] = (((SignalField) termSigs) >> 0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(4) - 1] = (((SignalField) termSigs) >> 8) & 0xFF;
+
+    // set the place for the exit code
+    SRAM[newStackTop + getOffsetForParameter(6) - 0] = (((uint16_t) exitCode) >> 0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(6) - 1] = (((uint16_t) exitCode) >> 8) & 0xFF;
+
+    // The prepared stack has all the registers + SREG + RAMPZ 'pushed'
+    // onto it (zeroed out). So we need to set a new SP that reflects
+    // the 32 registers + SREG/RAMPZ + PC pushed onto it.
+    // The reason is because the way that a thread is launched ultimately
+    // ends with a call to restoreInitialContext(), which pops all these
+    // null values off the stack and into the registers proper
+    _sp = newStackTop;
+
+    // Signal defaults
+    _allocatedSignals = 0UL;
+    _waitingSignals = 0UL;
+    _currentSignals = 0UL;
+
+    // ready to run?
+    if (flags & TF_READY) {
+        // add the Thread into the ready list
+        ACTIVE_LIST.append(*this);
+    }
+}
+
+
+Thread::~Thread() {
+    // deallocate the stack
+    memory::free(_stackBottom, _stackSize);
+    _stackBottom = 0UL;
+    _stackSize = 0UL;
+}
+
+
+// Moves the Thread into the expired list
+void Thread::expire() {
+    ACTIVE_LIST.remove(*this);
+    EXPIRED_LIST.append(*this);
+}
+
+
+// Chooses the next Thread to run. This is the head of the active list,
+// unless there are no Threads ready to run, in which case this will
+// choose the idle Thread.
+static Thread* selectNextThread() {
+    Thread* rc = ACTIVE_LIST.getHead();
+
+    if (!rc) {
+        SWAP_LISTS;
+        rc = ACTIVE_LIST.getHead();
+
+        if (!rc) {
+            rc = _idleThread;
+        }
+    }
+
+    return rc;
+}
+
+
+// Saves enough of the register set that we can do some basic things inside a naked ISR.
+static void inline saveInitialContext() {
+    asm volatile ("push r0");
+
+    asm volatile ("in r0, __SREG__");               // status register
+    asm volatile ("push r0");
+#ifdef RAMPZ
+    asm volatile ("in r0, __RAMPZ__");              // RAMPZ
+    asm volatile ("push r0");
+#endif
+    asm volatile ("push r1");
+    asm volatile ("push r18");
+    asm volatile ("push r19");
+    asm volatile ("push r20");
+    asm volatile ("push r21");
+    asm volatile ("push r22");
+    asm volatile ("push r23");
+    asm volatile ("push r24");
+    asm volatile ("push r25");
+    asm volatile ("push r26");
+    asm volatile ("push r27");
+    asm volatile ("push r28");
+    asm volatile ("push r29");
+}
+
+
+// Save the remainder of the register set that wasn't saved by saveInitalContext()
+static void inline saveExtendedContext() {
+    asm volatile ("push r30");
+    asm volatile ("push r31");
+    asm volatile ("push r2");
+    asm volatile ("push r3");
+    asm volatile ("push r4");
+    asm volatile ("push r5");
+    asm volatile ("push r6");
+    asm volatile ("push r7");
+    asm volatile ("push r8");
+    asm volatile ("push r9");
+    asm volatile ("push r10");
+    asm volatile ("push r11");
+    asm volatile ("push r12");
+    asm volatile ("push r13");
+    asm volatile ("push r14");
+    asm volatile ("push r15");
+    asm volatile ("push r16");
+    asm volatile ("push r17");
+}
+
+
+// Restores the basic minimal register set
+static void inline restoreInitialContext() {
+    asm volatile ("pop r29");
+    asm volatile ("pop r28");
+    asm volatile ("pop r27");
+    asm volatile ("pop r26");
+    asm volatile ("pop r25");
+    asm volatile ("pop r24");
+    asm volatile ("pop r23");
+    asm volatile ("pop r22");
+    asm volatile ("pop r21");
+    asm volatile ("pop r20");
+    asm volatile ("pop r19");
+    asm volatile ("pop r18");
+    asm volatile ("pop r1");
+#ifdef RAMPZ
+    asm volatile ("pop r0");
+    asm volatile ("out __RAMPZ__, r0");
+#endif
+    asm volatile ("pop r0");
+    asm volatile ("out __SREG__, r0");
+
+    asm volatile ("pop r0");
+}
+
+
+// Restores the extended register set
+static void inline restoreExtendedContext() {
+    asm volatile ("pop r17");
+    asm volatile ("pop r16");
+    asm volatile ("pop r15");
+    asm volatile ("pop r14");
+    asm volatile ("pop r13");
+    asm volatile ("pop r12");
+    asm volatile ("pop r11");
+    asm volatile ("pop r10");
+    asm volatile ("pop r9");
+    asm volatile ("pop r8");
+    asm volatile ("pop r7");
+    asm volatile ("pop r6");
+    asm volatile ("pop r5");
+    asm volatile ("pop r4");
+    asm volatile ("pop r3");
+    asm volatile ("pop r2");
+    asm volatile ("pop r31");
+    asm volatile ("pop r30");
+}
+
+
+static void yield() {
+    cli();
+
+    if (_currentThread) {
+        // save current context for when we unblock
+        saveInitialContext();
+        saveExtendedContext();
+        _currentThread->_sp = SP;
+
+        // take it out of the running
+        ACTIVE_LIST.remove(*_currentThread);
+    }
+
+    // kernel stack
+    SP = RAMEND;
+
+    // select the next thread to run
+    _currentThread = selectNextThread();
+
+    // top up its quantum
+    // _currentThread->_ticksRemaining = QUANTUM_TICKS;
+
+    // restore its context
+    SP = _currentThread->_sp;
+    restoreExtendedContext();
+    restoreInitialContext();
+
+    // and off we go
+    reti();
+}
+
+
+static void initTimer0() {
+    #define SCALE(x) ((F_CPU * (x)) / 16'000'000ULL)
+
+	// 8-bit Timer/Counter0
+	power_timer0_enable();                          // switch it on
+    TCCR0B = 0;                                     // stop the clock
+	TCNT0 = 0;				                        // reset counter to 0
+	TCCR0A = (1 << WGM01);	                        // CTC
+	TCCR0B = (1 << CS02);	                        // /256 prescalar
+	OCR0A = SCALE(63U)-1;           			    // 1ms
+	TIMSK0 |= (1 << OCIE0A);                        // enable ISR
+}
+
+
+// The Timer tick - the main heartbeat
+ISR(TIMER0_COMPA_vect, ISR_NAKED) {
+    // save what we need in order to do basic stuff (non ctx switching)
+    saveInitialContext();
+
+    // increase the ms counter
+    // TODO: Change this to inline assembly using only the 'initial' register set
+    _ms++;
+
+    // let's figure out switching
+    if (_currentThread) {
+        // only subtract time if there's time to subtract
+        if (_currentThread->_ticksRemaining) {
+            _currentThread->_ticksRemaining--;
+        }
+
+        // if the Thread has more time to run, or switching is disabled, bail
+        if (_currentThread->_ticksRemaining || !_switchingEnabled) {
+            restoreInitialContext();
+            
+            // return, enabling interrupts
+            reti();
+        }
+
+        // we're switching, so we need to save the rest of the context
+        saveExtendedContext();
+        _currentThread->_sp = SP;
+
+        // send it to the expired list
+        if (_currentThread != _idleThread) {
+            _currentThread->expire();
+        }
+    }
+
+    // kernel stack
+    SP = RAMEND;
+
+    // choose the next thread
+    _currentThread = selectNextThread();
+
+    // top up its quantum if it exhausted its previous one
+    if (!_currentThread->_ticksRemaining) {
+        _currentThread->_ticksRemaining = QUANTUM_TICKS;
+    }
+
+    // bring the new thread online
+    SP = _currentThread->_sp;
+
+    // and of course we need to do a full restore because context switch
+    restoreExtendedContext();
+    restoreInitialContext();
+    reti();
+}
+
+
+// Idle Thread. Currently flashes the C3 LED
+int idleEntry() {
+    DDRC |= (1 << 3);
+    while (true) {
+        PORTC ^= (1 << 3);
+        _delay_ms(200);
+    }
+}
+
+
+// Kickstart the system
 int main() {
-	// disable all modules, and let the
-	// appropriate init routines power
-	// up things as they get used
-	power_all_disable();
+    extern void startup_sequence();
 
-	// prep the scheduler/ms timer
-	Thread::init();
+    // start Timer0 (does not enable global ints)
+    initTimer0();
 
-	// new entry point to zero programs
-	startup_sequence();
+    // create the idle Thread
+    _idleThread = new Thread(96, idleEntry, TF_NONE);
 
-	// and immediately cause a context switch.
-	// ISRs will be enabled at the very end of
-	// this first switch
-	yield();
+    // bootstrap
+    startup_sequence();
+
+    // bring the first thread on-line
+    _currentThread = selectNextThread();
+
+    // top up its quantum
+    _currentThread->_ticksRemaining = QUANTUM_TICKS;
+
+    // set the current stack pointer to first thread's
+    SP = _currentThread->_sp;
+
+    // restore the (brand new) context for the chosen thread
+    restoreExtendedContext();
+    restoreInitialContext();
+    reti();                         // this enables global interrupts as well
+}
+
+
+// Attempts to allocate a specific Signal number
+bool Thread::tryAllocateSignal(const uint16_t signalNumber) {
+    if (signalNumber >= SIGNAL_BITS) return false;
+
+    const SignalField m = 1L << signalNumber;
+
+    if (!(_allocatedSignals & m)) {
+        _allocatedSignals |= m;
+        return true;
+    }
+
+    return false;
+}
+
+
+// Tries to find an unused Signal number and then allocates it for use.
+// If you supply a specific Signal number, only that Signal will be
+// allocated, and only if it is currently free. Supplying -1 here
+// will let the kernel find a free Signal number for you.
+SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber) {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        if (reqdSignalNumber < SIGNAL_BITS) {
+            if (tryAllocateSignal(reqdSignalNumber)) {
+                return 1L << reqdSignalNumber;
+            }
+    
+        } else {
+            for (uint16_t i = 0; i < SIGNAL_BITS; i++) {
+                if (tryAllocateSignal(i)) {
+                    return 1L << i;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+// Frees a Signal number and allows its re-use by the Thread
+void Thread::freeSignals(const SignalField signals) {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        _allocatedSignals &= ~signals;
+        _waitingSignals &= ~signals;
+        _currentSignals &= ~signals;
+    }
+}
+
+
+// Returns a SignalField showing which Signals are currently active
+SignalField Thread::getActiveSignals() {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        return (_currentSignals & _waitingSignals & _allocatedSignals);
+    }
+}
+
+
+// Clears a set of Signals and returns the remaining ones
+SignalField Thread::clearSignals(const SignalField sigs) {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        return (_currentSignals &= ~sigs);
+    }
+}
+
+
+// Waits for any of a set of Signals, returning a SignalField
+// representing the Signals that woke the Thread up again
+SignalField Thread::wait(const SignalField sigs) {
+    SignalField rc = 0;
+
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {    
+        // A Thread can wait only on its own Signals.
+        if (_currentThread != this) return 0;
+
+        // set which Signals we are waiting on
+        _waitingSignals = (sigs & _allocatedSignals);
+        
+        // if we're not going to end up waiting on anything, bail
+        if (!_waitingSignals) return 0;
+    
+        // see what Signals are already set that we care about
+        rc = getActiveSignals();
+
+        // if there aren't any, block to wait for them
+        if (!rc) {
+            // this will block until at least one Signal is
+            // received that we are waiting for. Execution
+            // will resume immediately following the yield()
+            yield();
+
+            // disable ISRs again so we're back to being atomic
+            cli();
+
+            // Figure out which Signal(s) woke us
+            rc = getActiveSignals();
+        }
+
+        // clear the recd Signals so that we can see repeats of them
+        clearSignals(rc);
+    
+        // return the Signals that woke us
+        return rc;
+    }
+}
+
+
+// Send Signals to a Thread, potentially waking it up
+void Thread::signal(const SignalField sigs) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        const bool alreadySignalled = getActiveSignals();
+
+        _currentSignals |= (sigs & _allocatedSignals);
+
+        // if this resulted in the Thread waking up,
+        // schedule it to run next
+        if (!alreadySignalled && getActiveSignals()) {
+            // remove it, in case it's already there
+            ACTIVE_LIST.remove(*this);
+
+            // add it to the top of the list, so that it's next up
+            ACTIVE_LIST.prepend(*this);
+
+            // if the Thread just signalled isn't the one running
+            // now, then let's quickly get that Thread running
+            if (_currentThread != this) {
+                _currentThread->_ticksRemaining = 1;
+            }
+        }
+    }
 }
