@@ -41,7 +41,7 @@ namespace zero {
         SignalField allocateSignal(const uint16_t reqdSignalNumber = -1);
         void freeSignals(const SignalField signals);
 
-        SignalField getActiveSignals();
+        SignalField getCurrentSignals();
         SignalField clearSignals(const SignalField sigs);
         
         SignalField wait(const SignalField sigs);

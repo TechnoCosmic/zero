@@ -556,6 +556,14 @@ SignalField Thread::getActiveSignals() {
 }
 
 
+// Returns a SignalField showing which Signals are currently active
+SignalField Thread::getCurrentSignals() {
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        return (_currentSignals & _allocatedSignals);
+    }
+}
+
+
 // Clears a set of Signals and returns the remaining ones
 SignalField Thread::clearSignals(const SignalField sigs) {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {

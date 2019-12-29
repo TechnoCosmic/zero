@@ -25,9 +25,18 @@ Constructs a new Thread object, and begins executing it.
 |```exitCode```|A pointer to a ```uint16_t``` to store the return code from the Thread's ```entry``` function. Optional.|
 
 ### Notes
-- The ```entryPoint``` is a function that takes no parameters and returns an ```int```.
-- ```flags```: ```TF_READY``` makes the Thread immediately available to execute. ```TF_SELF_DESTRUCT``` will clean up the Thread object after termination, and is for use in cases where you cannot call ```delete``` on the Thread object when its finished, such as those Threads launched from ```startup_sequence()``` (the ```main()``` replacement function for zero programs). ```TF_FIRE_AND_FORGET``` is a shortcut for both flags combined.
-- If you want to know when a child Thread terminates, allocate a signal via ```allocateSignal()``` and pass that as ```termSignals```. When the child Thread terminates, that signal will be set, and can be checked by calling ```getActiveSignals()``` or by ```wait()```ing on it.
+- The ```entryPoint``` is a function that takes no parameters and returns an ```int```. Conforms to ```ThreadEntry```.
+
+- ```flags```...
+
+|Flag|Description|
+|----|-----------|
+|```TF_READY```|Makes the Thread immediately available to execute|
+|```TF_SELF_DESTRUCT```|Will clean up the Thread object after termination, and is for use in cases where you cannot call ```delete``` on the Thread object when its finished, such as those Threads launched from ```startup_sequence()``` (the ```main()``` replacement function for zero programs)
+|```TF_FIRE_AND_FORGET```|Shortcut for both ```TF_READY``` and ```TF_SELF_DESTRUCT``` combined|
+
+- If you want to know when a child Thread terminates, allocate a signal via ```allocateSignal()``` and pass that as ```termSignals```. When the child Thread terminates, that signal will be set, and can be checked by calling ```getCurrentSignals()``` or by ```wait()```ing on it.
+
 - ```exitCode``` is only valid once (and if) a Thread terminates.
 
 ### Example
@@ -176,10 +185,10 @@ Frees a previously allocated signal(s) for re-use.
 |-----|-----------|
 |```signals```|The ```SignalField``` of the signal(s) you want to deallocate. Can free multiple signals at once.|
 
-## getActiveSignals()
+## getCurrentSignals()
 Returns the signals currently set for the Thread.
 ```
-    SignalField Thread::getActiveSignals()
+    SignalField Thread::getCurrentSignals()
 ```
 
 ### Notes
@@ -199,7 +208,7 @@ Clears one or more signals, returning the remaining set signals.
 |```sigs```|The ```SignalField``` containing the signal(s) to be cleared.|
 
 ### Notes
-If a signal occurs while your Thread is awake, and you check it with ```getActiveSignals()```, you will usually want to clear those signals after you have acted on them, to prevent your code from erroneously acting on them again. Use this function to tell zero that you've addressed some signals outside of the normal ```wait()``` process. If you do not do this, and you ```wait()``` on these signals again, your Thread will NOT block as those signals are still set.
+If a signal occurs while your Thread is awake, and you check it with ```getCurrentSignals()```, you will usually want to clear those signals after you have acted on them, to prevent your code from erroneously acting on them again. Use this function to tell zero that you've addressed some signals outside of the normal ```wait()``` process. If you do not do this, and you ```wait()``` on these signals again, your Thread will NOT block as those signals are still set.
 
 You do NOT need to call ```clearSignals()``` after your Thread wakes from ```wait()``` as the signals that woke the Thread are automatically cleared by the kernel.
 

@@ -16,6 +16,7 @@ public:
     uint8_t _ticksRemaining;
 
 private:
+    SignalField getActiveSignals();
     bool tryAllocateSignal(const uint16_t signalNumber);
     
     uint8_t* _stackBottom;
