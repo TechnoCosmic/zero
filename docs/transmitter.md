@@ -48,7 +48,8 @@ Once a transmission is finished, the transmitter will signal the ```txCompleteSy
 #include "thread.h"
 #include "usart.h"
 
-int txDemo() {
+int txDemo()
+{
     // Signal for learning when we can send again
     SignalField txDoneSig = me.allocateSignal();
 
@@ -75,7 +76,7 @@ int txDemo() {
         }
 
         if (canSend) {
-            tx->transmit("Beaker is the best puppy ever!\r\n", 32);
+            tx->transmit((char*) "Beaker is the best puppy ever!\r\n", 32);
             canSend = false;
         }
     }
