@@ -35,12 +35,12 @@ See ```docs/thread.md``` for API reference.
 zero implements a simple page-based memory manager, with overrides for ```new``` and ```delete```. See ```docs/memory.md``` for API reference.
 
 ## Hardware USART Drivers
-zero's serial I/O model implemented by ```Transmitter```s and ```Receiver```s.
+zero's serial I/O model implemented by Transmitters and Receivers.
 
 ### Transmitting Data
 After creating an instance of a ```Transmitter```-derived class, such as ```UsartTx```, you set up the communications parameters (specific to the type of transmitter), and enable it. In the case of the AVR on-board USART devices, the only parameter needed is the baud rate. If you want to use zero's software serial transmitter, you will also need to specify the DDR, PORT and pin for the TX line.
 
-To transmit data, call ```transmit()``` on the transmitter. The transmitter will then *asynchronously* transmit the information handed to the ```transmit()```. This means that whatever data or buffer you transmit must remain valid and untouched until the transmission is complete, as ***no copy of the supplied information is performed***.
+To transmit data, call ```transmit()``` on the transmitter. The transmitter will then *asynchronously* transmit the information handed to the ```transmit()``` function. This means that whatever data or buffer you transmit must remain valid and untouched until the transmission is complete, as ***no copy of the supplied information is performed***.
 
 Transmission is complete when the transmitter signals the ```Synapse``` that it was handed when it was ```enable()```'d. A ```Synapse``` is a simple ```Thread```/```SignalField``` pair.
 ```
@@ -98,7 +98,9 @@ int mySerialThread()
     // This is why you can simply pass a SignalField where a
     // Synapse is expected, since 99/100 times the Thread
     // component of the Synapse should always be the Thread
-    // that created it
+    // that created it. Put another way, it is rare that one
+    // Thread will create a Synapse on behalf of a different
+    // Thread.
 
     rx->enable(128, rxDataAvailSig, rxOvfSig);
 
@@ -128,4 +130,4 @@ int mySerialThread()
 }
 ```
 ### Notes
-The receiver uses a double-buffered approach. Because of this, the actual size of the active receive buffer is half that specified in the ```enable()``` call, with the other half on standby. ```getCurrentBuffer()``` returns a pointer to the data received since the last call to ```getCurrentBuffer()```. ***It does not return of copy of that data***. If there is no data available, ```getCurrentBuffer()``` will return a null pointer, and the supplied reference argument, ```numBytes```, will be set to zero (0).
+The receiver uses a double-buffered approach. Because of this, the actual size of the active receive buffer is half that specified in the ```enable()``` call. One half of the buffer is filling with incoming data while your code is processing the data in the other half. ```getCurrentBuffer()``` returns a pointer to the data received since the last call to ```getCurrentBuffer()```. ***It does not return of copy of that data***. If there is no data available, ```getCurrentBuffer()``` will return a null pointer, and the supplied reference argument, ```numBytes```, will be set to zero (0).

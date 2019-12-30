@@ -108,7 +108,7 @@ int myFirstThread()
 
 void startup_sequence()
 {
-    // start one simple Thread when the MCU fires up
+    // start one simple Thread when the kernel fires up
     new Thread(128, myFirstThread, TF_FIRE_AND_FORGET);
 }
 ```
@@ -116,11 +116,11 @@ void startup_sequence()
 ## getCurrentThread()
 Returns the currently executing ```Thread``` object.
 ```
-    static Thread* Thread::getCurrentThread()
+    static Thread& Thread::getCurrentThread()
 ```
 
 ### Notes
-This is a static method of the ```Thread``` class. For readability of code, use the ```me``` macro instead, which returns a *reference* to the current ```Thread``` object, rather than a pointer.
+This is a static method of the ```Thread``` class. For readability of code, use the ```me``` macro instead.
 
 ## forbid()
 Prevents context switching.
@@ -130,6 +130,8 @@ Prevents context switching.
 
 ### Notes
 This is a static method of the ```Thread``` class. Use this sparingly, for critical sections where context switching needs to be prevented temporarily.
+
+**NOTE:** This only suspends context switching (multi-tasking) - it does NOT disable interrupts.
 
 ## permit()
 Resumes context switching.
