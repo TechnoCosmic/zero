@@ -128,4 +128,4 @@ int mySerialThread()
 }
 ```
 ### Notes
-The receiver uses a double-buffered approach. ```getCurrentBuffer()``` returns a pointer to the data received since the last call to ```getCurrentBuffer()```. ***It does not return of copy of that data***. If there is no data available, ```getCurrentBuffer()``` will return a null pointer, and the supplied reference argument, ```numBytes```, will be set to zero (0).
+The receiver uses a double-buffered approach. Because of this, the actual size of the active receive buffer is half that specified in the ```enable()``` call, with the other half on standby. ```getCurrentBuffer()``` returns a pointer to the data received since the last call to ```getCurrentBuffer()```. ***It does not return of copy of that data***. If there is no data available, ```getCurrentBuffer()``` will return a null pointer, and the supplied reference argument, ```numBytes```, will be set to zero (0).

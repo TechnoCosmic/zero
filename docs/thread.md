@@ -43,14 +43,16 @@ Constructs a new Thread object, and begins executing it.
 ```
 #include "thread.h"
 
-int myAsyncThread() {
+int myAsyncThread()
+{
     // do other work here...
 
     // return the result
     return 42;
 }
 
-int myFirstThread() {
+int myFirstThread()
+{
     // do work here...
 
     // now we're going to launch another Thread
@@ -104,7 +106,8 @@ int myFirstThread() {
     return 0;
 }
 
-void startup_sequence() {
+void startup_sequence()
+{
     // start one simple Thread when the MCU fires up
     new Thread(128, myFirstThread, TF_FIRE_AND_FORGET);
 }
