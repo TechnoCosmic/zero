@@ -35,3 +35,44 @@ Returns a buffer that contains the currently unprocessed received data.
 |Param|Description|
 |-----|-----------|
 |```numBytes```|A reference to a ```uint16_t``` used to tell the caller how many bytes are in the returned buffer.|
+
+## Example
+```
+#include "thread.h"
+#include "usart.h"
+
+int rxDemo()
+{
+    // Signals for communicating with the receiver
+    SignalField rxSig = me.allocateSignal();
+    SignalField rxOvfSig = me.allocateSignal();
+
+    // create a receiver for hardware USART1
+    UsartRx* rx = new UsartRx(1);
+
+    // set the comms parameters and enable the RX
+    rx->setCommsParams(9600);
+    rx->enable(128, rxSig, rxOvfSig);
+
+    // main loop
+    while (true) {
+        SignalField wokeSigs = me.wait(rxSig | rxOvfSig)
+
+        if (wokeSigs & rxSig) {
+            // data received, get the RX buffer
+            uint16_t numBytesRecd;
+            uint8_t* rxBuffer = rx->getCurrentBuffer(numBytesRecd);
+
+            if (buffer) {
+                // do something with the received data
+                processRxData(rxBuffer, numBytesRecd);
+            }
+        }
+
+        if (wokeSigs & rxOvfSig) {
+            // buffer overflow - need a bigger buffer
+            
+        }
+    }
+}
+```

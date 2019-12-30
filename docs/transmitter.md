@@ -39,6 +39,41 @@ Sends information asynchronously.
 |```data```|A pointer to the information to transmit.|
 |```numBytes```|The number of bytes to send.|
 ### Notes
-A specific implementation of a ```Transmitter``` is not required to copy the data you supply here before transmitting it. It is up to your code to ensure the supplied buffer stays current while the transmission is in progress.
+A ```Transmitter``` is not required to copy the data you supply here before transmitting it. It is up to your code to ensure the supplied buffer stays current while the transmission is in progress.
 
 Once a transmission is finished, the transmitter will signal the ```txCompleteSyn``` ```Synapse``` supplied in the call to ```enable()```.
+
+## Example
+```
+#include "thread.h"
+#include "usart.h"
+
+int txDemo() {
+    // Signal for learning when we can send again
+    SignalField txDoneSig = me.allocateSignal();
+
+    // create a transmitter for hardware USART1
+    UsartTx* tx = new UsartTx(1);
+
+    // set comms params and enable the TX
+    tx->setCommsParams(9600);
+    tx->enable(txDoneSig);
+
+    // main loop
+    bool canSend = true;
+
+    while (true) {
+        SignalField wokeSigs = me.wait(txDoneSig);
+
+        if (wokeSigs & txDoneSig) {
+            // last xmit complete, can send again
+            canSend = true;
+        }
+
+        if (canSend) {
+            tx->transmit("Beaker is the best puppy ever!\r\n", 32);
+            canSend = false;
+        }
+    }
+}
+```
