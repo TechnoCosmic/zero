@@ -26,27 +26,27 @@ namespace {
 
     // The bit mapped page manager
     PageManager<SRAM_PAGES> _sram;
-}
 
 
-// Returns the address for the start of a given page
-static constexpr uint16_t getAddressForPage(const uint16_t pageNumber)
-{
-    return ((uint16_t) _memoryArea) + (pageNumber * PAGE_BYTES);
-}
+    // Returns the address for the start of a given page
+    constexpr uint16_t getAddressForPage(const uint16_t pageNumber)
+    {
+        return ((uint16_t) _memoryArea) + (pageNumber * PAGE_BYTES);
+    }
 
 
-// Return the page number for the given SRAM memory address
-static constexpr uint16_t getPageForAddress(const uint16_t address)
-{
-    return ((address) - ((uint16_t) _memoryArea)) / PAGE_BYTES;
-}
+    // Return the page number for the given SRAM memory address
+    constexpr uint16_t getPageForAddress(const uint16_t address)
+    {
+        return ((address) - ((uint16_t) _memoryArea)) / PAGE_BYTES;
+    }
 
 
-// Returns the number of pages needed to store the supplied number of bytes
-static constexpr uint16_t getNumPagesForBytes(const uint16_t bytes)
-{
-    return ROUND_UP(bytes, PAGE_BYTES) / PAGE_BYTES;
+    // Returns the number of pages needed to store the supplied number of bytes
+    constexpr uint16_t getNumPagesForBytes(const uint16_t bytes)
+    {
+        return ROUND_UP(bytes, PAGE_BYTES) / PAGE_BYTES;
+    }
 }
 
 

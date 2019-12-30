@@ -26,6 +26,15 @@ using namespace zero;
 #define NAKED __attribute__((__naked__))
 
 
+// Ready list helpers, to make list accessing and swapping easy and QUICK
+#define ACTIVE_LIST_NUM     (_activeListNum)
+#define EXPIRED_LIST_NUM    (_activeListNum ^ 1)
+#define SWAP_LISTS          _activeListNum ^= 1;
+
+#define ACTIVE_LIST         _readyLists[ACTIVE_LIST_NUM]
+#define EXPIRED_LIST        _readyLists[EXPIRED_LIST_NUM]
+
+
 namespace {
     // globals
     List<Thread> _readyLists[2];             // the threads that will run
@@ -49,15 +58,6 @@ namespace {
     // of each of the nine (9) parameters that are register-passed by GCC
     const PROGMEM uint8_t _paramOffsets[] = { 24, 26, 28, 30, 2, 4, 6, 8, 10 };
 }
-
-
-// Ready list helpers, to make list accessing and swapping easy and QUICK
-#define ACTIVE_LIST_NUM     (_activeListNum)
-#define EXPIRED_LIST_NUM    (_activeListNum ^ 1)
-#define SWAP_LISTS          _activeListNum ^= 1;
-
-#define ACTIVE_LIST         _readyLists[ACTIVE_LIST_NUM]
-#define EXPIRED_LIST        _readyLists[EXPIRED_LIST_NUM]
 
 
 // 'naked' means 'no save/restore of regs' but it will still
@@ -490,27 +490,17 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
 }
 
 
-// Idle Thread. Currently flashes the C3 LED
-int idleEntry()
-{
-    DDRC |= (1 << 3);
-    while (true) {
-        PORTC ^= (1 << 3);
-        _delay_ms(200);
-    }
-}
-
-
 // Kickstart the system
 int main()
 {
     extern void startup_sequence();
-
+    extern int idleThreadEntry();
+    
     // start Timer0 (does not enable global ints)
     initTimer0();
 
     // create the idle Thread
-    _idleThread = new Thread(0, idleEntry, TF_NONE);
+    _idleThread = new Thread(0, idleThreadEntry, TF_NONE);
 
     // bootstrap
     startup_sequence();

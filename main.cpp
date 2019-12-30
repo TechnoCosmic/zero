@@ -22,7 +22,8 @@ using namespace zero;
 
 
 // flash an LED on C0
-int resetIndicatorThread() {
+int resetIndicatorThread()
+{
     for (auto i = 0; i < 20; i++) {
     // while (true) {
         if (PINC & (1 << 4)) {
@@ -38,8 +39,8 @@ int resetIndicatorThread() {
 
 
 // flash an LED on C2
-int limitedFlasherThread() {
-
+int limitedFlasherThread()
+{
     // while (true) {
     for (int i = 0; i < 30; i++) {
         if (PINC & (1 << 6)) {
@@ -56,7 +57,8 @@ int limitedFlasherThread() {
 }
 
 
-int usartEchoDemo() {
+int usartEchoDemo()
+{
     SignalField txCompleteSig = me.allocateSignal();
     UsartTx* tx = new UsartTx(1);
     tx->setCommsParams(9600);
@@ -94,7 +96,8 @@ int usartEchoDemo() {
 }
 
 
-int serialStreamer() {
+int serialStreamer()
+{
     char* buffer = (char*) memory::allocate(97, 0UL, memory::SearchStrategy::BottomUp);
 
     // fill the buffer
@@ -149,7 +152,31 @@ int serialStreamer() {
 }
 
 
-void startup_sequence() {
+// This function is required by the kernel. It is run whenever there is nothing
+// else to do. For now, this is a user-definable function, for debugging purposes.
+int idleThreadEntry()
+{
+    DDRC |= (1 << 3);
+
+    while (true) {
+        PORTC ^= (1 << 3);
+        _delay_ms(200);
+    }
+}
+
+
+// // This function is required by the kernel. It is run whenever there's nothing
+// // else to do. For now, this is a user-definable function, for debugging purposes.
+// int idleThreadEntry()
+// {
+//     while (true);
+// }
+
+
+// This function is the main entry point for all zero programs. Set things up, spawn
+// your initial Threads. Get your party started here.
+void startup_sequence()
+{
     // GPIO setup for LEDs and buttons
     DDRC = 0b00001111;
     PORTC = 0b11110000;
@@ -161,4 +188,3 @@ void startup_sequence() {
     new Thread(128, serialStreamer, TF_FIRE_AND_FORGET);
     new Thread(128, usartEchoDemo, TF_FIRE_AND_FORGET);
 }
-
