@@ -250,3 +250,40 @@ Signals a Thread, potentially waking it up.
 
 ### Notes
 Threads are woken from ```wait()``` with use of the ```signal()``` function. ```signal()``` is usually called by another Thread, or device driver.
+
+# Macros
+## ZERO_ATOMIC_BLOCK
+Similar to AVR-libc's ```ATOMIC_BLOCK``` macros, this macro lets you easily wrap up a critical section that calls ```Thread::forbid()``` and ```Thread::permit()``` for you...
+
+```
+// do normal stuff here...
+// ...
+// ...
+
+ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+
+    // do stuff here that requires context-switching
+    // to be disabled in order to work correctly
+
+    // ...
+    // ...    
+
+}
+```
+There is also a zero equivalent of ```ATOMIC_FORCEON``` (```ZERO_ATOMIC_FORCEON```) that behaves as you would expect.
+
+## ZERO_SIGNAL
+This macro provides an easy way to temporarily allocate a signal, and free it again when the code block is finished...
+
+```
+ZERO_SIGNAL(txDoneSig) {
+
+    // use the signal allocated
+    tx->enable(txDoneSig);
+
+    // do stuff using that signal...
+    // ...
+    // ...
+
+}
+```
