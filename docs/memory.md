@@ -25,8 +25,8 @@ Allocates SRAM for use by the caller.
 
 ### Search Strategy
 
-|Flag|Description|
-|----|-----------|
+|Value|Description|
+|-----|-----------|
 |```BottomUp```|The allocator searchs for free memory, starting at the bottom of it's heap, and working up towards higher addresses.|
 |```TopDown```|The allocator searchs for free memory, starting at the top of it's heap, and working down towards lower addresses.|
 
