@@ -235,6 +235,8 @@ Returns a ```SignalField``` specifying which signals woke the Thread up. May be 
 
 You do NOT need to call ```clearSignals()``` on any signal that you ```wait()```ed on, as they will be cleared automatically when your Thread wakes up.
 
+Also be aware that a call to ```wait()``` does not necessarily block - if any of the signals you are waiting on are already set prior to calling ```wait()```, your code will continue executing without blocking. This means you can safely call ```wait()``` when needed and you will get the best performance in both pre-set and blocking situations.
+
 ## signal()
 Signals a Thread, potentially waking it up.
 ```
@@ -293,4 +295,4 @@ ZERO_SIGNAL(txDoneSig) {
     void startup_sequence()
 ```
 
-Instead of ```main()``` (because zero has hijacked that for it's own purposes), your zero program will use ```startup_sequence()``` to initialize itself and spawn your initial threads.
+Because zero has hijacked ```main()``` for it's own initialization purposes, your program will use ```startup_sequence()``` to initialize itself and spawn your initial threads.
