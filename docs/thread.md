@@ -270,7 +270,7 @@ ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 
 }
 ```
-There is also a zero equivalent of ```ATOMIC_FORCEON``` (```ZERO_ATOMIC_FORCEON```) that behaves as you would expect.
+There is also a zero equivalent of ```ATOMIC_FORCEON```, called ```ZERO_ATOMIC_FORCEON```, that behaves as you would expect.
 
 ## ZERO_SIGNAL
 This macro provides an easy way to temporarily allocate a signal, and free it again when the code block is finished...
@@ -287,3 +287,10 @@ ZERO_SIGNAL(txDoneSig) {
 
 }
 ```
+
+# startup_sequence()
+```
+    void startup_sequence()
+```
+
+Instead of ```main()``` (because zero has hijacked that for it's own purposes), your zero program will use ```startup_sequence()``` to initialize itself and spawn your initial threads.

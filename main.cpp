@@ -25,7 +25,6 @@ using namespace zero;
 int resetIndicatorThread()
 {
     for (auto i = 0; i < 20; i++) {
-    // while (true) {
         if (PINC & (1 << 4)) {
             PORTC ^= (1 << 0);
 
@@ -41,8 +40,7 @@ int resetIndicatorThread()
 // flash an LED on C2
 int limitedFlasherThread()
 {
-    // while (true) {
-    for (int i = 0; i < 30; i++) {
+    for (auto i = 0; i < 30; i++) {
         if (PINC & (1 << 6)) {
             PORTC ^= (1 << 2);
 
@@ -143,8 +141,11 @@ int serialStreamer()
         }
 
         if (wokeSigs & softTxCompleteSig) {
+            // swap TX pins
             stx->setCommsParams(9600, &DDRA, &PORTA, lineNum & 0b1);
             stx->enable(softTxCompleteSig);
+
+            // send the buffer to the new TX pin
             *stx << buffer;
             lineNum += 1;
         }
@@ -183,8 +184,8 @@ void startup_sequence()
 
     
     // create the Thread objects
+    // new Thread(128, limitedFlasherThread, TF_FIRE_AND_FORGET);
     new Thread(128, resetIndicatorThread, TF_FIRE_AND_FORGET);
-    new Thread(128, limitedFlasherThread, TF_FIRE_AND_FORGET);
     new Thread(128, serialStreamer, TF_FIRE_AND_FORGET);
     new Thread(128, usartEchoDemo, TF_FIRE_AND_FORGET);
 }

@@ -65,7 +65,8 @@ UsartTx::UsartTx(const uint8_t deviceNum)
 }
 
 
-UsartTx::~UsartTx() {
+UsartTx::~UsartTx()
+{
     disable();
     _usartTx[_deviceNum] = 0UL;
 }
@@ -288,5 +289,6 @@ ISR(USART1_RX_vect)
 
 
 #endif
+
 
 #endif

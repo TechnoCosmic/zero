@@ -552,7 +552,7 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
             }
     
         } else {
-            for (uint16_t i = 0; i < SIGNAL_BITS; i++) {
+            for (auto i = 0; i < SIGNAL_BITS; i++) {
                 if (tryAllocateSignal(i)) {
                     return 1L << i;
                 }
