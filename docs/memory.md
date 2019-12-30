@@ -21,7 +21,7 @@ Allocates SRAM for use by the caller.
 |```strategy```|How should the heap be searched? ```BottomUp``` or ```TopDown```?|
 
 ### Notes
-- Because zero uses a page-based memory allocator, the number of bytes actually allocated by any call to ```allocate()``` will always be a multiple of the page size (default is 16 bytes, adjustable in the ```makefile```). If your program can make use of an 'extra' bytes assigned, you may pass a pointer to a ```uin16_t``` as the second argument to learn how many bytes you can actually use.
+- Because zero uses a page-based memory allocator, the number of bytes actually allocated by any call to ```allocate()``` will always be a multiple of the page size (default is 16 bytes, adjustable in the ```makefile```). If your program can make use of any 'extra' bytes assigned, you may pass a pointer to a ```uin16_t``` as the second argument to learn how many bytes you can actually use.
 
 ### Search Strategy
 
