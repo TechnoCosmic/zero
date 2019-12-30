@@ -10,7 +10,8 @@
 #include "serial.h"
 
 
-zero::Transmitter& operator<<(zero::Transmitter& out, const char* s) {
+zero::Transmitter& operator<<(zero::Transmitter& out, const char* s)
+{
     out.transmit(s, strlen(s));
     return out;
 }

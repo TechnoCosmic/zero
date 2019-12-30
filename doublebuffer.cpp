@@ -18,7 +18,8 @@
 using namespace zero;
 
 
-DoubleBuffer::DoubleBuffer(const uint16_t size) {
+DoubleBuffer::DoubleBuffer(const uint16_t size)
+{
     if (_buffer = memory::allocate(size, &_bufferSize, memory::SearchStrategy::BottomUp)) {
         _pivot = _bufferSize / 2;
         _writeOffset = 0UL;
@@ -27,14 +28,16 @@ DoubleBuffer::DoubleBuffer(const uint16_t size) {
 }
 
 
-DoubleBuffer::~DoubleBuffer() {
+DoubleBuffer::~DoubleBuffer()
+{
     memory::free(_buffer, _bufferSize);
     _buffer = 0UL;
     _bufferSize = 0UL;
 }
 
 
-bool DoubleBuffer::write(const uint8_t d) {
+bool DoubleBuffer::write(const uint8_t d)
+{
     bool rc = false;
 
     if (_usedBytes < _pivot) {
@@ -47,7 +50,8 @@ bool DoubleBuffer::write(const uint8_t d) {
 }
 
 
-uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes) {
+uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes)
+{
     const uint8_t oldSreg = SREG;
     cli();
     

@@ -75,13 +75,15 @@ static void INLINE restoreExtendedContext();
 
 
 // Returns the currently executing Thread
-Thread& Thread::getCurrentThread() {
+Thread& Thread::getCurrentThread()
+{
     return *_currentThread;
 }
 
 
 // Returns the elapse milliseconds since startup
-uint64_t Thread::now() {
+uint64_t Thread::now()
+{
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return _ms;
     }
@@ -89,35 +91,46 @@ uint64_t Thread::now() {
 
 
 // Prevent context switching
-void Thread::forbid() {
+void Thread::forbid()
+{
     _switchingEnabled = false;
 }
 
 
 // Enable context switching
-void Thread::permit() {
+void Thread::permit()
+{
     _switchingEnabled = true;
 }
 
 
 // Determines if context switching is on or not
-bool Thread::isSwitchingEnabled() {
+bool Thread::isSwitchingEnabled()
+{
     return _switchingEnabled;
 }
 
 
 // Determine where in the stack the registers are for a given parameter number
 // NOTE: This is GCC-specific. Different compilers may pass parameters differently.
-static int getOffsetForParameter(const uint8_t parameterNumber) {
+static int getOffsetForParameter(const uint8_t parameterNumber)
+{
     if (parameterNumber < 9) {
         return pgm_read_byte((uint16_t) _paramOffsets + parameterNumber);
     }
+
     return 0;
 }
 
 
 // All threads start life here
-static void globalThreadEntry(Thread& t, const uint32_t entry, const ThreadFlags flags, Synapse notifySyn, uint16_t* exitCode) {
+static void globalThreadEntry(
+    Thread& t,
+    const uint32_t entry,
+    const ThreadFlags flags,
+    Synapse notifySyn,
+    uint16_t* exitCode)
+{
     // run the thread and get its exit code
     uint16_t ec = ((ThreadEntry) entry)();
 
@@ -154,7 +167,13 @@ static void globalThreadEntry(Thread& t, const uint32_t entry, const ThreadFlags
 
 
 // ctor
-Thread::Thread(const uint16_t stackSize, const ThreadEntry entry, const ThreadFlags flags, const SignalField termSigs, uint16_t* exitCode) {    
+Thread::Thread(
+    const uint16_t stackSize,
+    const ThreadEntry entry,
+    const ThreadFlags flags,
+    const SignalField termSigs,
+    uint16_t* exitCode)
+{    
     // allocate a stack from the heap
     _stackBottom = memory::allocate(MAX(stackSize, 96), &_stackSize, memory::SearchStrategy::TopDown);
 
@@ -227,7 +246,8 @@ Thread::Thread(const uint16_t stackSize, const ThreadEntry entry, const ThreadFl
 }
 
 
-Thread::~Thread() {
+Thread::~Thread()
+{
     // deallocate the stack
     memory::free(_stackBottom, _stackSize);
     _stackBottom = 0UL;
@@ -236,7 +256,8 @@ Thread::~Thread() {
 
 
 // Moves the Thread into the expired list
-void Thread::expire() {
+void Thread::expire()
+{
     ACTIVE_LIST.remove(*this);
     EXPIRED_LIST.append(*this);
 }
@@ -245,7 +266,8 @@ void Thread::expire() {
 // Chooses the next Thread to run. This is the head of the active list,
 // unless there are no Threads ready to run, in which case this will
 // choose the idle Thread.
-static Thread* selectNextThread() {
+static Thread* selectNextThread()
+{
     Thread* rc = ACTIVE_LIST.getHead();
 
     if (!rc) {
@@ -262,7 +284,8 @@ static Thread* selectNextThread() {
 
 
 // Saves enough of the register set that we can do some basic things inside a naked ISR.
-static void inline saveInitialContext() {
+static void inline saveInitialContext()
+{
     asm volatile ("push r0");
 
     asm volatile ("in r0, __SREG__");               // status register
@@ -288,7 +311,8 @@ static void inline saveInitialContext() {
 
 
 // Save the remainder of the register set that wasn't saved by saveInitalContext()
-static void inline saveExtendedContext() {
+static void inline saveExtendedContext()
+{
     asm volatile ("push r30");
     asm volatile ("push r31");
     asm volatile ("push r2");
@@ -311,7 +335,8 @@ static void inline saveExtendedContext() {
 
 
 // Restores the basic minimal register set
-static void inline restoreInitialContext() {
+static void inline restoreInitialContext()
+{
     asm volatile ("pop r29");
     asm volatile ("pop r28");
     asm volatile ("pop r27");
@@ -337,7 +362,8 @@ static void inline restoreInitialContext() {
 
 
 // Restores the extended register set
-static void inline restoreExtendedContext() {
+static void inline restoreExtendedContext()
+{
     asm volatile ("pop r17");
     asm volatile ("pop r16");
     asm volatile ("pop r15");
@@ -359,7 +385,8 @@ static void inline restoreExtendedContext() {
 }
 
 
-static void yield() {
+static void yield()
+{
     cli();
 
     if (_currentThread) {
@@ -391,7 +418,8 @@ static void yield() {
 }
 
 
-static void initTimer0() {
+static void initTimer0()
+{
     #define SCALE(x) ((F_CPU * (x)) / 16'000'000ULL)
 
 	// 8-bit Timer/Counter0
@@ -406,7 +434,8 @@ static void initTimer0() {
 
 
 // The Timer tick - the main heartbeat
-ISR(TIMER0_COMPA_vect, ISR_NAKED) {
+ISR(TIMER0_COMPA_vect, ISR_NAKED)
+{
     // save what we need in order to do basic stuff (non ctx switching)
     saveInitialContext();
 
@@ -461,7 +490,8 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED) {
 
 
 // Idle Thread. Currently flashes the C3 LED
-int idleEntry() {
+int idleEntry()
+{
     DDRC |= (1 << 3);
     while (true) {
         PORTC ^= (1 << 3);
@@ -471,7 +501,8 @@ int idleEntry() {
 
 
 // Kickstart the system
-int main() {
+int main()
+{
     extern void startup_sequence();
 
     // start Timer0 (does not enable global ints)
@@ -500,7 +531,8 @@ int main() {
 
 
 // Attempts to allocate a specific Signal number
-bool Thread::tryAllocateSignal(const uint16_t signalNumber) {
+bool Thread::tryAllocateSignal(const uint16_t signalNumber)
+{
     if (signalNumber >= SIGNAL_BITS) return false;
 
     const SignalField m = 1L << signalNumber;
@@ -518,7 +550,8 @@ bool Thread::tryAllocateSignal(const uint16_t signalNumber) {
 // If you supply a specific Signal number, only that Signal will be
 // allocated, and only if it is currently free. Supplying -1 here
 // will let the kernel find a free Signal number for you.
-SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber) {
+SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
+{
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         if (reqdSignalNumber < SIGNAL_BITS) {
             if (tryAllocateSignal(reqdSignalNumber)) {
@@ -539,7 +572,8 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber) {
 
 
 // Frees a Signal number and allows its re-use by the Thread
-void Thread::freeSignals(const SignalField signals) {
+void Thread::freeSignals(const SignalField signals)
+{
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         _allocatedSignals &= ~signals;
         _waitingSignals &= ~signals;
@@ -549,7 +583,8 @@ void Thread::freeSignals(const SignalField signals) {
 
 
 // Returns a SignalField showing which Signals are currently active
-SignalField Thread::getActiveSignals() {
+SignalField Thread::getActiveSignals()
+{
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return (_currentSignals & _waitingSignals & _allocatedSignals);
     }
@@ -557,7 +592,8 @@ SignalField Thread::getActiveSignals() {
 
 
 // Returns a SignalField showing which Signals are currently active
-SignalField Thread::getCurrentSignals() {
+SignalField Thread::getCurrentSignals()
+{
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return (_currentSignals & _allocatedSignals);
     }
@@ -565,7 +601,8 @@ SignalField Thread::getCurrentSignals() {
 
 
 // Clears a set of Signals and returns the remaining ones
-SignalField Thread::clearSignals(const SignalField sigs) {
+SignalField Thread::clearSignals(const SignalField sigs)
+{
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return (_currentSignals &= ~sigs);
     }
@@ -574,7 +611,8 @@ SignalField Thread::clearSignals(const SignalField sigs) {
 
 // Waits for any of a set of Signals, returning a SignalField
 // representing the Signals that woke the Thread up again
-SignalField Thread::wait(const SignalField sigs) {
+SignalField Thread::wait(const SignalField sigs)
+{
     SignalField rc = 0;
 
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {    
@@ -614,7 +652,8 @@ SignalField Thread::wait(const SignalField sigs) {
 
 
 // Send Signals to a Thread, potentially waking it up
-void Thread::signal(const SignalField sigs) {
+void Thread::signal(const SignalField sigs)
+{
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         const bool alreadySignalled = getActiveSignals();
 

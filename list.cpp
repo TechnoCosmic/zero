@@ -14,25 +14,29 @@ using namespace zero;
 
 
 template <class T>
-List<T>::List() {
+List<T>::List() 
+{
     _head = _tail = 0UL;
 }
 
 
 template <class T>
-T* List<T>::getHead() {
+T* List<T>::getHead()
+{
     return _head;
 }
 
 
 template <class T>
-T* List<T>::getTail() {
+T* List<T>::getTail()
+{
     return _tail;
 }
 
 
 template <class T>
-void List<T>::prepend(T& item) {
+void List<T>::prepend(T& item)
+{
     item._prev = 0UL;
     item._next = _head;
 
@@ -43,7 +47,8 @@ void List<T>::prepend(T& item) {
 
 
 template <class T>
-void List<T>::append(T& item) {
+void List<T>::append(T& item)
+{
     item._next = 0UL;
     item._prev = _tail;
 
@@ -54,7 +59,8 @@ void List<T>::append(T& item) {
 
 
 template <class T>
-void List<T>::remove(T& item) {
+void List<T>::remove(T& item)
+{
     const bool wasHead = _head == &item;
     const bool wasTail = _tail == &item;
 

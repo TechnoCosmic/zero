@@ -26,18 +26,21 @@ namespace {
 }
 
 
-SuartTx::SuartTx() {
+SuartTx::SuartTx()
+{
     _suartTx = this;
 }
 
 
-SuartTx::~SuartTx() {
+SuartTx::~SuartTx()
+{
     disable();
     _suartTx = 0UL;
 }
 
 
-uint16_t SuartTx::formatForSerial(const uint8_t d) {
+uint16_t SuartTx::formatForSerial(const uint8_t d)
+{
     uint16_t rc = 0UL;
 
     rc = d << 1;
@@ -47,7 +50,8 @@ uint16_t SuartTx::formatForSerial(const uint8_t d) {
     return rc;
 }
 
-void SuartTx::startTxTimer() {
+void SuartTx::startTxTimer()
+{
     #define SCALE(x) ((F_CPU * (x)) / 16000000ULL)      // to scale the Timer for MCU clock speed
 
     TCCR2B = 0;                                         // make sure timer is stopped
@@ -59,14 +63,16 @@ void SuartTx::startTxTimer() {
 }
 
 
-void SuartTx::stopTxTimer() {
+void SuartTx::stopTxTimer()
+{
     TIMSK2 &= ~(1 << OCIE2A);       // disable Timer ISR
     TCCR2B = 0;                     // make sure timer is stopped
     TCNT2 = 0;                      // reset the counter
 }
 
 
-bool SuartTx::enable(const Synapse txCompleteSyn) {
+bool SuartTx::enable(const Synapse txCompleteSyn)
+{
     _txCompleteSyn = txCompleteSyn;
 
     *_ddr |= _pinMask;          // output
@@ -76,7 +82,8 @@ bool SuartTx::enable(const Synapse txCompleteSyn) {
 }
 
 
-void SuartTx::disable() {
+void SuartTx::disable()
+{
     stopTxTimer();
 
     if (_ddr && _port && _pinMask) {
@@ -86,11 +93,12 @@ void SuartTx::disable() {
 }
 
 
-void SuartTx::setCommsParams(const uint32_t baud,
-        volatile uint8_t* ddr,
-        volatile uint8_t* port,
-        const uint8_t pin) {
-    
+void SuartTx::setCommsParams(
+    const uint32_t baud,
+    volatile uint8_t* ddr,
+    volatile uint8_t* port,
+    const uint8_t pin)
+{
     disable();
 
     _baud = baud;
@@ -100,7 +108,8 @@ void SuartTx::setCommsParams(const uint32_t baud,
 }
 
 
-bool SuartTx::transmit(const void* buffer, const uint16_t sz) {
+bool SuartTx::transmit(const void* buffer, const uint16_t sz)
+{
     if (_txBuffer) return false;
     if (!buffer) return false;
     if (!sz) return false;
@@ -120,7 +129,8 @@ bool SuartTx::transmit(const void* buffer, const uint16_t sz) {
 }
 
 
-bool SuartTx::getNextTxByte(uint8_t& data) {
+bool SuartTx::getNextTxByte(uint8_t& data)
+{
     bool rc = false;
 
     data = 0;
@@ -136,7 +146,8 @@ bool SuartTx::getNextTxByte(uint8_t& data) {
 }
 
 
-ISR(TIMER2_COMPA_vect) {
+ISR(TIMER2_COMPA_vect)
+{
     // just in time fetch of data to send
     if (!_suartTx->_txReg) {
         uint8_t nextByte;

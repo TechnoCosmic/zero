@@ -56,7 +56,8 @@ namespace {
 } 
 
 
-UsartTx::UsartTx(const uint8_t deviceNum) {
+UsartTx::UsartTx(const uint8_t deviceNum)
+{
     if (deviceNum < 2) {
         _deviceNum = deviceNum;
         _usartTx[deviceNum] = this;
@@ -70,7 +71,8 @@ UsartTx::~UsartTx() {
 }
 
 
-void UsartTx::setCommsParams(const uint32_t baud) {
+void UsartTx::setCommsParams(const uint32_t baud)
+{
     const uint16_t pre = (F_CPU / (16UL * baud)) - 1;
 
     // 8-none-1
@@ -85,19 +87,22 @@ void UsartTx::setCommsParams(const uint32_t baud) {
 #define TX_BITS ((1 << TXEN0) | (1 << TXCIE0))
 
 
-bool UsartTx::enable(const Synapse txCompleteSyn) {
+bool UsartTx::enable(const Synapse txCompleteSyn)
+{
     _txCompleteSyn = txCompleteSyn;
     UCSRB(_deviceNum) |= TX_BITS;
     return true;
 }
 
 
-void UsartTx::disable() {
+void UsartTx::disable()
+{
     UCSRB(_deviceNum) &= ~TX_BITS;
 }
 
 
-bool UsartTx::transmit(const void* buffer, const uint16_t sz) {
+bool UsartTx::transmit(const void* buffer, const uint16_t sz)
+{
     if (_txBuffer) return false;
     if (!buffer) return false;
     if (!sz) return false;
@@ -113,7 +118,8 @@ bool UsartTx::transmit(const void* buffer, const uint16_t sz) {
 }
 
 
-bool UsartTx::getNextTxByte(uint8_t& data) {
+bool UsartTx::getNextTxByte(uint8_t& data)
+{
     bool rc = false;
 
     data = 0;
@@ -129,7 +135,8 @@ bool UsartTx::getNextTxByte(uint8_t& data) {
 }
 
 
-UsartRx::UsartRx(const uint8_t deviceNum) {
+UsartRx::UsartRx(const uint8_t deviceNum)
+{
     if (deviceNum < 2) {
         _deviceNum = deviceNum;
         _usartRx[deviceNum] = this;
@@ -137,13 +144,15 @@ UsartRx::UsartRx(const uint8_t deviceNum) {
 }
 
 
-UsartRx::~UsartRx() {
+UsartRx::~UsartRx()
+{
     disable();
     _usartRx[_deviceNum] = 0UL;
 }
 
 
-void UsartRx::setCommsParams(const uint32_t baud) {
+void UsartRx::setCommsParams(const uint32_t baud)
+{
     const uint16_t pre = (F_CPU / (16UL * baud)) - 1;
 
     // 8-none-1
@@ -158,7 +167,11 @@ void UsartRx::setCommsParams(const uint32_t baud) {
 #define RX_BITS ((1 << RXEN0) | (1 << RXCIE0))
 
 
-bool UsartRx::enable(const uint16_t bufferSize, const Synapse rxSyn, const Synapse ovfSyn) {
+bool UsartRx::enable(
+    const uint16_t bufferSize,
+    const Synapse rxSyn,
+    const Synapse ovfSyn)
+{
     bool rc = false;
 
     _rxDataReceivedSyn.clear();
@@ -180,7 +193,8 @@ bool UsartRx::enable(const uint16_t bufferSize, const Synapse rxSyn, const Synap
 }
 
 
-void UsartRx::disable() {
+void UsartRx::disable()
+{
     UCSRB(_deviceNum) &= ~RX_BITS;
 
     _rxDataReceivedSyn.clear();
@@ -188,12 +202,14 @@ void UsartRx::disable() {
 }
 
 
-uint8_t* UsartRx::getCurrentBuffer(uint16_t& numBytes) {
+uint8_t* UsartRx::getCurrentBuffer(uint16_t& numBytes)
+{
     return _rxBuffer->getCurrentBuffer(numBytes);
 }
 
 
-ISR(USART_TX_vect) {
+ISR(USART_TX_vect)
+{
     // last byte complete
     if (!_usartTx[0]->_txSize && _usartTx[0]->_txBuffer != 0UL) {
         _usartTx[0]->_txCompleteSyn.signal();
@@ -202,7 +218,8 @@ ISR(USART_TX_vect) {
 }
 
 
-ISR(USART_UDRE_vect) {
+ISR(USART_UDRE_vect)
+{
     // need more data
     uint8_t nextByte;
 
@@ -215,7 +232,8 @@ ISR(USART_UDRE_vect) {
 }
 
 
-ISR(USART_RX_vect) {
+ISR(USART_RX_vect)
+{
     register volatile uint8_t newByte = UDR0;
 
     // received data
@@ -231,7 +249,8 @@ ISR(USART_RX_vect) {
 #ifdef UCSR1B
 
 
-ISR(USART1_TX_vect) {
+ISR(USART1_TX_vect)
+{
     // last byte complete
     if (!_usartTx[1]->_txSize && _usartTx[1]->_txBuffer != 0UL) {
         _usartTx[1]->_txCompleteSyn.signal();
@@ -240,7 +259,8 @@ ISR(USART1_TX_vect) {
 }
 
 
-ISR(USART1_UDRE_vect) {
+ISR(USART1_UDRE_vect)
+{
     // need more data
     uint8_t nextByte;
 
@@ -253,7 +273,8 @@ ISR(USART1_UDRE_vect) {
 }
 
 
-ISR(USART1_RX_vect) {
+ISR(USART1_RX_vect)
+{
     register volatile uint8_t newByte = UDR1;
 
     // received data

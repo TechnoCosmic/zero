@@ -31,35 +31,40 @@ using namespace zero;
 
 // Has the page been marked as used, or is it free?
 template <uint16_t PAGE_COUNT>
-bool PageManager<PAGE_COUNT>::isPageAvailable(const uint16_t pageNumber) {
+bool PageManager<PAGE_COUNT>::isPageAvailable(const uint16_t pageNumber)
+{
     return IS_PAGE_AVAILABLE(pageNumber);
 }
 
 
 // Mark the supplied page as free
 template <uint16_t PAGE_COUNT>
-void PageManager<PAGE_COUNT>::markAsFree(const uint16_t pageNumber) {
+void PageManager<PAGE_COUNT>::markAsFree(const uint16_t pageNumber)
+{
     MARK_AS_FREE(pageNumber);
 }
 
 
 // Mark the supplied page as used
 template <uint16_t PAGE_COUNT>
-void PageManager<PAGE_COUNT>::markAsUsed(const uint16_t pageNumber) {
+void PageManager<PAGE_COUNT>::markAsUsed(const uint16_t pageNumber)
+{
     MARK_AS_USED(pageNumber);
 }
 
 
 // Returns the number of pages being managed
 template <uint16_t PAGE_COUNT>
-uint16_t PageManager<PAGE_COUNT>::getTotalPageCount() {
+uint16_t PageManager<PAGE_COUNT>::getTotalPageCount()
+{
     return PAGE_COUNT;
 }
 
 
 // Returns the number of currently available pages
 template <uint16_t PAGE_COUNT>
-uint16_t PageManager<PAGE_COUNT>::getFreePageCount() {
+uint16_t PageManager<PAGE_COUNT>::getFreePageCount()
+{
     uint16_t rc = 0UL;
 
     for (uint16_t i = 0; i < getTotalPageCount(); i++) {
@@ -74,7 +79,8 @@ uint16_t PageManager<PAGE_COUNT>::getFreePageCount() {
 
 // Returns the number of currently allocated pages
 template <uint16_t PAGE_COUNT>
-uint16_t PageManager<PAGE_COUNT>::getUsedPageCount() {
+uint16_t PageManager<PAGE_COUNT>::getUsedPageCount()
+{
     return getTotalPageCount() - getFreePageCount();
 }
 
@@ -85,13 +91,19 @@ static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t
 
 
 // search strategy - BottomUp starts searching the allocation table at the bottom and works up
-static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t totalPages) {
+static int16_t getPageForSearchStep_BottomUp(
+    const uint16_t step,
+    const uint16_t totalPages)
+{
     return step;
 }
 
 
 // search strategy - TopDown starts searching the allocation table at the top and works down
-static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t totalPages) {
+static int16_t getPageForSearchStep_TopDown(
+    const uint16_t step,
+    const uint16_t totalPages)
+{
     return totalPages - (step + 1);
 }
 
@@ -106,7 +118,10 @@ static int16_t (*_strategies[])(const uint16_t, const uint16_t) = {
 // This is the main workhorse for the memory allocator. Using only the search strategy supplied,
 // find a supplied number of continguously available pages.
 template <uint16_t PAGE_COUNT>
-int16_t PageManager<PAGE_COUNT>::findFreePages(const uint16_t numPagesRequired, const memory::SearchStrategy strat) {
+int16_t PageManager<PAGE_COUNT>::findFreePages(
+    const uint16_t numPagesRequired,
+    const memory::SearchStrategy strat)
+{
     int16_t startPage = -1;
     uint16_t pageCount = 0;
 
