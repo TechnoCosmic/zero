@@ -65,6 +65,10 @@ namespace {
 // and that is crucial for yield() to work correctly
 static void NAKED yield();
 
+// main() is naked because we don't care for the setup upon
+// entry, and we use reti at the end of main() to start everything
+int NAKED main();
+
 // these ones are inline because we specifically don't want
 // any stack/register shenanigans because that's what these
 // functions are here to do, but in our own controlled way
@@ -310,7 +314,7 @@ static void inline saveInitialContext()
 }
 
 
-// Save the remainder of the register set that wasn't saved by saveInitalContext()
+// Save the remainder of the register set that wasn't saved by saveInitialContext()
 static void inline saveExtendedContext()
 {
     asm volatile ("push r30");
@@ -405,9 +409,6 @@ static void yield()
     // select the next thread to run
     _currentThread = selectNextThread();
 
-    // top up its quantum
-    // _currentThread->_ticksRemaining = QUANTUM_TICKS;
-
     // restore its context
     SP = _currentThread->_sp;
     restoreExtendedContext();
@@ -423,7 +424,7 @@ static void initTimer0()
     #define SCALE(x) ((F_CPU * (x)) / 16'000'000ULL)
 
 	// 8-bit Timer/Counter0
-	power_timer0_enable();                          // switch it on
+    power_timer0_enable();                          // switch it on
     TCCR0B = 0;                                     // stop the clock
 	TCNT0 = 0;				                        // reset counter to 0
 	TCCR0A = (1 << WGM01);	                        // CTC
@@ -509,7 +510,7 @@ int main()
     initTimer0();
 
     // create the idle Thread
-    _idleThread = new Thread(96, idleEntry, TF_NONE);
+    _idleThread = new Thread(0, idleEntry, TF_NONE);
 
     // bootstrap
     startup_sequence();
@@ -526,7 +527,9 @@ int main()
     // restore the (brand new) context for the chosen thread
     restoreExtendedContext();
     restoreInitialContext();
-    reti();                         // this enables global interrupts as well
+
+    // this enables global interrupts as well as returning
+    reti();
 }
 
 
@@ -595,7 +598,7 @@ SignalField Thread::getActiveSignals()
 SignalField Thread::getCurrentSignals()
 {
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        return (_currentSignals & _allocatedSignals);
+        return _currentSignals;
     }
 }
 
