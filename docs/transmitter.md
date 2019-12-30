@@ -63,11 +63,15 @@ int txDemo() {
     bool canSend = true;
 
     while (true) {
-        SignalField wokeSigs = me.wait(txDoneSig);
-
-        if (wokeSigs & txDoneSig) {
-            // last xmit complete, can send again
-            canSend = true;
+        SignalField wokeSigs = 0UL;
+        
+        if (!canSend) {
+            me.wait(txDoneSig);
+        
+            if (wokeSigs & txDoneSig) {
+                // last xmit complete, can send again
+                canSend = true;
+            }
         }
 
         if (canSend) {
