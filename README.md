@@ -2,7 +2,7 @@
 zero is a tiny pre-emptive multitasking kernel for AVR microcontrollers.
 
 ## Features
-- Small binary footprint - less than 7KB and 256 bytes of SRAM
+- Small footprint - less than 7KB and 256 bytes of SRAM
 - O(1) scheduler
 - Dynamic memory allocation
 - Drivers for on-chip hardware USART peripherals
@@ -116,7 +116,7 @@ int mySerialThread()
             uint16_t numBytes;
             uint8_t* rxData = tx->getCurrentBuffer(numBytes);
 
-            if (rxData && numBytes) {
+            if (rxData) {
                 // numBytes now contains the number of bytes
                 // actually received in the current buffer
                 processRxData(buffer, numBytes);

@@ -46,28 +46,28 @@ Once a transmission is finished, the transmitter will signal the ```txCompleteSy
 ## Example
 ```
 #include "thread.h"
-#include "usart.h"
+#include "suart.h"
 
 int txDemo()
 {
     // Signal for learning when we can send again
     SignalField txDoneSig = me.allocateSignal();
 
-    // create a transmitter for hardware USART1
-    UsartTx* tx = new UsartTx(1);
+    // create a transmitter for software serial TX
+    SuartTx* tx = new SuartTx();
 
-    // set comms params and enable the TX
-    tx->setCommsParams(9600);
+    // set comms params - 9600bps on PORTA, PIN0
+    tx->setCommsParams(9600, &DDRA, &PORTA, 0);
+
+    // enable the transmitter
     tx->enable(txDoneSig);
 
     // main loop
     bool canSend = true;
 
     while (true) {
-        SignalField wokeSigs = 0UL;
-        
         if (!canSend) {
-            me.wait(txDoneSig);
+            SignalField wokeSigs = me.wait(txDoneSig);
         
             if (wokeSigs & txDoneSig) {
                 // last xmit complete, can send again
