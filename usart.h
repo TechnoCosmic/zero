@@ -6,8 +6,8 @@
 //
 
 
-#ifndef TCRI_ZERO_USART0_H
-#define TCRI_ZERO_USART0_H
+#ifndef TCRI_ZERO_USART_H
+#define TCRI_ZERO_USART_H
 
 
 #include <stdint.h>
