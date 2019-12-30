@@ -17,6 +17,7 @@ Enables the transmitter.
 |```txCompleteSyn```|The ```Synapse``` to signal when the transmitter completes a transmission.|
 
 ## disable()
+Disables the transmitter, releases any resources used, and prevents further data transmission.
 ```
     virtual void disable()
 ```
@@ -26,6 +27,7 @@ Disabling a transmitter may or may not corrupt or interrupt any transmission in 
 Disabling a transmitter may involve powering down on-board (or external) peripherals, changing the states of GPIO pins, and so on.
 
 ## transmit()
+Sends information asynchronously.
 ```
     virtual bool transmit(
         const void* data,
