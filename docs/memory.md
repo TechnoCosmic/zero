@@ -3,6 +3,8 @@
 
 The ```memory``` namespace handles the management of dynamically allocated SRAM.
 
+The amount of SRAM available to zero's allocator is defined in the ```makefile```. Search for ```DYNAMIC_BYTES```, making sure you're adjusting the correct one for your chosen target MCU.
+
 ## memory::allocate()
 Allocates SRAM for use by the caller.
 
