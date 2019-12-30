@@ -21,7 +21,6 @@
 		"prefix": [ "zero-signals", "zero-signals-block" ],
 		"body": [
 			"ZERO_SIGNAL(${1:name}) {",
-			"\tset${2:sender}Synapse(${1:name});",
 			"",
 			"\t$0",
 			"}",
