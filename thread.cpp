@@ -7,9 +7,11 @@
 
 
 #include <stdint.h>
+
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <avr/power.h>
+
 #include <util/delay.h>
 #include <util/atomic.h>
 
@@ -602,7 +604,7 @@ SignalField Thread::getCurrentSignals()
 // Clears a set of Signals and returns the remaining ones
 SignalField Thread::clearSignals(const SignalField sigs)
 {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return (_currentSignals &= ~sigs);
     }
 }
@@ -614,16 +616,16 @@ SignalField Thread::wait(const SignalField sigs)
 {
     SignalField rc = 0;
 
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {    
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {    
         // A Thread can wait only on its own Signals.
         if (_currentThread != this) return 0;
 
         // set which Signals we are waiting on
         _waitingSignals = (sigs & _allocatedSignals);
-        
+
         // if we're not going to end up waiting on anything, bail
         if (!_waitingSignals) return 0;
-    
+
         // see what Signals are already set that we care about
         rc = getActiveSignals();
 
@@ -643,7 +645,7 @@ SignalField Thread::wait(const SignalField sigs)
 
         // clear the recd Signals so that we can see repeats of them
         clearSignals(rc);
-    
+
         // return the Signals that woke us
         return rc;
     }
