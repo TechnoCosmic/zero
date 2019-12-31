@@ -78,17 +78,6 @@ namespace zero {
             }
         }
 
-        void clearSignals() {
-            if (isValid()) {
-                thread->clearSignals(signals);
-            }
-        }
-
-        SignalField wait() {
-            if (!isValid() || &Thread::getCurrentThread() != thread) return 0;
-            return Thread::getCurrentThread().wait(signals);
-        }
-
     }; 
 }
 
