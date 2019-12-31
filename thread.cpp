@@ -189,7 +189,7 @@ Thread::Thread(
     #define SRAM ((uint8_t*) 0)
 
     // clear the stack
-    for (uint16_t i = newStackTop + 1; i <= stackTop; i++) {
+    for (auto i = (uint16_t) _stackBottom; i <= stackTop; i++) {
         SRAM[i] = 0;
     }
     
@@ -250,6 +250,7 @@ Thread::Thread(
 }
 
 
+// dtor
 Thread::~Thread()
 {
     // deallocate the stack
@@ -389,8 +390,10 @@ static void inline restoreExtendedContext()
 }
 
 
+// Voluntarily hands control of the MCU over to another thread. Called by wait()/
 static void yield()
 {
+    // DND
     cli();
 
     if (_currentThread) {
@@ -409,7 +412,7 @@ static void yield()
     // select the next thread to run
     _currentThread = selectNextThread();
 
-    // restore its context
+    // restore it's context
     SP = _currentThread->_sp;
     restoreExtendedContext();
     restoreInitialContext();

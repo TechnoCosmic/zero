@@ -18,6 +18,7 @@
 using namespace zero;
 
 
+// ctor
 DoubleBuffer::DoubleBuffer(const uint16_t size)
 {
     if (_buffer = memory::allocate(size, &_bufferSize, memory::SearchStrategy::BottomUp)) {
@@ -28,6 +29,7 @@ DoubleBuffer::DoubleBuffer(const uint16_t size)
 }
 
 
+// dtor
 DoubleBuffer::~DoubleBuffer()
 {
     memory::free(_buffer, _bufferSize);
@@ -36,20 +38,28 @@ DoubleBuffer::~DoubleBuffer()
 }
 
 
+// Writes a byte to the active buffer.
 bool DoubleBuffer::write(const uint8_t d)
 {
     bool rc = false;
-
+    const uint8_t oldSreg = SREG;
+    cli();
+    
     if (_usedBytes < _pivot) {
         _buffer[_writeOffset + _usedBytes] = d;
         _usedBytes++;
+
         rc = true;
     }
+
+    SREG = oldSreg;
 
     return rc;
 }
 
 
+// Returns the currently active half of the buffer (if there's any data in it), and swaps
+// buffers. This is the only time atomicity is required, due to the design.
 uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes)
 {
     const uint8_t oldSreg = SREG;

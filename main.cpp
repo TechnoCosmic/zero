@@ -157,10 +157,10 @@ int serialStreamer()
 // else to do. For now, this is a user-definable function, for debugging purposes.
 int idleThreadEntry()
 {
-    DDRC |= (1 << 3);
+    DDRC |= (1 << 1);
 
     while (true) {
-        PORTC ^= (1 << 3);
+        PORTC ^= (1 << 1);
         _delay_ms(200);
     }
 }
