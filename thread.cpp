@@ -37,7 +37,26 @@ using namespace zero;
 #define EXPIRED_LIST        _readyLists[EXPIRED_LIST_NUM]
 
 
+// 'naked' means 'no save/restore of regs' but it will still
+// put the caller's PC on the stack because it's not inline,
+// and that is crucial for yield() to work correctly
+static void NAKED yield();
+
+// main() is naked because we don't care for the setup upon
+// entry, and we use reti at the end of main() to start everything
+int NAKED main();
+
+// these ones are inline because we specifically don't want
+// any stack/register shenanigans because that's what these
+// functions are here to do, but in our own controlled way
+static void INLINE saveInitialContext();
+static void INLINE saveExtendedContext();
+static void INLINE restoreInitialContext();
+static void INLINE restoreExtendedContext();
+
+
 namespace {
+
     // globals
     List<Thread> _readyLists[2];             // the threads that will run
     Thread* _currentThread = 0UL;            // the currently executing thread
@@ -59,25 +78,99 @@ namespace {
     // the offsets from the stack top (as seen AFTER all the registers have been pushed onto the stack already)
     // of each of the nine (9) parameters that are register-passed by GCC
     const PROGMEM uint8_t _paramOffsets[] = { 24, 26, 28, 30, 2, 4, 6, 8, 10 };
+
+
+    // Determine where in the stack the registers are for a given parameter number
+    // NOTE: This is GCC-specific. Different compilers may pass parameters differently.
+    int getOffsetForParameter(const uint8_t parameterNumber)
+    {
+        if (parameterNumber < 9) {
+            return pgm_read_byte((uint16_t) _paramOffsets + parameterNumber);
+        }
+
+        return 0;
+    }
+
+
+    // All threads start life here
+    void globalThreadEntry(
+        Thread& t,
+        const uint32_t entry,
+        const ThreadFlags flags,
+        Synapse notifySyn,
+        uint16_t* exitCode)
+    {
+        // run the thread and get its exit code
+        uint16_t ec = ((ThreadEntry) entry)();
+
+        // we don't want to be disturbed while cleaning up
+        cli();
+
+        // return the exit code if the parent wants it
+        if (exitCode) {
+            *exitCode = ec;
+        }
+
+        // if the parent wanted to be signalled upon
+        // this Thread's termination, signal them
+        notifySyn.signal();
+
+        // remove from the list of Threads
+        ACTIVE_LIST.remove(t);
+
+        // forget us so that no context is remembered
+        // superfluously in the yield() below
+        _currentThread = 0UL;
+
+        // tidy up, maybe
+        if (flags & TF_SELF_DESTRUCT) {
+            // Like garbage collection, this means the Thread
+            // wants us to deallocate everything. The stack
+            // will be deallocated in the Thread's dtor
+            delete &t;
+        }
+
+        // NEXT!
+        yield();
+    }
+
+
+    // Chooses the next Thread to run. This is the head of the active list,
+    // unless there are no Threads ready to run, in which case this will
+    // choose the idle Thread.
+    Thread* selectNextThread()
+    {
+        Thread* rc = ACTIVE_LIST.getHead();
+
+        if (!rc) {
+            SWAP_LISTS;
+            rc = ACTIVE_LIST.getHead();
+
+            if (!rc) {
+                rc = _idleThread;
+            }
+        }
+
+        return rc;
+    }
+
+
+    // zero's heartbeat
+    void initTimer0()
+    {
+        #define SCALE(x) (( F_CPU * (x)) / 16'000'000ULL)
+
+        // 8-bit Timer/Counter0
+        power_timer0_enable();                          // switch it on
+        TCCR0B = 0;                                     // stop the clock
+        TCNT0 = 0;				                        // reset counter to 0
+        TCCR0A = (1 << WGM01);	                        // CTC
+        TCCR0B = (1 << CS02);	                        // /256 prescalar
+        OCR0A = SCALE(63U)-1;           			    // 1ms
+        TIMSK0 |= (1 << OCIE0A);                        // enable ISR
+    }
+
 }
-
-
-// 'naked' means 'no save/restore of regs' but it will still
-// put the caller's PC on the stack because it's not inline,
-// and that is crucial for yield() to work correctly
-static void NAKED yield();
-
-// main() is naked because we don't care for the setup upon
-// entry, and we use reti at the end of main() to start everything
-int NAKED main();
-
-// these ones are inline because we specifically don't want
-// any stack/register shenanigans because that's what these
-// functions are here to do, but in our own controlled way
-static void INLINE saveInitialContext();
-static void INLINE saveExtendedContext();
-static void INLINE restoreInitialContext();
-static void INLINE restoreExtendedContext();
 
 
 // Returns the currently executing Thread
@@ -114,61 +207,6 @@ void Thread::permit()
 bool Thread::isSwitchingEnabled()
 {
     return _switchingEnabled;
-}
-
-
-// Determine where in the stack the registers are for a given parameter number
-// NOTE: This is GCC-specific. Different compilers may pass parameters differently.
-static int getOffsetForParameter(const uint8_t parameterNumber)
-{
-    if (parameterNumber < 9) {
-        return pgm_read_byte((uint16_t) _paramOffsets + parameterNumber);
-    }
-
-    return 0;
-}
-
-
-// All threads start life here
-static void globalThreadEntry(
-    Thread& t,
-    const uint32_t entry,
-    const ThreadFlags flags,
-    Synapse notifySyn,
-    uint16_t* exitCode)
-{
-    // run the thread and get its exit code
-    uint16_t ec = ((ThreadEntry) entry)();
-
-    // we don't want to be disturbed while cleaning up
-    cli();
-
-    // return the exit code if the parent wants it
-    if (exitCode) {
-        *exitCode = ec;
-    }
-
-    // if the parent wanted to be signalled upon
-    // this Thread's termination, signal them
-    notifySyn.signal();
-
-    // remove from the list of Threads
-    ACTIVE_LIST.remove(t);
-
-    // forget us so that no context is remembered
-    // superfluously in the yield() below
-    _currentThread = 0UL;
-
-    // tidy up, maybe
-    if (flags & TF_SELF_DESTRUCT) {
-        // Like garbage collection, this means the Thread
-        // wants us to deallocate everything. The stack
-        // will be deallocated in the Thread's dtor
-        delete &t;
-    }
-
-    // NEXT!
-    yield();
 }
 
 
@@ -267,26 +305,6 @@ void Thread::expire()
 {
     ACTIVE_LIST.remove(*this);
     EXPIRED_LIST.append(*this);
-}
-
-
-// Chooses the next Thread to run. This is the head of the active list,
-// unless there are no Threads ready to run, in which case this will
-// choose the idle Thread.
-static Thread* selectNextThread()
-{
-    Thread* rc = ACTIVE_LIST.getHead();
-
-    if (!rc) {
-        SWAP_LISTS;
-        rc = ACTIVE_LIST.getHead();
-
-        if (!rc) {
-            rc = _idleThread;
-        }
-    }
-
-    return rc;
 }
 
 
@@ -424,22 +442,6 @@ static void yield()
 }
 
 
-// zero's heartbeat
-static void initTimer0()
-{
-    #define SCALE(x) (( F_CPU * (x)) / 16'000'000ULL)
-
-    // 8-bit Timer/Counter0
-    power_timer0_enable();                          // switch it on
-    TCCR0B = 0;                                     // stop the clock
-    TCNT0 = 0;				                        // reset counter to 0
-    TCCR0A = (1 << WGM01);	                        // CTC
-    TCCR0B = (1 << CS02);	                        // /256 prescalar
-    OCR0A = SCALE(63U)-1;           			    // 1ms
-    TIMSK0 |= (1 << OCIE0A);                        // enable ISR
-}
-
-
 // The Timer tick - the main heartbeat
 ISR(TIMER0_COMPA_vect, ISR_NAKED)
 {
@@ -494,39 +496,6 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
     restoreInitialContext();
 
     // return, enabling interrupts
-    reti();
-}
-
-
-// Kickstart the system
-int main()
-{
-    extern void startup_sequence();
-    extern int idleThreadEntry();
-    
-    // start Timer0 (does not enable global ints)
-    initTimer0();
-
-    // create the idle Thread
-    _idleThread = new Thread(0, idleThreadEntry, TF_NONE);
-
-    // bootstrap
-    startup_sequence();
-
-    // bring the first thread on-line
-    _currentThread = selectNextThread();
-
-    // top up its quantum
-    _currentThread->_ticksRemaining = QUANTUM_TICKS;
-
-    // set the current stack pointer to first thread's
-    SP = _currentThread->_sp;
-
-    // restore the (brand new) context for the chosen thread
-    restoreExtendedContext();
-    restoreInitialContext();
-
-    // this enables global interrupts as well as returning
     reti();
 }
 
@@ -676,4 +645,40 @@ void Thread::signal(const SignalField sigs)
             }
         }
     }
+}
+
+
+// Kickstart the system
+int main()
+{
+    // startup_sequence is the developer-supplied main() replacement
+    extern void startup_sequence();
+
+    // idleThreadEntry is the developer-supplied "do nothing" idle thread
+    extern int idleThreadEntry();
+    
+    // start Timer0 (does not enable global ints)
+    initTimer0();
+
+    // create the idle Thread
+    _idleThread = new Thread(0, idleThreadEntry, TF_NONE);
+
+    // bootstrap
+    startup_sequence();
+
+    // bring the first thread on-line
+    _currentThread = selectNextThread();
+
+    // top up its quantum
+    _currentThread->_ticksRemaining = QUANTUM_TICKS;
+
+    // set the current stack pointer to first thread's
+    SP = _currentThread->_sp;
+
+    // restore the (brand new) context for the chosen thread
+    restoreExtendedContext();
+    restoreInitialContext();
+
+    // this enables global interrupts as well as returning
+    reti();
 }
