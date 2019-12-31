@@ -33,7 +33,7 @@ Calling ```Synapse::signal()``` is functionally equivalent to the following code
 ```
     mySynapse.thread->signal(mySynapse.signals);
 ```
-... except with validation so we don't signal a null ```Thread*``` as so on.
+... except with validation so we don't signal a null ```Thread*``` and so on.
 
 ## clear()
 Clears both the ```thread``` and ```signals``` fields.
