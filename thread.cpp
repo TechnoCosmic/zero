@@ -161,13 +161,13 @@ namespace {
         #define SCALE(x) (( F_CPU * (x)) / 16'000'000ULL)
 
         // 8-bit Timer/Counter0
-        power_timer0_enable();                          // switch it on
-        TCCR0B = 0;                                     // stop the clock
-        TCNT0 = 0;				                        // reset counter to 0
-        TCCR0A = (1 << WGM01);	                        // CTC
-        TCCR0B = (1 << CS02);	                        // /256 prescalar
-        OCR0A = SCALE(63U)-1;           			    // 1ms
-        TIMSK0 |= (1 << OCIE0A);                        // enable ISR
+        power_timer0_enable();      // switch it on
+        TCCR0B = 0;                 // stop the clock
+        TCNT0 = 0;                  // reset counter to 0
+        TCCR0A = (1 << WGM01);      // CTC
+        TCCR0B = (1 << CS02);       // /256 prescalar
+        OCR0A = SCALE(63U)-1;       // 1ms
+        TIMSK0 |= (1 << OCIE0A);    // enable ISR
     }
 
 }

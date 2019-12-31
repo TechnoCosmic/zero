@@ -52,7 +52,7 @@ uint16_t SuartTx::formatForSerial(const uint8_t d)
 
 void SuartTx::startTxTimer()
 {
-    #define SCALE(x) ((F_CPU * (x)) / 16000000ULL)      // to scale the Timer for MCU clock speed
+    #define SCALE(x) ((F_CPU * (x)) / 16'000'000ULL)    // to scale the Timer for MCU clock speed
 
     TCCR2B = 0;                                         // make sure timer is stopped
     TCNT2 = 0;                                          // reset the counter
@@ -65,9 +65,9 @@ void SuartTx::startTxTimer()
 
 void SuartTx::stopTxTimer()
 {
-    TIMSK2 &= ~(1 << OCIE2A);       // disable Timer ISR
-    TCCR2B = 0;                     // make sure timer is stopped
-    TCNT2 = 0;                      // reset the counter
+    TIMSK2 &= ~(1 << OCIE2A);                           // disable Timer ISR
+    TCCR2B = 0;                                         // make sure timer is stopped
+    TCNT2 = 0;                                          // reset the counter
 }
 
 
