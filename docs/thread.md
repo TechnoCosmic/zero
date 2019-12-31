@@ -228,7 +228,7 @@ Waits for one or more signals to occur, blocking if necessary.
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```sigs```|The signal(s) to wait for. You may specify multiple signals in the one ```SignalField```.|
+|```sigs```|The signal(s) to wait for. You may specify multiple signals in the one ```SignalField``` by using bitwise-OR.|
 
 ### Notes
 Returns a ```SignalField``` specifying which signals woke the Thread up. May be more than one if more than one signal was ```wait()```ed on and multiple occurred, so be sure to check for all signals when the Thread wakes.

@@ -7,6 +7,7 @@
 
 
 #include <string.h>
+#include <avr/io.h>
 
 #include "pagemanager.h"
 #include "util.h"

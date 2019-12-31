@@ -26,23 +26,23 @@ LFUSE = 0xFF
 HFUSE = 0xD9
 EFUSE = 0xFF
 
+# All SRAM except 1K
+DYNAMIC_BYTES = "((RAMEND-255)-1024)"
 
+# MCU mappings
 ifeq ($(AVRDUDE_PART),m328p)
-	# 1.5KB for allocator
+	# 1KB for allocator
 	MCU = atmega328p
-	DYNAMIC_BYTES = 1536
 endif
 
 ifeq ($(AVRDUDE_PART),m644p)
 	# 3KB for allocator
 	MCU = atmega644p
-	DYNAMIC_BYTES = 3172
 endif
 
 ifeq ($(AVRDUDE_PART),m1284p)
 	# 15KB for allocator
 	MCU = atmega1284p
-	DYNAMIC_BYTES = 15360
 endif
 
 
