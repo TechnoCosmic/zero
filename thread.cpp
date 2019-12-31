@@ -390,7 +390,7 @@ static void inline restoreExtendedContext()
 }
 
 
-// Voluntarily hands control of the MCU over to another thread. Called by wait()/
+// Voluntarily hands control of the MCU over to another thread. Called by wait().
 static void yield()
 {
     // DND
@@ -422,18 +422,19 @@ static void yield()
 }
 
 
+// zero's heartbeat
 static void initTimer0()
 {
-    #define SCALE(x) ((F_CPU * (x)) / 16'000'000ULL)
+    #define SCALE(x) (( F_CPU * (x)) / 16'000'000ULL)
 
-	// 8-bit Timer/Counter0
+    // 8-bit Timer/Counter0
     power_timer0_enable();                          // switch it on
     TCCR0B = 0;                                     // stop the clock
-	TCNT0 = 0;				                        // reset counter to 0
-	TCCR0A = (1 << WGM01);	                        // CTC
-	TCCR0B = (1 << CS02);	                        // /256 prescalar
-	OCR0A = SCALE(63U)-1;           			    // 1ms
-	TIMSK0 |= (1 << OCIE0A);                        // enable ISR
+    TCNT0 = 0;				                        // reset counter to 0
+    TCCR0A = (1 << WGM01);	                        // CTC
+    TCCR0B = (1 << CS02);	                        // /256 prescalar
+    OCR0A = SCALE(63U)-1;           			    // 1ms
+    TIMSK0 |= (1 << OCIE0A);                        // enable ISR
 }
 
 
@@ -457,7 +458,7 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
         // if the Thread has more time to run, or switching is disabled, bail
         if (_currentThread->_ticksRemaining || !_switchingEnabled) {
             restoreInitialContext();
-            
+
             // return, enabling interrupts
             reti();
         }
@@ -478,7 +479,7 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
     // choose the next thread
     _currentThread = selectNextThread();
 
-    // top up its quantum if it exhausted its previous one
+    // top up the Thread's quantum if it has none left
     if (!_currentThread->_ticksRemaining) {
         _currentThread->_ticksRemaining = QUANTUM_TICKS;
     }
@@ -489,6 +490,8 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
     // and of course we need to do a full restore because context switch
     restoreExtendedContext();
     restoreInitialContext();
+
+    // return, enabling interrupts
     reti();
 }
 

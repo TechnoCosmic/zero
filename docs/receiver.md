@@ -25,7 +25,7 @@ Disables the receiver, releases any resources used, and prevents further data re
     virtual void disable()
 ```
 
-# getCurrentBuffer()
+## getCurrentBuffer()
 Returns a buffer that contains the currently unprocessed received data.
 ```
     virtual uint8_t* getCurrentBuffer(
