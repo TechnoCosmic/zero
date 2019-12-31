@@ -10,6 +10,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/power.h>
 #include <util/atomic.h>
 
 #include "thread.h"
@@ -78,6 +79,8 @@ bool SuartTx::enable(const Synapse txCompleteSyn)
     *_ddr |= _pinMask;          // output
     *_port |= _pinMask;         // idle-high
 
+    power_timer2_enable();      // switch it on
+
     return true;
 }
 
@@ -85,6 +88,7 @@ bool SuartTx::enable(const Synapse txCompleteSyn)
 void SuartTx::disable()
 {
     stopTxTimer();
+    power_timer2_disable();     // switch it on
 
     if (_ddr && _port && _pinMask) {
         *_ddr &= ~_pinMask;

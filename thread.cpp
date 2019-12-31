@@ -92,49 +92,6 @@ namespace {
     }
 
 
-    // All threads start life here
-    void globalThreadEntry(
-        Thread& t,
-        const uint32_t entry,
-        const ThreadFlags flags,
-        Synapse notifySyn,
-        uint16_t* exitCode)
-    {
-        // run the thread and get its exit code
-        uint16_t ec = ((ThreadEntry) entry)();
-
-        // we don't want to be disturbed while cleaning up
-        cli();
-
-        // return the exit code if the parent wants it
-        if (exitCode) {
-            *exitCode = ec;
-        }
-
-        // if the parent wanted to be signalled upon
-        // this Thread's termination, signal them
-        notifySyn.signal();
-
-        // remove from the list of Threads
-        ACTIVE_LIST.remove(t);
-
-        // forget us so that no context is remembered
-        // superfluously in the yield() below
-        _currentThread = 0UL;
-
-        // tidy up, maybe
-        if (flags & TF_SELF_DESTRUCT) {
-            // Like garbage collection, this means the Thread
-            // wants us to deallocate everything. The stack
-            // will be deallocated in the Thread's dtor
-            delete &t;
-        }
-
-        // NEXT!
-        yield();
-    }
-
-
     // Chooses the next Thread to run. This is the head of the active list,
     // unless there are no Threads ready to run, in which case this will
     // choose the idle Thread.
@@ -170,6 +127,49 @@ namespace {
         TIMSK0 |= (1 << OCIE0A);    // enable ISR
     }
 
+}
+
+
+// All threads start life here
+static void globalThreadEntry(
+    Thread& t,
+    const uint32_t entry,
+    const ThreadFlags flags,
+    Synapse notifySyn,
+    uint16_t* exitCode)
+{
+    // run the thread and get its exit code
+    uint16_t ec = ((ThreadEntry) entry)();
+
+    // we don't want to be disturbed while cleaning up
+    cli();
+
+    // return the exit code if the parent wants it
+    if (exitCode) {
+        *exitCode = ec;
+    }
+
+    // if the parent wanted to be signalled upon
+    // this Thread's termination, signal them
+    notifySyn.signal();
+
+    // remove from the list of Threads
+    ACTIVE_LIST.remove(t);
+
+    // forget us so that no context is remembered
+    // superfluously in the yield() below
+    _currentThread = 0UL;
+
+    // tidy up, maybe
+    if (flags & TF_SELF_DESTRUCT) {
+        // Like garbage collection, this means the Thread
+        // wants us to deallocate everything. The stack
+        // will be deallocated in the Thread's dtor
+        delete &t;
+    }
+
+    // NEXT!
+    yield();
 }
 
 
