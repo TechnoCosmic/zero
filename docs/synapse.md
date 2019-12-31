@@ -28,6 +28,13 @@ Signals the ```Thread``` specified in the ```Synapse``` with the signals in the 
     void signal()
 ```
 
+### Notes
+Calling ```Synapse::signal()``` is functionally equivalent to the following code...
+```
+    mySynapse.thread->signal(mySynapse.signals);
+```
+... except with validation so we don't signal a null ```Thread*``` as so on.
+
 ## clear()
 Clears both the ```thread``` and ```signals``` fields.
 ```
