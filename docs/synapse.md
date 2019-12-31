@@ -1,7 +1,7 @@
 # Synapse
 ```zero/thread.h```
 
-```Synapse``` is simple class that pairs a ```Thread``` pointer with a ```SignalField```, in order to make it easy to pass around an object representing the endpoint, or target, of a signal.
+```Synapse``` is simple class that pairs a ```Thread*``` with a ```SignalField```, in order to make it easy to pass around an object representing the endpoint, or target, of a signal.
 
 ## Constructors
 ```
@@ -13,7 +13,9 @@
 ```
 A ```Synapse``` has no private members. It is a very transparent helper class. You can directly access ```Synapse::thread``` and ```Synapse::signals```.
 
-The constructor that takes the ```SignalField``` parameter is what lets us pass a ```SignalField``` where a ```Synapse``` is expected. The compiler will construct a ```Synapse``` automatically, and will use the currently executing ```Thread``` as the thread component of the ```Synapse```.
+The constructor with the ```SignalField``` parameter is what lets us pass a ```SignalField``` where a ```Synapse``` is expected. The compiler will construct a ```Synapse``` automatically, and will use the currently executing ```Thread``` as the thread component of the ```Synapse```. See ```Receiver::enable()``` as one example of this.
+
+Generally I'd frown on this sort of implicit conversion, but it enhances readability and maintainablity of the code significantly.
 
 The intention is that instead of code directly calling ```Thread::signal()```, it should call ```Synapse::signal()```. By adopting this convention, it becomes very easy to create and pass these endpoints around without your program having to manage it.
 

@@ -58,21 +58,25 @@ namespace zero {
 
         Synapse() {}
 
-        Synapse(const SignalField sigs) {
+        Synapse(const SignalField sigs)
+        {
             thread = &Thread::getCurrentThread();
             signals = sigs;
         }
 
-        void clear() {
+        void clear()
+        {
             thread = 0UL;
             signals = 0UL;
         }
 
-        bool isValid() {
+        bool isValid()
+        {
             return (thread != 0UL && signals != 0UL);
         }
 
-        void signal() {
+        void signal()
+        {
             if (isValid()) {
                 thread->signal(signals);
             }
