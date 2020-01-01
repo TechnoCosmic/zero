@@ -310,4 +310,86 @@ ISR(USART1_RX_vect)
 #endif
 
 
+#ifdef UCSR2B
+
+
+ISR(USART2_TX_vect)
+{
+    // last byte complete
+    _usartTx[2]->byteTxComplete();
+}
+
+
+ISR(USART2_UDRE_vect)
+{
+    // need more data
+    uint8_t nextByte;
+
+    if (!_usartTx[2]->getNextTxByte(nextByte)) {
+        UCSR2B &= ~(1 << UDRIE2);
+
+    } else {
+        UDR2 = nextByte;
+    }
+}
+
+
+ISR(USART2_RX_vect)
+{
+    register volatile uint8_t newByte = UDR2;
+
+    // received data
+    if (_usartRx[2]->_rxBuffer->write(newByte)) {
+        _usartRx[2]->_rxDataReceivedSyn.signal();
+
+    } else {
+        _usartRx[2]->_rxOverflowSyn.signal();
+    }
+}
+
+
+#endif
+
+
+#ifdef UCSR3B
+
+
+ISR(USART3_TX_vect)
+{
+    // last byte complete
+    _usartTx[3]->byteTxComplete();
+}
+
+
+ISR(USART3_UDRE_vect)
+{
+    // need more data
+    uint8_t nextByte;
+
+    if (!_usartTx[3]->getNextTxByte(nextByte)) {
+        UCSR3B &= ~(1 << UDRIE3);
+
+    } else {
+        UDR3 = nextByte;
+    }
+}
+
+
+ISR(USART3_RX_vect)
+{
+    register volatile uint8_t newByte = UDR3;
+
+    // received data
+    if (_usartRx[3]->_rxBuffer->write(newByte)) {
+        _usartRx[3]->_rxDataReceivedSyn.signal();
+
+    } else {
+        _usartRx[3]->_rxOverflowSyn.signal();
+    }
+}
+
+
+#endif
+
+
 #endif
