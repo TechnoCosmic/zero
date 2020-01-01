@@ -16,6 +16,9 @@ Enables the transmitter.
 |-----|-----------|
 |```txReadySyn```|The ```Synapse``` to signal when the transmitter is ready to send a new transmission.|
 
+### Notes
+The hardware USART and software serial drivers in zero will signal ```txReadySyn``` immediately upon calling ```enable()```.
+
 ## disable()
 Disables the transmitter, releases any resources used, and prevents further data transmission.
 ```

@@ -631,12 +631,10 @@ void Thread::signal(const SignalField sigs)
 
         _currentSignals |= (sigs & _allocatedSignals);
 
-        if (_currentThread != this) {
-            if (!alreadySignalled && getActiveSignals()) {
-                ACTIVE_LIST.remove(*this);
-                ACTIVE_LIST.prepend(*this);
-                _currentThread->_ticksRemaining = 1;
-            }
+        if (_currentThread != this && !alreadySignalled && getActiveSignals()) {
+            ACTIVE_LIST.remove(*this);
+            ACTIVE_LIST.prepend(*this);
+            _currentThread->_ticksRemaining = 1;
         }
     }
 }
