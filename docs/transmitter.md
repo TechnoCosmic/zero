@@ -63,21 +63,12 @@ int txDemo()
     tx->enable(txDoneSig);
 
     // main loop
-    bool canSend = true;
-
     while (true) {
-        if (!canSend) {
-            SignalField wokeSigs = me.wait(txDoneSig);
-        
-            if (wokeSigs & txDoneSig) {
-                // last xmit complete, can send again
-                canSend = true;
-            }
-        }
-
-        if (canSend) {
+        SignalField wokeSigs = me.wait(txDoneSig);
+    
+        if (wokeSigs & txDoneSig) {
+            // last xmit complete, can send again
             tx->transmit((char*) "Beaker is the best puppy ever!\r\n", 32);
-            canSend = false;
         }
     }
 }

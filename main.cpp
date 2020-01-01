@@ -124,11 +124,6 @@ int serialStreamer()
     stx->setCommsParams(9600, &DDRA, &PORTA, 0);
     stx->enable(softTxCompleteSig);
 
-    // clear the screen
-    uint8_t cls = '\f';
-    htx0->transmit(&cls, 1);
-    stx->transmit(&cls, 1); 
-
     // tracking
     uint8_t lineNum = 0;
 

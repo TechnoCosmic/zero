@@ -25,7 +25,7 @@ Synapses should always be handed around by copy, rather than by reference or by 
 ## signal()
 Signals the ```Thread``` specified in the ```Synapse``` with the signals in the ```Synapse's``` ```signals``` field.
 ```
-    void signal()
+    void Synapse::signal()
 ```
 
 ### Notes
@@ -34,6 +34,12 @@ Calling ```Synapse::signal()``` is functionally equivalent to the following code
     mySynapse.thread->signal(mySynapse.signals);
 ```
 ... except with validation so we don't signal a null ```Thread*``` and so on.
+
+## clearSignals()
+Calls ```Thread::clearSignals()``` with the signals associated with the ```Synapse```.
+```
+    void Synapse::clearSignals()
+```
 
 ## clear()
 Clears both the ```thread``` and ```signals``` fields.
@@ -44,5 +50,5 @@ Clears both the ```thread``` and ```signals``` fields.
 ## isValid()
 Returns ```true``` if the ```Synapse``` has valid ```thread``` *and* ```signals``` fields.
 ```
-    bool isValid()
+    bool Synapse::isValid()
 ```

@@ -631,18 +631,10 @@ void Thread::signal(const SignalField sigs)
 
         _currentSignals |= (sigs & _allocatedSignals);
 
-        // if this resulted in the Thread waking up,
-        // schedule it to run next
-        if (!alreadySignalled && getActiveSignals()) {
-            // remove it, in case it's already there
-            ACTIVE_LIST.remove(*this);
-
-            // add it to the top of the list, so that it's next up
-            ACTIVE_LIST.prepend(*this);
-
-            // if the Thread just signalled isn't the one running
-            // now, then let's quickly get that Thread running
-            if (_currentThread != this) {
+        if (_currentThread != this) {
+            if (!alreadySignalled && getActiveSignals()) {
+                ACTIVE_LIST.remove(*this);
+                ACTIVE_LIST.prepend(*this);
                 _currentThread->_ticksRemaining = 1;
             }
         }

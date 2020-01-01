@@ -74,13 +74,12 @@ void SuartTx::stopTxTimer()
 
 bool SuartTx::enable(const Synapse txCompleteSyn)
 {
-    _txCompleteSyn = txCompleteSyn;
-
     *_ddr |= _pinMask;          // output
     *_port |= _pinMask;         // idle-high
-
     power_timer2_enable();      // switch the Timer on
-
+    _txCompleteSyn = txCompleteSyn;
+    _txCompleteSyn.signal();
+    
     return true;
 }
 
@@ -119,6 +118,8 @@ bool SuartTx::transmit(const void* buffer, const uint16_t sz)
     if (_txBuffer) return false;
     if (!buffer) return false;
     if (!sz) return false;
+
+    _txCompleteSyn.clearSignals();
 
     // prime the buffer data
     _txBuffer = (uint8_t*) buffer;

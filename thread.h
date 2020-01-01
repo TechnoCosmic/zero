@@ -82,6 +82,12 @@ namespace zero {
             }
         }
 
+        void clearSignals() {
+            if (isValid()) {
+                thread->clearSignals(signals);
+            }
+        }
+        
     }; 
 }
 

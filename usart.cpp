@@ -107,8 +107,10 @@ void UsartTx::setCommsParams(const uint32_t baud)
 
 bool UsartTx::enable(const Synapse txCompleteSyn)
 {
-    _txCompleteSyn = txCompleteSyn;
     UCSRB(_deviceNum) |= TX_BITS;
+    _txCompleteSyn = txCompleteSyn;
+    _txCompleteSyn.signal();
+    
     return true;
 }
 
@@ -124,6 +126,8 @@ bool UsartTx::transmit(const void* buffer, const uint16_t sz)
     if (_txBuffer) return false;
     if (!buffer) return false;
     if (!sz) return false;
+
+    _txCompleteSyn.clearSignals();
 
     // prime the buffer data
     _txBuffer = (uint8_t*) buffer;

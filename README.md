@@ -54,13 +54,8 @@ int txDemoThread()
     tx->setCommsParams(9600);
     tx->enable(txCompleteSig);
 
-    // clear the screen on the attached terminal
-    char cls = '\f';
-
-    tx->transmit(&cls, 1);
-
     while (true) {
-        SignalField wokeSigs = me.wait(txCompleteSig) {
+        SignalField wokeSigs = me.wait(txCompleteSig);
 
         if (wokeSigs & txCompleteSig) {
             tx->transmit("Hello, World!\r\n", 15);
@@ -78,7 +73,7 @@ To receive data serially in zero, you can create an instance of a ```Receiver```
 When you enable a ```Receiver```, you hand it three (3) pieces of information...
 
 - Buffer size, in bytes
-- A ```Synapse``` to be signalled when data is available to for your program to process
+- A ```Synapse``` to be signalled when data is available for your program to process
 - A ```Synapse``` to be signalled if/when the receive buffer overflows
 
 To receive data, your Thread should ```wait()``` on the signal it allocated for the "data available" ```Synapse```. When this signal is set, you can ask the receiver for the current receive buffer...
