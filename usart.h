@@ -35,7 +35,8 @@ namespace zero {
         bool transmit(const void* buffer, const uint16_t sz) override;
 
         bool getNextTxByte(uint8_t& data);
-
+        void byteTxComplete();
+        
         uint8_t _deviceNum = 0;
         uint8_t* _txBuffer = 0UL;
         uint16_t _txSize = 0UL;

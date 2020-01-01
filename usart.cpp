@@ -50,15 +50,32 @@ volatile uint8_t* _UDR_base = &UDR0;
 #define UDR(p) *((volatile uint8_t*) (_UDR_base+(p*8)))
 
 
+#if defined(UCSR3B)
+    const int NUM_DEVICES = 4;
+
+#elif defined(UCSR2B)
+    const int NUM_DEVICES = 3;
+
+#elif defined(UCSR1B)
+    const int NUM_DEVICES = 2;
+
+#elif defined(UCSR0B)
+    const int NUM_DEVICES = 1;
+
+#else
+    const int NUM_DEVICES = 0;
+#endif
+
+
 namespace {
-    UsartTx* _usartTx[2];
-    UsartRx* _usartRx[2];
+    UsartTx* _usartTx[NUM_DEVICES];
+    UsartRx* _usartRx[NUM_DEVICES];
 } 
 
 
 UsartTx::UsartTx(const uint8_t deviceNum)
 {
-    if (deviceNum < 2) {
+    if (deviceNum < NUM_DEVICES) {
         _deviceNum = deviceNum;
         _usartTx[deviceNum] = this;
     }
@@ -133,6 +150,14 @@ bool UsartTx::getNextTxByte(uint8_t& data)
     }
 
     return rc;
+}
+
+
+void UsartTx::byteTxComplete() {
+    if (!_txSize && _txBuffer != 0UL) {
+        _txBuffer = 0UL;
+        _txCompleteSyn.signal();
+    }
 }
 
 
@@ -212,10 +237,7 @@ uint8_t* UsartRx::getCurrentBuffer(uint16_t& numBytes)
 ISR(USART_TX_vect)
 {
     // last byte complete
-    if (!_usartTx[0]->_txSize && _usartTx[0]->_txBuffer != 0UL) {
-        _usartTx[0]->_txBuffer = 0UL;
-        _usartTx[0]->_txCompleteSyn.signal();
-    }
+    _usartTx[0]->byteTxComplete();
 }
 
 
@@ -253,10 +275,7 @@ ISR(USART_RX_vect)
 ISR(USART1_TX_vect)
 {
     // last byte complete
-    if (!_usartTx[1]->_txSize && _usartTx[1]->_txBuffer != 0UL) {
-        _usartTx[1]->_txBuffer = 0UL;
-        _usartTx[1]->_txCompleteSyn.signal();
-    }
+    _usartTx[1]->byteTxComplete();
 }
 
 
