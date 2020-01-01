@@ -59,7 +59,7 @@ int rxDemo()
 
     // main loop
     while (true) {
-        SignalField wokeSigs = me.wait(rxSig | rxOvfSig)
+        SignalField wokeSigs = me.wait(rxSig | rxOvfSig);
 
         if (wokeSigs & rxSig) {
             // data received, get the RX buffer
