@@ -106,7 +106,6 @@ int mySerialThread()
             uint16_t numBytes;
 
             while (uint8_t* rxData = rx->getCurrentBuffer(numBytes)) {
-
                 // numBytes now contains the number of bytes
                 // actually received in the current buffer
                 processRxData(rxData, numBytes);
@@ -120,4 +119,4 @@ int mySerialThread()
 }
 ```
 ### Notes
-The receiver uses a double-buffered approach. Because of this, the actual size of the active receive buffer is half that specified in the ```enable()``` call. One half of the buffer is filling with incoming data while your code is processing the data in the other half. ```getCurrentBuffer()``` returns a pointer to the data received since the last call to ```getCurrentBuffer()```. ***It does not return of copy of that data***. If there is no data available, ```getCurrentBuffer()``` will return a null pointer, and the supplied reference argument, ```numBytes```, will be set to zero (0).
+The receiver uses a double-buffered approach. Because of this, the actual size of the active receive buffer is half that specified in the ```enable()``` call. One half of the buffer is filling with incoming data while your code is processing the data contained in the other half. ```getCurrentBuffer()``` returns a pointer to the data received since the last call to ```getCurrentBuffer()```. ***It does not return of copy of that data***. If there is no data available, ```getCurrentBuffer()``` will return a null pointer, and the supplied reference argument, ```numBytes```, will be set to zero (0).
