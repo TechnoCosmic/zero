@@ -48,16 +48,16 @@ Transmission is complete when the transmitter signals the ```Synapse``` that it 
 ```
 int txDemoThread()
 {
-    SignalField txCompleteSig = me.allocateSignal();
+    SignalField txReadySig = me.allocateSignal();
     UsartTx* tx = new UsartTx(0);
 
     tx->setCommsParams(9600);
-    tx->enable(txCompleteSig);
+    tx->enable(txReadySig);
 
     while (true) {
-        SignalField wokeSigs = me.wait(txCompleteSig);
+        SignalField wokeSigs = me.wait(txReadySig);
 
-        if (wokeSigs & txCompleteSig) {
+        if (wokeSigs & txReadySig) {
             tx->transmit("Hello, World!\r\n", 15);
         }
     }

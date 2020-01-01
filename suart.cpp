@@ -72,13 +72,13 @@ void SuartTx::stopTxTimer()
 }
 
 
-bool SuartTx::enable(const Synapse txCompleteSyn)
+bool SuartTx::enable(const Synapse txReadySyn)
 {
     *_ddr |= _pinMask;          // output
     *_port |= _pinMask;         // idle-high
     power_timer2_enable();      // switch the Timer on
-    _txCompleteSyn = txCompleteSyn;
-    _txCompleteSyn.signal();
+    _txReadySyn = txReadySyn;
+    _txReadySyn.signal();
     
     return true;
 }
@@ -94,7 +94,7 @@ void SuartTx::disable()
         *_port &= ~_pinMask;
     }
 
-    _txCompleteSyn.clear();
+    _txReadySyn.clear();
 }
 
 
@@ -119,7 +119,7 @@ bool SuartTx::transmit(const void* buffer, const uint16_t sz)
     if (!buffer) return false;
     if (!sz) return false;
 
-    _txCompleteSyn.clearSignals();
+    _txReadySyn.clearSignals();
 
     // prime the buffer data
     _txBuffer = (uint8_t*) buffer;
@@ -165,7 +165,7 @@ ISR(TIMER2_COMPA_vect)
 
             // signal and tidy up
             _suartTx->_txBuffer = 0UL;
-            _suartTx->_txCompleteSyn.signal();
+            _suartTx->_txReadySyn.signal();
 
         } else {
             // load next byte

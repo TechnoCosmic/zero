@@ -18,7 +18,7 @@ namespace zero {
 
     class Transmitter {
     public:
-        virtual bool enable(const Synapse txCompleteSyn) = 0;
+        virtual bool enable(const Synapse txReadySyn) = 0;
         virtual void disable() = 0;
         virtual bool transmit(const void* data, const uint16_t numBytes) = 0;
     };

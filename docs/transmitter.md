@@ -7,14 +7,14 @@ The ```Transmitter``` is an abstract base class for device drivers implementing 
 Enables the transmitter.
 ```
     virtual bool enable(
-        const Synapse txCompleteSyn
+        const Synapse txReadySyn
         )
 ```
 
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```txCompleteSyn```|The ```Synapse``` to signal when the transmitter completes a transmission.|
+|```txReadySyn```|The ```Synapse``` to signal when the transmitter is ready to send a new transmission.|
 
 ## disable()
 Disables the transmitter, releases any resources used, and prevents further data transmission.
@@ -41,7 +41,7 @@ Sends information asynchronously.
 ### Notes
 A ```Transmitter``` is not required to copy the data you supply here before transmitting it. It is up to your code to ensure the supplied buffer stays current while the transmission is in progress.
 
-Once a transmission is finished, the transmitter will signal the ```txCompleteSyn``` ```Synapse``` supplied in the call to ```enable()```.
+Once a transmission is finished, the transmitter will signal the ```txReadySyn``` ```Synapse``` supplied in the call to ```enable()```.
 
 ## Example
 ```
@@ -51,7 +51,7 @@ Once a transmission is finished, the transmitter will signal the ```txCompleteSy
 int txDemo()
 {
     // Signal for learning when we can send again
-    SignalField txDoneSig = me.allocateSignal();
+    SignalField txReadySig = me.allocateSignal();
 
     // create a transmitter for software serial TX
     SuartTx* tx = new SuartTx();
@@ -60,13 +60,13 @@ int txDemo()
     tx->setCommsParams(9600, &DDRA, &PORTA, 0);
 
     // enable the transmitter
-    tx->enable(txDoneSig);
+    tx->enable(txReadySig);
 
     // main loop
     while (true) {
-        SignalField wokeSigs = me.wait(txDoneSig);
+        SignalField wokeSigs = me.wait(txReadySig);
     
-        if (wokeSigs & txDoneSig) {
+        if (wokeSigs & txReadySig) {
             // last xmit complete, can send again
             tx->transmit((char*) "Beaker is the best puppy ever!\r\n", 32);
         }

@@ -57,10 +57,10 @@ int limitedFlasherThread()
 
 int usartEchoDemo()
 {
-    SignalField txCompleteSig = me.allocateSignal();
+    SignalField txReadySig = me.allocateSignal();
     UsartTx* tx = new UsartTx(1);
     tx->setCommsParams(9600);
-    tx->enable(txCompleteSig);
+    tx->enable(txReadySig);
 
     SignalField rxSig = me.allocateSignal();
     SignalField rxOvfSig = me.allocateSignal();
@@ -80,14 +80,14 @@ int usartEchoDemo()
             uint16_t numBytes;
 
             while (uint8_t* rxData = rx->getCurrentBuffer(numBytes)) {
-                me.wait(txCompleteSig);
+                me.wait(txReadySig);
                 tx->transmit(rxData, numBytes);
             }
         }
 
         // or if we woke because the receive buffer has overflowed
         if (wokeSigs & rxOvfSig) {
-            me.wait(txCompleteSig);
+            me.wait(txReadySig);
             tx->transmit("*** BUFFER FULL ***\r\n", 21);
         }
     }
@@ -112,33 +112,33 @@ int serialStreamer()
 
     // get the hardware USARTs configured
     UsartTx* htx0 = new UsartTx(0);
-    SignalField hardTx0CompleteSig = me.allocateSignal();
+    SignalField hardTx0ReadySig = me.allocateSignal();
 
     htx0->setCommsParams(9600);
-    htx0->enable(hardTx0CompleteSig);
+    htx0->enable(hardTx0ReadySig);
 
     // get the software USART configured
     SuartTx* stx = new SuartTx();
-    SignalField softTxCompleteSig = me.allocateSignal();
+    SignalField softTxReadySig = me.allocateSignal();
 
     stx->setCommsParams(9600, &DDRA, &PORTA, 0);
-    stx->enable(softTxCompleteSig);
+    stx->enable(softTxReadySig);
 
     // tracking
     uint8_t lineNum = 0;
 
     // the main loop
     while (true) {
-        SignalField wokeSigs = me.wait(hardTx0CompleteSig | softTxCompleteSig);
+        SignalField wokeSigs = me.wait(hardTx0ReadySig | softTxReadySig);
 
-        if (wokeSigs & hardTx0CompleteSig) {
+        if (wokeSigs & hardTx0ReadySig) {
             *htx0 << buffer;
         }
 
-        if (wokeSigs & softTxCompleteSig) {
+        if (wokeSigs & softTxReadySig) {
             // swap TX pins
             stx->setCommsParams(9600, &DDRA, &PORTA, lineNum & 0b1);
-            stx->enable(softTxCompleteSig);
+            stx->enable(softTxReadySig);
 
             // send the buffer to the new TX pin
             *stx << buffer;

@@ -30,7 +30,7 @@ namespace zero {
         ~UsartTx();
 
         void setCommsParams(const uint32_t baud);
-        bool enable(const Synapse txCompleteSyn) override;
+        bool enable(const Synapse txReadySyn) override;
         void disable() override;
         bool transmit(const void* buffer, const uint16_t sz) override;
 
@@ -40,7 +40,7 @@ namespace zero {
         uint8_t _deviceNum = 0;
         uint8_t* _txBuffer = 0UL;
         uint16_t _txSize = 0UL;
-        Synapse _txCompleteSyn;
+        Synapse _txReadySyn;
     };
 
 
