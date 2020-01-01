@@ -64,9 +64,8 @@ int rxDemo()
         if (wokeSigs & rxSig) {
             // data received, get the RX buffer
             uint16_t numBytesRecd;
-            uint8_t* rxBuffer = rx->getCurrentBuffer(numBytesRecd);
-
-            if (buffer) {
+            
+            while (uint8_t* rxBuffer = rx->getCurrentBuffer(numBytesRecd)) {
                 // do something with the received data
                 processRxData(rxBuffer, numBytesRecd);
             }
@@ -74,7 +73,6 @@ int rxDemo()
 
         if (wokeSigs & rxOvfSig) {
             // buffer overflow - need a bigger buffer
-            
         }
     }
 }
