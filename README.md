@@ -42,7 +42,9 @@ After creating an instance of a ```Transmitter```-derived class, such as ```Usar
 
 To transmit data, call ```transmit()``` on the transmitter. The transmitter will then *asynchronously* transmit the information handed to the ```transmit()``` function. This means that whatever data or buffer you transmit must remain valid and untouched until the transmission is complete, as ***no copy of the supplied information is performed***.
 
-Transmission is complete when the transmitter signals the ```Synapse``` that it was handed when it was ```enable()```'d. A ```Synapse``` is a simple ```Thread```/```SignalField``` pair.
+Transmission is complete when the transmitter signals the ```Synapse``` that it was handed when it was ```enable()```'d. A ```Synapse``` is a simple ```Thread```/```SignalField``` pair. See ```docs/synapse.md``` for more information.
+
+#### Example
 ```
 int txDemoThread()
 {
@@ -76,7 +78,7 @@ To receive data serially in zero, you can create an instance of a ```Receiver```
 When you enable a ```Receiver```, you hand it three (3) pieces of information...
 
 - Buffer size, in bytes
-- A ```Synapse``` to be signalled when data is available to read
+- A ```Synapse``` to be signalled when data is available to for your program to process
 - A ```Synapse``` to be signalled if/when the receive buffer overflows
 
 To receive data, your Thread should ```wait()``` on the signal it allocated for the "data available" ```Synapse```. When this signal is set, you can ask the receiver for the current receive buffer...
@@ -90,36 +92,24 @@ int mySerialThread()
     // allocate a serial receiver on USART0
     UsartRx* rx = new UsartRx(0);
 
+    // order matters - comms params, then enable
     rx->setCommsParams(9600);
-
-    // The Synapse class has a ctor that accepts a SignalField
-    // as a parameter. The Thread component of that Synapse is
-    // the Thread that created it (me).
-    // This is why you can simply pass a SignalField where a
-    // Synapse is expected, since 99/100 times the Thread
-    // component of the Synapse should always be the Thread
-    // that created it. Put another way, it is rare that one
-    // Thread will create a Synapse on behalf of a different
-    // Thread.
-
     rx->enable(128, rxDataAvailSig, rxOvfSig);
 
     // main loop
-
     while (true) {
-        // block waiting for data (or overflow)
+        // block waiting for data or buffer overflow
         SignalField wokeSigs = me.wait(rxDataAvailSig | rxOvfSig);
 
         if (wokeSigs & rxDataAvailSig) {
             // data has arrived at the USART0 device!
-
             uint16_t numBytes;
-            uint8_t* rxData = tx->getCurrentBuffer(numBytes);
 
-            if (rxData) {
+            while (uint8_t* rxData = rx->getCurrentBuffer(numBytes)) {
+
                 // numBytes now contains the number of bytes
                 // actually received in the current buffer
-                processRxData(buffer, numBytes);
+                processRxData(rxData, numBytes);
             }
         }
 

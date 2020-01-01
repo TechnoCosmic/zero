@@ -75,6 +75,8 @@ namespace {
         const uint16_t EXTRAS_COUNT = 1;
     #endif
 
+    const uint16_t MIN_STACK_BYTES = 96;
+    
     // the offsets from the stack top (as seen AFTER all the registers have been pushed onto the stack already)
     // of each of the nine (9) parameters that are register-passed by GCC
     const PROGMEM uint8_t _paramOffsets[] = { 24, 26, 28, 30, 2, 4, 6, 8, 10 };
@@ -219,7 +221,7 @@ Thread::Thread(
     uint16_t* exitCode)
 {    
     // allocate a stack from the heap
-    _stackBottom = memory::allocate(MAX(stackSize, 96), &_stackSize, memory::SearchStrategy::TopDown);
+    _stackBottom = memory::allocate(MAX(stackSize, MIN_STACK_BYTES), &_stackSize, memory::SearchStrategy::TopDown);
 
     const uint16_t stackTop = (uint16_t) _stackBottom + _stackSize - 1;
     const uint16_t newStackTop = stackTop - (PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT);

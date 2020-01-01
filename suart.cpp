@@ -79,7 +79,7 @@ bool SuartTx::enable(const Synapse txCompleteSyn)
     *_ddr |= _pinMask;          // output
     *_port |= _pinMask;         // idle-high
 
-    power_timer2_enable();      // switch it on
+    power_timer2_enable();      // switch the Timer on
 
     return true;
 }
@@ -88,12 +88,14 @@ bool SuartTx::enable(const Synapse txCompleteSyn)
 void SuartTx::disable()
 {
     stopTxTimer();
-    power_timer2_disable();     // switch it on
+    power_timer2_disable();     // switch the Timer off
 
     if (_ddr && _port && _pinMask) {
         *_ddr &= ~_pinMask;
         *_port &= ~_pinMask;
     }
+
+    _txCompleteSyn.clear();
 }
 
 
