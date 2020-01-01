@@ -213,8 +213,8 @@ ISR(USART_TX_vect)
 {
     // last byte complete
     if (!_usartTx[0]->_txSize && _usartTx[0]->_txBuffer != 0UL) {
-        _usartTx[0]->_txCompleteSyn.signal();
         _usartTx[0]->_txBuffer = 0UL;
+        _usartTx[0]->_txCompleteSyn.signal();
     }
 }
 
@@ -254,8 +254,8 @@ ISR(USART1_TX_vect)
 {
     // last byte complete
     if (!_usartTx[1]->_txSize && _usartTx[1]->_txBuffer != 0UL) {
-        _usartTx[1]->_txCompleteSyn.signal();
         _usartTx[1]->_txBuffer = 0UL;
+        _usartTx[1]->_txCompleteSyn.signal();
     }
 }
 
