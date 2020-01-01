@@ -1,5 +1,5 @@
 # zero AVR kernel
-zero is a tiny pre-emptive multitasking kernel for AVR microcontrollers. Specifically, zero is built with the ATmega328, ATmega644, and ATmega1284 in mind, though many others will work the appropriate tweaks.
+zero is a tiny pre-emptive multitasking kernel for AVR microcontrollers. Specifically, zero is built with the ATmega328, ATmega644, and ATmega1284 in mind, though many others will work with the appropriate tweaks.
 
 ## Features
 - Small footprint - a little more than 6KB binary, and 192 bytes of SRAM
