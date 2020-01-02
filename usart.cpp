@@ -15,6 +15,8 @@
 #ifdef UCSR0B
 
 
+#include <util/atomic.h>
+
 #include "thread.h"
 #include "memory.h"
 #include "doublebuffer.h"
@@ -117,7 +119,12 @@ bool UsartTx::enable(const Synapse txReadySyn)
 
 void UsartTx::disable()
 {
-    UCSRB(_deviceNum) &= ~TX_BITS;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        _txReadySyn.clearSignals();
+        _txReadySyn.clear();
+
+        UCSRB(_deviceNum) &= ~TX_BITS;
+    }
 }
 
 

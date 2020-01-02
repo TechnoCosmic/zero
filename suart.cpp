@@ -86,15 +86,18 @@ bool SuartTx::enable(const Synapse txReadySyn)
 
 void SuartTx::disable()
 {
-    stopTxTimer();
-    power_timer2_disable();     // switch the Timer off
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        stopTxTimer();
+        power_timer2_disable();     // switch the Timer off
 
-    if (_ddr && _port && _pinMask) {
-        *_ddr &= ~_pinMask;
-        *_port &= ~_pinMask;
+        if (_ddr && _port && _pinMask) {
+            *_ddr &= ~_pinMask;
+            *_port &= ~_pinMask;
+        }
+
+        _txReadySyn.clearSignals();
+        _txReadySyn.clear();        
     }
-
-    _txReadySyn.clear();
 }
 
 
@@ -120,10 +123,6 @@ bool SuartTx::transmit(const void* buffer, const uint16_t sz)
     if (!sz) return false;
 
     _txReadySyn.clearSignals();
-
-    // prime the buffer data
-    _txBuffer = (uint8_t*) buffer;
-    _txSize = sz;
 
     // remember the buffer data
     _txBuffer = (uint8_t*) buffer;
