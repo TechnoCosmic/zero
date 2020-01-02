@@ -15,7 +15,7 @@ Enables the receiver.
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```bufferSize```|The size of the receiver buffer, in bytes.|
+|```bufferSize```|The size of the receive buffer, in bytes.|
 |```rxSyn```|A ```Synapse``` that the receiver will signal when data is available.|
 |```rxOvfSyn```|A ```Synapse``` that the receiver will signal when the receive buffer overflows.|
 
