@@ -15,12 +15,12 @@ Enables the receiver.
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```bufferSize```|The size of the RX buffer, in bytes.|
+|```bufferSize```|The size of the receiver buffer, in bytes.|
 |```rxSyn```|A ```Synapse``` that the receiver will signal when data is available.|
 |```rxOvfSyn```|A ```Synapse``` that the receiver will signal when the receive buffer overflows.|
 
 ### Notes
-The serial device drivers in zero use the ```DoubleBuffer``` class to implement their receiver buffers. For this reason, the effective buffer size at any given moment is only half of ```bufferSize```, since ```bufferSize``` specifies the total memory used by both buffers.
+The serial device drivers in zero use the ```DoubleBuffer``` class to implement their receive buffers. For this reason, the effective buffer size at any given moment is only half of ```bufferSize```, since ```bufferSize``` specifies the total memory used by both buffers.
 
 ## disable()
 Disables the receiver, releases any resources used, and prevents further data reception.
