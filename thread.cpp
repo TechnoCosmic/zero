@@ -524,7 +524,7 @@ bool Thread::tryAllocateSignal(const uint16_t signalNumber)
 // will let the kernel find a free Signal number for you.
 SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
 {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         if (reqdSignalNumber < SIGNAL_BITS) {
             if (tryAllocateSignal(reqdSignalNumber)) {
                 return 1L << reqdSignalNumber;
@@ -546,7 +546,7 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
 // Frees a Signal number and allows its re-use by the Thread
 void Thread::freeSignals(const SignalField signals)
 {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         _allocatedSignals &= ~signals;
         _waitingSignals &= ~signals;
         _currentSignals &= ~signals;
@@ -557,7 +557,7 @@ void Thread::freeSignals(const SignalField signals)
 // Returns a SignalField showing which Signals are currently active
 SignalField Thread::getActiveSignals()
 {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return (_currentSignals & _waitingSignals & _allocatedSignals);
     }
 }
@@ -566,7 +566,7 @@ SignalField Thread::getActiveSignals()
 // Returns a SignalField showing which Signals are currently active
 SignalField Thread::getCurrentSignals()
 {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return _currentSignals;
     }
 }
