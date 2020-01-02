@@ -7,7 +7,7 @@ The ```Transmitter``` is an abstract base class for device drivers implementing 
 Enables the transmitter.
 ```
     virtual bool enable(
-        const Synapse txReadySyn
+        Synapse txReadySyn
         )
 ```
 

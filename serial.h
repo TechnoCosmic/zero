@@ -18,14 +18,14 @@ namespace zero {
 
     class Transmitter {
     public:
-        virtual bool enable(const Synapse txReadySyn) = 0;
+        virtual bool enable(Synapse txReadySyn) = 0;
         virtual void disable() = 0;
         virtual bool transmit(const void* data, const uint16_t numBytes) = 0;
     };
 
     class Receiver {
     public:
-        virtual bool enable(const uint16_t bufferSize, const Synapse rxSyn, const Synapse ovfSyn) = 0;
+        virtual bool enable(const uint16_t bufferSize, Synapse rxSyn, Synapse ovfSyn) = 0;
         virtual void disable() = 0;
         virtual uint8_t* getCurrentBuffer(uint16_t& numBytes) = 0;
     };

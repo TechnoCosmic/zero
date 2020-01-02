@@ -107,9 +107,12 @@ void UsartTx::setCommsParams(const uint32_t baud)
 #define TX_BITS ((1 << TXEN0) | (1 << TXCIE0))
 
 
-bool UsartTx::enable(const Synapse txReadySyn)
+bool UsartTx::enable(Synapse txReadySyn)
 {
+    if (!txReadySyn.isValid()) return false;
+
     UCSRB(_deviceNum) |= TX_BITS;
+
     _txReadySyn = txReadySyn;
     _txReadySyn.signal();
 
@@ -206,8 +209,8 @@ void UsartRx::setCommsParams(const uint32_t baud)
 
 bool UsartRx::enable(
     const uint16_t bufferSize,
-    const Synapse rxSyn,
-    const Synapse ovfSyn)
+    Synapse rxSyn,
+    Synapse ovfSyn)
 {
     bool rc = false;
 

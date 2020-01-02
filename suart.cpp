@@ -72,11 +72,15 @@ void SuartTx::stopTxTimer()
 }
 
 
-bool SuartTx::enable(const Synapse txReadySyn)
+bool SuartTx::enable(Synapse txReadySyn)
 {
-    *_ddr |= _pinMask;          // output
-    *_port |= _pinMask;         // idle-high
-    power_timer2_enable();      // switch the Timer on
+    if (!txReadySyn.isValid()) return false;
+
+    *_ddr |= _pinMask;                                  // output
+    *_port |= _pinMask;                                 // idle-high
+
+    power_timer2_enable();                              // power the Timer
+
     _txReadySyn = txReadySyn;
     _txReadySyn.signal();
     
@@ -88,7 +92,7 @@ void SuartTx::disable()
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         stopTxTimer();
-        power_timer2_disable();     // switch the Timer off
+        power_timer2_disable();                         // depower the Timer
 
         if (_ddr && _port && _pinMask) {
             *_ddr &= ~_pinMask;

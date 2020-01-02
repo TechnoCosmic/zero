@@ -8,8 +8,8 @@ Enables the receiver.
 ```
     virtual bool enable(
         const uint16_t bufferSize,
-        const Synapse rxSyn,
-        const Synapse ovfSyn
+        Synapse rxSyn,
+        Synapse ovfSyn
         )
 ```
 ### Parameters
