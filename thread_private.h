@@ -14,6 +14,7 @@ public:
     Thread* _prev;
     Thread* _next;
     uint8_t _ticksRemaining;
+    uint32_t _timeoutOffset;
 
 private:
     SignalField getActiveSignals();

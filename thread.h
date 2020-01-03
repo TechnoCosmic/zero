@@ -25,6 +25,8 @@ namespace zero {
     const ThreadFlags TF_SELF_DESTRUCT = (1L << 1);
     const ThreadFlags TF_FIRE_AND_FORGET = TF_READY | TF_SELF_DESTRUCT;
     
+    const SignalField SIG_TIMEOUT = (1L << 0);
+
     class Thread {
     public:
         // Life cycle
@@ -44,7 +46,7 @@ namespace zero {
         SignalField getCurrentSignals();
         SignalField clearSignals(const SignalField sigs);
         
-        SignalField wait(const SignalField sigs);
+        SignalField wait(const SignalField sigs, const uint32_t timeoutMs = 0ULL);
         void signal(const SignalField sigs);
 
         // Don't touch! That means you! :)

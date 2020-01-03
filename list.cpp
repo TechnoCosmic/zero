@@ -68,13 +68,77 @@ void List<T>::remove(T& item)
     T* n = item._next;
 
     if (p) p->_next = n;
-    if (n) n->_prev = p;
+
+    if (n) {
+        n->_prev = p;
+        n->_timeoutOffset += item._timeoutOffset;
+    }
 
     if (wasHead) _head = n;
     if (wasTail) _tail = p;
 
     item._prev = 0UL;
     item._next = 0UL;
+}
+
+
+template <class T>
+void List<T>::insertBefore(T& item, T& before)
+{
+    const bool newHead = &before == _head;
+
+    item._next = &before;
+    item._prev = before._prev;
+
+    before._prev = &item;
+
+    if (item._prev) {
+        item._prev->_next = &item;
+    }
+
+    if (newHead) {
+        _head = &item;
+    }
+}
+
+
+template <class T>
+void List<T>::insertByOffset(T& item, const uint32_t offsetFromNow)
+{
+    bool added = false;
+    uint32_t curOffsetFromNow = 0ULL;
+    T* cur = _head;
+
+    while (cur) {
+        curOffsetFromNow += cur->_timeoutOffset;
+
+        if (curOffsetFromNow > offsetFromNow) {
+            // insert before cur
+            insertBefore(item, *cur);
+
+            // adjust the deltas
+            item._timeoutOffset = offsetFromNow - (curOffsetFromNow - cur->_timeoutOffset);
+
+            // next delta from us
+            cur->_timeoutOffset -= item._timeoutOffset;
+
+            // mark it as done
+            added = true;
+
+            // escape
+            break;
+        }
+
+        cur = cur->_next;
+    }
+
+    if (!added) {
+        append(item);
+
+        // adjust the deltas
+        item._timeoutOffset = offsetFromNow - curOffsetFromNow;
+    }
+
 }
 
 

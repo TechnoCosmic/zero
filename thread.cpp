@@ -58,12 +58,13 @@ static void INLINE restoreExtendedContext();
 namespace {
 
     // globals
-    List<Thread> _readyLists[2];             // the threads that will run
-    Thread* _currentThread = 0UL;            // the currently executing thread
-    Thread* _idleThread = 0UL;               // to run when there's nothing else to do, and only then
-    volatile uint8_t _activeListNum = 0;     // which of the two ready lists are we using as the active list?
-    volatile uint64_t _ms = 0;               // elapsed milliseconds
-    volatile bool _switchingEnabled = true;  // context switching ISR enabled?
+    List<Thread> _readyLists[2];                // the threads that will run
+    List<Thread> _sleepers;                     // the list of Threads wanting to sleep for a time
+    Thread* _currentThread = 0UL;               // the currently executing thread
+    Thread* _idleThread = 0UL;                  // to run when there's nothing else to do, and only then
+    volatile uint8_t _activeListNum = 0;        // which of the two ready lists are we using as the active list?
+    volatile uint64_t _ms = 0;                  // elapsed milliseconds
+    volatile bool _switchingEnabled = true;     // context switching ISR enabled?
 
     // constants
     const uint8_t SIGNAL_BITS = sizeof(SignalField) * 8;
@@ -126,7 +127,9 @@ namespace {
         TCCR0A = (1 << WGM01);      // CTC
         TCCR0B = (1 << CS02);       // /256 prescalar
         OCR0A = SCALE(63U)-1;       // 1ms
+        OCR0B = SCALE(63U)-1;       // 1ms
         TIMSK0 |= (1 << OCIE0A);    // enable ISR
+        TIMSK0 |= (1 << OCIE0B);    // enable ISR
     }
 
 }
@@ -280,9 +283,12 @@ Thread::Thread(
     _sp = newStackTop;
 
     // Signal defaults
-    _allocatedSignals = 0UL;
+    _allocatedSignals = SIG_TIMEOUT;
     _waitingSignals = 0UL;
     _currentSignals = 0UL;
+
+    // sleeping time
+    _timeoutOffset = 0ULL;
 
     // ready to run?
     if (flags & TF_READY) {
@@ -426,6 +432,11 @@ static void yield()
 
         // take it out of the running
         ACTIVE_LIST.remove(*_currentThread);
+
+        // see if it wanted to sleep
+        if (_currentThread->_timeoutOffset) {
+            _sleepers.insertByOffset(*_currentThread, _currentThread->_timeoutOffset);
+        }
     }
 
     // kernel stack
@@ -441,6 +452,29 @@ static void yield()
 
     // and off we go
     reti();
+}
+
+
+// handles sleeping threads
+ISR(TIMER0_COMPB_vect)
+{
+    if (Thread* curSleeper = _sleepers.getHead()) {
+        if (curSleeper->_timeoutOffset > 0ULL) {
+            curSleeper->_timeoutOffset--;
+        }
+        
+        while (true) {
+            curSleeper = _sleepers.getHead();
+
+            if (curSleeper && curSleeper->_timeoutOffset == 0ULL) {
+                _sleepers.remove(*curSleeper);
+                curSleeper->signal(SIG_TIMEOUT);
+
+            } else {
+                break;
+            }
+        }
+    }
 }
 
 
@@ -583,7 +617,7 @@ SignalField Thread::clearSignals(const SignalField sigs)
 
 // Waits for any of a set of Signals, returning a SignalField
 // representing the Signals that woke the Thread up again
-SignalField Thread::wait(const SignalField sigs)
+SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
 {
     SignalField rc = 0;
 
@@ -591,8 +625,18 @@ SignalField Thread::wait(const SignalField sigs)
         // A Thread can wait only on its own Signals.
         if (_currentThread != this) return 0;
 
+        // clear this to build the final field from scratch
+        _waitingSignals = 0UL;
+
+        // make sure the signal gets used if the Thread wants a timeout set
+        if (timeoutMs) {
+            _timeoutOffset = timeoutMs;
+            _waitingSignals |= SIG_TIMEOUT;
+        }
+
         // set which Signals we are waiting on
-        _waitingSignals = (sigs & _allocatedSignals);
+        _waitingSignals |= sigs;
+        _waitingSignals &= _allocatedSignals;
 
         // if we're not going to end up waiting on anything, bail
         if (!_waitingSignals) return 0;
@@ -632,8 +676,15 @@ void Thread::signal(const SignalField sigs)
         _currentSignals |= (sigs & _allocatedSignals);
 
         if (_currentThread != this && !alreadySignalled && getActiveSignals()) {
-            ACTIVE_LIST.remove(*this);
+            if (_timeoutOffset) {
+                _sleepers.remove(*this);
+
+            } else {
+                ACTIVE_LIST.remove(*this);
+            }
+
             ACTIVE_LIST.prepend(*this);
+            this->_timeoutOffset = 0ULL;
             _currentThread->_ticksRemaining = 1;
         }
     }

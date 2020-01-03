@@ -23,6 +23,8 @@ namespace zero {
         void prepend(T& item);
         void append(T& item);
         void remove(T& item);
+        void insertBefore(T& item, T& before);
+        void insertByOffset(T& item, const uint32_t offsetFromNow);
 
     private:
         T* _head;
