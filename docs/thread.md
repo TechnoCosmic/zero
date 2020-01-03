@@ -168,7 +168,7 @@ Allocates a signal for use.
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```reqdSignalNumber```|If you require a specific signal number for any reason, specify it here (0-15). Omit this parameter to let zero allocate the first available signal number. Optional.|
+|```reqdSignalNumber```|If you require a specific signal number for any reason, specify it here (1-15). Omit this parameter to let zero allocate the first available signal number. Optional.|
 
 ### Notes
 This function returns a ```SignalField``` that represents the allocated signal. Returns ```0``` if all signals are currently allocated.
@@ -176,6 +176,8 @@ This function returns a ```SignalField``` that represents the allocated signal. 
 A ```SignalField``` is just a ```uint16_t``` used as a bitfield for signals.
 
 Free the signal when no longer needed by calling ```freeSignals()```.
+
+```SIG_TIMEOUT``` is a reserved signal. The remaining 15 are available for program use.
 
 ## freeSignals()
 Frees a previously allocated signal(s) for re-use.
@@ -221,7 +223,8 @@ You do NOT need to call ```clearSignals()``` after your Thread wakes from ```wai
 Waits for one or more signals to occur, blocking if necessary.
 ```
     SignalField Thread::wait(
-        const SignalField sigs
+        const SignalField sigs,
+        const uint32_t timeoutMs = 0ULL
         )
 ```
 
@@ -229,6 +232,7 @@ Waits for one or more signals to occur, blocking if necessary.
 |Param|Description|
 |-----|-----------|
 |```sigs```|The signal(s) to wait for. You may specify multiple signals in the one ```SignalField``` by using bitwise-OR.|
+|```timeoutMs```|An optional timeout for the call in milliseconds.|
 
 ### Notes
 Returns a ```SignalField``` specifying which signals woke the Thread up. May be more than one if more than one signal was ```wait()```ed on and multiple occurred, so be sure to check for all signals when the Thread wakes.
@@ -236,6 +240,17 @@ Returns a ```SignalField``` specifying which signals woke the Thread up. May be 
 You do NOT need to call ```clearSignals()``` on any signal that you ```wait()```ed on, as they will be cleared automatically when your Thread wakes up.
 
 Also be aware that a call to ```wait()``` does not necessarily block - if any of the signals you are waiting on are already set prior to calling ```wait()```, your code will continue executing without blocking. This means you can safely call ```wait()``` when needed and you will get the best performance in both pre-set and blocking situations.
+
+#### ```timeoutMs```
+This can be used to optionally provide a timeout for the call. If you only want a thread-friendly blocking delay (without waiting on any other signals), just use...
+```
+    SignalField wokeSigs = me.wait(SIG_TIMEOUT, 500);
+
+    if (wokeSigs & SIG_TIMEOUT) {
+        // ...
+    }
+```
+... replacing ```500``` with your desired delay. ```SIG_TIMEOUT``` is the reserved ```SignalField``` for timeouts.
 
 ## signal()
 Signals a Thread, potentially waking it up.
