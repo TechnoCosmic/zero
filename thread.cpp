@@ -581,9 +581,12 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
 void Thread::freeSignals(const SignalField signals)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        _allocatedSignals &= ~signals;
-        _waitingSignals &= ~signals;
-        _currentSignals &= ~signals;
+        // can't free the reserved signals
+        const SignalField sigsTofree = signals & ~SIG_TIMEOUT;
+
+        _allocatedSignals &= ~sigsTofree;
+        _waitingSignals &= ~sigsTofree;
+        _currentSignals &= ~sigsTofree;
     }
 }
 
@@ -625,17 +628,21 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         // A Thread can wait only on its own Signals.
         if (_currentThread != this) return 0;
 
-        // clear this to build the final field from scratch
-        _waitingSignals = 0UL;
+        // build the final field from scratch
+        _waitingSignals = sigs;
 
         // make sure the signal gets used if the Thread wants a timeout set
         if (timeoutMs) {
             _timeoutOffset = timeoutMs;
             _waitingSignals |= SIG_TIMEOUT;
+
+        } else {
+            // force the flag off, in case it was specified, but with no
+            // timeoutMs value supplied
+            _waitingSignals &= ~SIG_TIMEOUT;
         }
 
-        // set which Signals we are waiting on
-        _waitingSignals |= sigs;
+        // ensure we're only waiting on signals we have allocated
         _waitingSignals &= _allocatedSignals;
 
         // if we're not going to end up waiting on anything, bail

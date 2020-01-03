@@ -173,11 +173,9 @@ Allocates a signal for use.
 ### Notes
 This function returns a ```SignalField``` that represents the allocated signal. Returns ```0``` if all signals are currently allocated.
 
-A ```SignalField``` is just a ```uint16_t``` used as a bitfield for signals.
-
-Free the signal when no longer needed by calling ```freeSignals()```.
-
-```SIG_TIMEOUT``` is a reserved signal. The remaining 15 are available for program use.
+- A ```SignalField``` is just a ```uint16_t``` used as a bitfield for signals.
+- Free the signal when no longer needed by calling ```freeSignals()```.
+- ```SIG_TIMEOUT``` is a reserved signal. The remaining 15 are available for program use.
 
 ## freeSignals()
 Frees a previously allocated signal(s) for re-use.
@@ -232,7 +230,7 @@ Waits for one or more signals to occur, blocking if necessary.
 |Param|Description|
 |-----|-----------|
 |```sigs```|The signal(s) to wait for. You may specify multiple signals in the one ```SignalField``` by using bitwise-OR.|
-|```timeoutMs```|An optional timeout for the call in milliseconds.|
+|```timeoutMs```|An optional timeout for the call, in milliseconds.|
 
 ### Notes
 Returns a ```SignalField``` specifying which signals woke the Thread up. May be more than one if more than one signal was ```wait()```ed on and multiple occurred, so be sure to check for all signals when the Thread wakes.
@@ -251,6 +249,8 @@ This can be used to optionally provide a timeout for the call. If you only want 
     }
 ```
 ... replacing ```500``` with your desired delay. ```SIG_TIMEOUT``` is the reserved ```SignalField``` for timeouts.
+
+If you are waiting on other signals and want a timeout as well, you do not need to specify the ```SIG_TIMEOUT``` flag, but you can if you want to, for clarity.
 
 ## signal()
 Signals a Thread, potentially waking it up.
