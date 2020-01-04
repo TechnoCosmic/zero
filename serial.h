@@ -33,7 +33,4 @@ namespace zero {
 }
 
 
-zero::Transmitter& operator<<(zero::Transmitter& out, const char* s);
-
-
 #endif

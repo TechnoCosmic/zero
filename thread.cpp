@@ -455,9 +455,11 @@ static void yield()
 }
 
 
-// handles sleeping threads
+// handles sleeping threads and millisecond counter
 ISR(TIMER0_COMPB_vect)
 {
+    _ms++;
+
     if (Thread* curSleeper = _sleepers.getHead()) {
         if (curSleeper->_timeoutOffset > 0ULL) {
             curSleeper->_timeoutOffset--;
@@ -483,10 +485,6 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
 {
     // save what we need in order to do basic stuff (non ctx switching)
     saveInitialContext();
-
-    // increase the ms counter
-    // TODO: Change this to inline assembly using only the 'initial' register set
-    _ms++;
 
     // let's figure out switching
     if (_currentThread) {
@@ -632,8 +630,9 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         _waitingSignals = sigs;
 
         // make sure the signal gets used if the Thread wants a timeout set
-        if (timeoutMs) {
-            _timeoutOffset = timeoutMs;
+        _timeoutOffset = timeoutMs;
+
+        if (_timeoutOffset) {
             _waitingSignals |= SIG_TIMEOUT;
 
         } else {
@@ -668,6 +667,9 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         // clear the recd Signals so that we can see repeats of them
         clearSignals(rc);
 
+        // make the the Timeout is diabled
+        _currentThread->_timeoutOffset = 0ULL;
+
         // return the Signals that woke us
         return rc;
     }
@@ -684,14 +686,12 @@ void Thread::signal(const SignalField sigs)
 
         if (_currentThread != this && !alreadySignalled && getActiveSignals()) {
             if (_timeoutOffset) {
+                this->_timeoutOffset = 0ULL;
                 _sleepers.remove(*this);
-
-            } else {
-                ACTIVE_LIST.remove(*this);
             }
 
+            ACTIVE_LIST.remove(*this);
             ACTIVE_LIST.prepend(*this);
-            this->_timeoutOffset = 0ULL;
             _currentThread->_ticksRemaining = 1;
         }
     }
