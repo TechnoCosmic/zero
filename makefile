@@ -71,20 +71,14 @@ FLAGS += -DQUANTUM_TICKS=$(QUANTUM_TICKS)
 
 
 CC = avr-gcc
-OBJ := $(patsubst %.cpp,%.o,$(wildcard *.cpp))
+SRC := $(wildcard *.cpp)
 
 
 .PHONY: push fuses upload clean gettools
 
 
-%.o: %.cpp
-	@echo -n "Compiling $^..."
-	@$(CC) $(FLAGS) -c $^
-	@echo " done"
-
-
-$(OUTPUT).elf: $(OBJ)
-	@echo -n "Linking..."
+$(OUTPUT).elf: $(SRC)
+	@echo -n "Building..."
 	@$(CC) $(FLAGS) $(LDFLAGS) -o $@ $^
 	@echo " done"
 	@avr-size -A -x --mcu=$(MCU) $@
