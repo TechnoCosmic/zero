@@ -59,11 +59,11 @@ namespace {
 
     // globals
     List<Thread> _readyLists[2];                // the threads that will run
-    List<Thread> _sleepers;                     // the list of Threads wanting to sleep for a time
+    List<Thread> _timeoutList;                  // the list of Threads wanting to sleep for a time
     Thread* _currentThread = 0UL;               // the currently executing thread
     Thread* _idleThread = 0UL;                  // to run when there's nothing else to do, and only then
     volatile uint8_t _activeListNum = 0;        // which of the two ready lists are we using as the active list?
-    volatile uint64_t _ms = 0;                  // elapsed milliseconds
+    volatile uint32_t _ms = 0ULL;               // 49 day millisecond counter
     volatile bool _switchingEnabled = true;     // context switching ISR enabled?
 
     // constants
@@ -127,9 +127,7 @@ namespace {
         TCCR0A = (1 << WGM01);      // CTC
         TCCR0B = (1 << CS02);       // /256 prescalar
         OCR0A = SCALE(63U)-1;       // 1ms
-        OCR0B = SCALE(63U)-1;       // 1ms
         TIMSK0 |= (1 << OCIE0A);    // enable ISR
-        TIMSK0 |= (1 << OCIE0B);    // enable ISR
     }
 
 }
@@ -185,8 +183,9 @@ Thread& Thread::getCurrentThread()
 }
 
 
-// Returns the elapse milliseconds since startup
-uint64_t Thread::now()
+// Returns the number of milliseconds since the MCU started.
+// NOTE: Wraps around after approximately 49 continuous days
+uint32_t Thread::now()
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return _ms;
@@ -435,7 +434,7 @@ static void yield()
 
         // see if it wanted to sleep
         if (_currentThread->_timeoutOffset) {
-            _sleepers.insertByOffset(*_currentThread, _currentThread->_timeoutOffset);
+            _timeoutList.insertByOffset(*_currentThread, _currentThread->_timeoutOffset);
         }
     }
 
@@ -455,21 +454,25 @@ static void yield()
 }
 
 
-// handles sleeping threads and millisecond counter
-ISR(TIMER0_COMPB_vect)
+// The Timer tick - the main heartbeat
+ISR(TIMER0_COMPA_vect, ISR_NAKED)
 {
+    // save what we need in order to do basic stuff (non ctx switching)
+    saveInitialContext();
+
     _ms++;
 
-    if (Thread* curSleeper = _sleepers.getHead()) {
+    // check sleepers
+    if (Thread* curSleeper = _timeoutList.getHead()) {
         if (curSleeper->_timeoutOffset > 0ULL) {
             curSleeper->_timeoutOffset--;
         }
         
         while (true) {
-            curSleeper = _sleepers.getHead();
+            curSleeper = _timeoutList.getHead();
 
             if (curSleeper && curSleeper->_timeoutOffset == 0ULL) {
-                _sleepers.remove(*curSleeper);
+                _timeoutList.remove(*curSleeper);
                 curSleeper->signal(SIG_TIMEOUT);
 
             } else {
@@ -477,14 +480,6 @@ ISR(TIMER0_COMPB_vect)
             }
         }
     }
-}
-
-
-// The Timer tick - the main heartbeat
-ISR(TIMER0_COMPA_vect, ISR_NAKED)
-{
-    // save what we need in order to do basic stuff (non ctx switching)
-    saveInitialContext();
 
     // let's figure out switching
     if (_currentThread) {
@@ -687,7 +682,7 @@ void Thread::signal(const SignalField sigs)
         if (_currentThread != this && !alreadySignalled && getActiveSignals()) {
             if (_timeoutOffset) {
                 this->_timeoutOffset = 0ULL;
-                _sleepers.remove(*this);
+                _timeoutList.remove(*this);
             }
 
             ACTIVE_LIST.remove(*this);

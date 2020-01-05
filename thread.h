@@ -31,7 +31,7 @@ namespace zero {
     public:
         // Life cycle
         static Thread& getCurrentThread();
-        static uint64_t now();
+        static uint32_t now();
 
         static void forbid();
         static void permit();

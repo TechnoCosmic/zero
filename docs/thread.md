@@ -152,10 +152,12 @@ Determines if context switching is currently enabled.
 Returns ```true``` if context switching is currently enabled, ```false``` otherwise.
 
 ## now()
-Returns a 64-bit number representing the number of milliseconds elapsed since the zero kernel was initialized.
+Returns a 32-bit number representing the number of milliseconds elapsed since the zero kernel was initialized.
 ```
-    static uint64_t Thread::now();
+    static uint32_t Thread::now()
 ```
+### Notes
+Wraps around (overflows) after approximately 49 days of continuous operation.
 
 ## allocateSignal()
 Allocates a signal for use.
