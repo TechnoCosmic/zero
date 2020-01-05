@@ -8,7 +8,6 @@
 
 public:
     ~Thread();
-    void expire();
     
     uint16_t _sp;
     Thread* _prev;

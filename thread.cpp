@@ -307,14 +307,6 @@ Thread::~Thread()
 }
 
 
-// Moves the Thread into the expired list
-void Thread::expire()
-{
-    ACTIVE_LIST.remove(*this);
-    EXPIRED_LIST.append(*this);
-}
-
-
 // Saves enough of the register set that we can do some basic things inside a naked ISR.
 static void inline saveInitialContext()
 {
@@ -502,7 +494,8 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
 
         // send it to the expired list
         if (_currentThread != _idleThread) {
-            _currentThread->expire();
+            ACTIVE_LIST.remove(*_currentThread);
+            EXPIRED_LIST.append(*_currentThread);
         }
     }
 
