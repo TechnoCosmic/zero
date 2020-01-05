@@ -19,8 +19,8 @@ namespace zero {
 
     namespace memory {
 
-		uint8_t* allocate(const uint16_t bytesRqed, uint16_t* allocatedBytes, const SearchStrategy strategy);
-		void free(const uint8_t* address, uint16_t numBytes);
+      uint8_t* allocate(const uint16_t bytesRqed, uint16_t* allocatedBytes, const SearchStrategy strategy);
+      void free(const uint8_t* address, uint16_t numBytes);
 
     }
 

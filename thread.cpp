@@ -17,6 +17,7 @@
 
 #include "thread.h"
 #include "memory.h"
+#include "debug.h"
 #include "list.h"
 #include "util.h"
 
@@ -695,6 +696,9 @@ int main()
     // idleThreadEntry is the developer-supplied "do nothing" idle thread
     extern int idleThreadEntry();
     
+    // initialize the debug serial TX first so that anything can use it
+    debug::init();
+
     // start Timer0 (does not enable global ints)
     initTimer0();
 
