@@ -12,17 +12,22 @@
 
 namespace zero {
 
-    namespace debug {
+    class debug {
+    public:
 
         // public
-        void print(const char c);
-        void print(const char* s, const bool fromFlash = false);
+        static void print(const char c);
+        static void print(const char* s, const bool fromFlash = false);
 
         // private
-        void init();
-    }
+        static void init();
+    };
 
 }
+
+
+#define dbg(x) debug::print(x, false);
+#define dbg_pgm(x) debug::print(PSTR(x), true)
 
 
 #endif

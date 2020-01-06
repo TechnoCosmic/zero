@@ -52,7 +52,7 @@ namespace {
 
 // Allocates some memory. The amount of memory actually allocated is optionally
 // returned in allocatedBytes, which will always be a multiple of the page size.
-uint8_t* memory::allocate(
+void* memory::allocate(
     const uint16_t numBytesRequested,
     uint16_t* allocatedBytes,
     const SearchStrategy strategy)
@@ -93,7 +93,7 @@ uint8_t* memory::allocate(
 // Frees up a chunk of previously allocated memory. In the interests of performance,
 // there is no checking that the Thread 'owns' the memory being freed, nor is there
 // a check to see if the memory was even allocated in the first place.
-void memory::free(const uint8_t* address, const uint16_t numBytes)
+void memory::free(const void* address, const uint16_t numBytes)
 {
     if (address == 0UL) return;
 

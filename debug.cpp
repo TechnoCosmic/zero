@@ -21,7 +21,7 @@ using namespace zero;
 
 
 namespace {
-    const int DEBUG_MASK = (1 << DEBUG_PIN);
+    const int DEBUG_PIN_MASK = (1 << DEBUG_PIN);
     const int DEBUG_DELAY = (10000UL / (DEBUG_BAUD / 100));
 }
 
@@ -38,6 +38,7 @@ void debug::init()
 }
 
 
+// Transmit a single byte via software bit-banging and no ISRs
 void debug::print(const char d)
 {
 #ifdef DEBUG_ENABLED
@@ -47,22 +48,22 @@ void debug::print(const char d)
     reg &= ~(1 << 0);                           // start bit forced low
     reg |= (1 << 9);                            // stop is high (so that TX remains idle high)
 
-    // stop interrupts because timiing is critical
+    // stop interrupts because timing is critical
     const uint8_t oldSreg = SREG;
     cli();
 
     while (reg) {
         if (reg & 1) {
-            DEBUG_PORT |= DEBUG_MASK;
+            DEBUG_PORT |= DEBUG_PIN_MASK;
 
         } else {
-            DEBUG_PORT &= ~DEBUG_MASK;
+            DEBUG_PORT &= ~DEBUG_PIN_MASK;
         }
 
         // next bit please
         reg >>= 1;
 
-        // 104us = 9600bps
+        // 52us = 19200bps, 104us = 9600bps
         _delay_us(DEBUG_DELAY);
     }
 
@@ -70,10 +71,10 @@ void debug::print(const char d)
     SREG = oldSreg;
 
 #endif
-
 }
 
 
+// Transmits a NULL-terminated string via software TX
 void debug::print(const char* s, const bool fromFlash)
 {
 #ifdef DEBUG_ENABLED
@@ -94,5 +95,4 @@ void debug::print(const char* s, const bool fromFlash)
     }
 
 #endif
-
 }

@@ -9,7 +9,7 @@ The amount of SRAM available to zero's allocator is defined in the ```makefile``
 Allocates SRAM for use by the caller.
 
 ```
-    uint8_t* memory::allocate(
+    void* memory::allocate(
         const uint16_t bytesReqd,
         uint16_t* allocatedBytes,
         SearchStrategy strategy
@@ -56,7 +56,7 @@ int memoryDemo()
 Returns a previously allocated chunk of memory to the heap.
 ```
     void memory::free(
-        const uint8_t* address,
+        const void* address,
         uint16_t numBytes
         )
 ```

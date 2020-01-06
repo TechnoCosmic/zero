@@ -224,7 +224,7 @@ Thread::Thread(
     uint16_t* exitCode)
 {    
     // allocate a stack from the heap
-    _stackBottom = memory::allocate(MAX(stackSize, MIN_STACK_BYTES), &_stackSize, memory::SearchStrategy::TopDown);
+    _stackBottom = (uint8_t*) memory::allocate(MAX(stackSize, MIN_STACK_BYTES), &_stackSize, memory::SearchStrategy::TopDown);
 
     const uint16_t stackTop = (uint16_t) _stackBottom + _stackSize - 1;
     const uint16_t newStackTop = stackTop - (PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT);
@@ -699,14 +699,14 @@ int main()
     // initialize the debug serial TX first so that anything can use it
     debug::init();
 
-    // start Timer0 (does not enable global ints)
-    initTimer0();
+    // bootstrap
+    startup_sequence();
 
     // create the idle Thread
     _idleThread = new Thread(0, idleThreadEntry, TF_NONE);
 
-    // bootstrap
-    startup_sequence();
+    // start Timer0 (does not enable global ints)
+    initTimer0();
 
     // bring the first thread on-line
     _currentThread = selectNextThread();
