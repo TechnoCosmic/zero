@@ -3,7 +3,7 @@
 
 The ```debug``` class provides a simple (non-ISR) software TX for debugging output.
 
-It intended to be a very lightweight method of outputting data to a terminal for **debugging purposes**, even on devices lacking a hardware UART.
+It is intended to be a very lightweight method of outputting data to a terminal for **debugging purposes**, even on devices lacking a hardware UART.
 
 ## debug::print()
 Outputs a character or string to the ```DEBUG_PORT``` on ```DEBUG_PIN``` at ```DEBUG_BAUD``` (see ```makefile```).
