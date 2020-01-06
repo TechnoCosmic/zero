@@ -26,7 +26,7 @@ namespace zero {
 }
 
 
-#define dbg(x) debug::print(x, false)
+#define dbg(x) debug::print(x)
 #define dbg_pgm(x) debug::print(PSTR(x), true)
 
 
