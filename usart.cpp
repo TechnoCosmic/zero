@@ -235,10 +235,15 @@ bool UsartRx::enable(
 
 void UsartRx::disable()
 {
-    UCSRB(_deviceNum) &= ~RX_BITS;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        UCSRB(_deviceNum) &= ~RX_BITS;
 
-    _rxDataReceivedSyn.clear();
-    _rxOverflowSyn.clear();
+        delete _rxBuffer;
+        _rxBuffer = 0UL;
+
+        _rxDataReceivedSyn.clear();
+        _rxOverflowSyn.clear();
+    }
 }
 
 

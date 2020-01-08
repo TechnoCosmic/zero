@@ -9,10 +9,10 @@ It is intended to be a very lightweight method of outputting data to a terminal 
 Outputs a character or string to the ```DEBUG_PORT``` on ```DEBUG_PIN``` at ```DEBUG_BAUD``` (see ```makefile```).
 
 ```
-    static void debug::print(const char c)
+    static void debug::print(char c)
 
     static void debug::print(
-        const char* s,
+        char* s,
         const bool fromFlash = false
         )
 ```

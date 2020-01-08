@@ -13,7 +13,7 @@
 OUTPUT = zero
 
 # flashing settings
-AVRDUDE_PART = m1284p
+AVRDUDE_PART = m328p
 AVRDUDE_CFG = pi
 
 # general kernel settings
@@ -22,8 +22,8 @@ QUANTUM_TICKS = 15
 PAGE_BYTES = 16
 
 # comms
-DEBUG_PORT = A
-DEBUG_PIN = A7
+DEBUG_PORT = D
+DEBUG_PIN = D1
 DEBUG_BAUD = 9600
 
 # some standard MCU settings
@@ -32,22 +32,31 @@ HFUSE = 0xD9
 EFUSE = 0xFF
 
 # All SRAM except 1K
-DYNAMIC_BYTES = "((RAMEND-255)-1024)"
+DYNAMIC_BYTES = "((RAMEND - 255) - 1024)"
 
 # MCU mappings
+ifeq ($(AVRDUDE_PART),m328)
+	# 1KB for allocator
+	MCU = atmega328
+	SPI_CFG = 1
+endif
+
 ifeq ($(AVRDUDE_PART),m328p)
 	# 1KB for allocator
 	MCU = atmega328p
+	SPI_CFG = 1
 endif
 
 ifeq ($(AVRDUDE_PART),m644p)
 	# 3KB for allocator
 	MCU = atmega644p
+	SPI_CFG = 2
 endif
 
 ifeq ($(AVRDUDE_PART),m1284p)
 	# 15KB for allocator
 	MCU = atmega1284p
+	SPI_CFG = 2
 endif
 
 
@@ -73,6 +82,7 @@ FLAGS += -DPAGE_BYTES=$(PAGE_BYTES)
 FLAGS += -DDYNAMIC_BYTES=$(DYNAMIC_BYTES)
 FLAGS += -DPROJ_NAME=\"$(OUTPUT)\"
 FLAGS += -DQUANTUM_TICKS=$(QUANTUM_TICKS)
+FLAGS += -DSPI_CFG=$(SPI_CFG)
 
 ifneq ($(DEBUG_PORT),)
 	FLAGS += -DDEBUG_ENABLED

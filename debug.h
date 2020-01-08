@@ -16,8 +16,8 @@ namespace zero {
     public:
 
         // public
-        static void print(const char c);
-        static void print(const char* s, const bool fromFlash = false);
+        static void print(char c);
+        static void print(char* s, const bool fromFlash = false);
 
         // private
         static void init();
@@ -26,8 +26,8 @@ namespace zero {
 }
 
 
-#define dbg(x) debug::print(x)
-#define dbg_pgm(x) debug::print(PSTR(x), true)
+#define dbg(x) zero::debug::print(x)
+#define dbg_pgm(x) zero::debug::print(PSTR(x), true)
 
 
 #endif

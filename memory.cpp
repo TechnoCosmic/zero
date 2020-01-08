@@ -119,7 +119,7 @@ void* operator new(size_t size)
 
 void operator delete(void* p, size_t size)
 {
-    memory::free((uint8_t*) p, size);
+    memory::free(p, size);
 }
 
 
