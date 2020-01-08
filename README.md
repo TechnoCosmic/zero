@@ -7,7 +7,7 @@ zero is a tiny pre-emptive multitasking kernel for AVR microcontrollers. Specifi
 - Dynamic memory allocation
 - Drivers for on-chip hardware USART peripherals
 - Driver for software interrupt-driven UART
-- Signals
+- Asynchronous SPI memory driver for supported Atmel ICs
 
 ## Documentation
 This document serves as an introduction to and conceptual description of zero. For API documentation, please see the ```docs``` folder.

@@ -26,7 +26,12 @@ namespace zero {
 
     class SpiMemory {
     public:
-        SpiMemory(volatile uint8_t* csDdr, volatile uint8_t* csPort, const uint8_t csPin, Synapse readySyn);
+        SpiMemory(
+            const uint32_t capacityBytes,
+            volatile uint8_t* csDdr,
+            volatile uint8_t* csPort,
+            const uint8_t csPin,
+            Synapse readySyn);
 
         void write(void* src, const uint32_t destAddress, const uint32_t numBytes);
         void read(void* dest, const uint32_t srcAddr, const uint32_t numBytes);

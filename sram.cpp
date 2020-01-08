@@ -48,43 +48,17 @@ namespace {
     }
 
 
-    void sendAddress(const uint32_t addr)
-    {
-        spiXfer(addr >> 16);
-        spiXfer(addr >>  8);
-        spiXfer(addr >>  0);
-    }
-
-
-    void sendSeqModeCommand()
-    {
-        spiXfer(1);
-        spiXfer(64);
-    }
-
-
-    void sendReadCommand(const uint32_t addr)
-    {
-        spiXfer(3);
-        sendAddress(addr);
-    }
-
-
-    void sendWriteCommand(const uint32_t addr)
-    {
-        spiXfer(2);
-        sendAddress(addr);
-    }
-
 }
 
 
 SpiMemory::SpiMemory(
+    const uint32_t capacityBytes,
     volatile uint8_t* csDdr,
     volatile uint8_t* csPort,
     const uint8_t csPin,
     Synapse readySyn)
 {
+    _capacityBytes = capacityBytes;
     _csDdr = csDdr;
     _csPort = csPort;
     _csPinMask = 1 << csPin;
@@ -102,11 +76,6 @@ SpiMemory::SpiMemory(
     // Full-speed MASTER mode SPI, kkplzthx
     SPCR = (1 << SPE) | (1 << MSTR);
     SPSR |= (1 << SPI2X);
-
-    // switch the chip to sequential mode
-    select();
-    sendSeqModeCommand();
-    deselect();
 
     // Signal the Synapse that we're ready to go
     _spiReadySyn = readySyn;
@@ -229,3 +198,33 @@ ISR(SPI_STC_vect)
     }
 
 }
+
+
+void SpiMemory::sendAddress(const uint32_t addr)
+{
+    if (_capacityBytes > 16777216ULL) {
+        spiXfer(addr >> 24);
+    }
+
+    if (_capacityBytes > 65536ULL) {
+        spiXfer(addr >> 16);
+    }
+
+    spiXfer(addr >>  8);
+    spiXfer(addr >>  0);
+}
+
+
+void SpiMemory::sendReadCommand(const uint32_t addr)
+{
+    spiXfer(3);
+    sendAddress(addr);
+}
+
+
+void SpiMemory::sendWriteCommand(const uint32_t addr)
+{
+    spiXfer(2);
+    sendAddress(addr);
+}
+
