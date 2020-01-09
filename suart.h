@@ -24,7 +24,7 @@ namespace zero {
         ~SuartTx();
 
         void setCommsParams(const uint32_t baud, volatile uint8_t* ddr, volatile uint8_t* port, const uint8_t pin);
-        bool enable(const Synapse txCompletSyn) override;
+        bool enable(const Synapse txReadySyn) override;
         void disable() override;
         bool transmit(const void* buffer, const uint16_t sz) override;
 

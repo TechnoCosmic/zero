@@ -65,3 +65,51 @@ Begins an asychronous transfer of data from local MCU SRAM, to the external memo
 
 ### Notes
 Once the transfer has begun, control wil return to your code. Once the transfer has finished, the ```SpiMemory``` object will signal the ```Synapse``` you supplied in the constructor.
+
+## Example
+```
+int spiMemoryDemo
+{
+    SignalField sramReadySig = me.allocateSignal();
+    SpiMemory* extSram = new SpiMemory(
+        131072ULL,                  // I'm using a 23LCV1024 (1Mbit)
+        &DDRB,
+        &PORTB,
+        PINB4,                      // on 1284, SS is PINB4
+        sramReadySig
+    );
+
+    // wait for the SRAM to be ready (immediately after init, thankfully!)
+    me.wait(sramReadySig);
+
+    // send it some data
+    extSram->write("Dogs are the best!\000", 19);
+
+    // do other things while that's happening
+    // ...
+
+    // allocate somewhere to put the incoming data
+    auto buffer = (char*) memory::allocate(19, 0UL, memory::SearchStrategy::BottomUp);
+
+    // wait for it to be done, then read it back
+    me.wait(sramReadySig);
+
+    // we *should* check that it allocated okay, but this is demo code
+    extSram->read(buffer, 19);
+
+    // wait for that to come back in...
+    me.wait(sramReadySig);
+
+    // it's here, do something with it...
+    dbg(buffer);
+
+    // clean up
+    memory:free(buffer, 19);
+    buffer = 0UL;
+
+    delete extSram;
+    extSram = 0UL;
+
+    me.freeSignals(sramReadySig);
+}
+```
