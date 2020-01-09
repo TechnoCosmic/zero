@@ -38,7 +38,7 @@ zero implements a simple page-based memory manager, with overrides for ```new```
 zero's serial I/O model implemented by Transmitters and Receivers.
 
 ### Transmitting Data
-After creating an instance of a ```Transmitter```-derived class, such as ```UsartTx```, you set up the communications parameters (specific to the type of transmitter), and enable it. In the case of the AVR on-board USART devices, the only parameter needed is the baud rate. If you want to use zero's software serial transmitter, you will also need to specify the DDR, PORT and pin for the TX line.
+After creating an instance of a ```Transmitter```-derived class, such as ```UsartTx```, you set up the communications parameters (specific to the type of transmitter), and enable it. In the case of the AVR on-board USART devices, the only parameter needed is the baud rate. If you want to use zero's software serial transmitter, you will also need to specify the ```DDR```, ```PORT``` and pin for the TX line.
 
 To transmit data, call ```transmit()``` on the transmitter. The transmitter will then *asynchronously* transmit the information handed to the ```transmit()``` function. This means that whatever data or buffer you transmit must remain valid and untouched until the transmission is complete, as ***no copy of the supplied information is performed***.
 
@@ -115,3 +115,8 @@ int mySerialThread()
 ```
 ### Notes
 The receiver uses a double-buffered approach. Because of this, the actual size of the active receive buffer is half that specified in the ```enable()``` call. One half of the buffer is filling with incoming data while your code is processing the data contained in the other half. ```getCurrentBuffer()``` returns a pointer to the data received since the last call to ```getCurrentBuffer()```. ***It does not return of copy of that data***. If there is no data available, ```getCurrentBuffer()``` will return a null pointer, and the supplied reference argument, ```numBytes```, will be set to zero (0).
+
+## External SPI Memory
+zero supports the use of external SPI memory ICs, namely those that are protocol-compatible with Atmel/Microchip's 23LCVxxx and 25LCVxxx memory chips. You can also use multiple of these devices on the same SPI bus, each with the same or different capacities.
+
+Using a very straightforward read/write model, you begin an asynchronous transfer between on-board SRAM and external memory, and ```wait()``` on a signal to learn when it's complete. See ```docs/sram.md``` for API reference.
