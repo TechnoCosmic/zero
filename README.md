@@ -25,7 +25,7 @@ zero's threading model is a simple one...
  ## Scheduler
  zero's scheduler maintains two (2) doubly-linked lists of ```Thread``` objects - Active, and Expired, which enables zero to implement context-switching in O(1) time.
 
-If a Thread uses all of it's quantum, it will be moved to the Expired list when it is pre-empted. Once all Threads in the Active list have expired, the Active list will be empty. The scheduler simply swaps lists and starts executing from the head of the old Expired list (which is now considered the Active list) and the process repeats. If at any stage there are no Threads on either the Active or the Expired lists, the Idle thread will be selected.
+If a Thread uses all of it's quantum, it will be moved to the Expired list when it is pre-empted. Once all Threads in the Active list have expired, the Active list will be empty. The scheduler simply swaps lists and starts executing from the head of the old Expired list (which is now considered the Active list) and the process repeats. If at any stage there are no Threads on either the Active or the Expired lists, the idle thread will be selected.
 
 Threads that yield control of the MCU voluntarily by way of calling ```wait()``` are taken out of both lists, and cannot execute again until another Thread or device driver calls ```signal()``` on that Thread (with one or more signals that the Thread is waiting for).
 

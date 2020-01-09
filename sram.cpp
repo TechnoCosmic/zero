@@ -51,12 +51,13 @@ namespace {
 }
 
 
+// ctor
 SpiMemory::SpiMemory(
-    const uint32_t capacityBytes,
-    volatile uint8_t* csDdr,
-    volatile uint8_t* csPort,
-    const uint8_t csPin,
-    Synapse readySyn)
+    const uint32_t capacityBytes,               // how many bytes does the chip hold?
+    volatile uint8_t* csDdr,                    // DDR for the CS for the chip
+    volatile uint8_t* csPort,                   // PORT for CS
+    const uint8_t csPin,                        // pin number for CS
+    Synapse readySyn)                           // Synapse to fire when ready to transfer
 {
     _capacityBytes = capacityBytes;
     _csDdr = csDdr;
@@ -80,6 +81,26 @@ SpiMemory::SpiMemory(
     // Signal the Synapse that we're ready to go
     _spiReadySyn = readySyn;
     _spiReadySyn.signal();
+}
+
+
+// dtor
+SpiMemory::~SpiMemory()
+{
+    // stop interrupting me!
+    setSpiIsrEnable(false);
+
+    // return the CS line to floating
+    *_csPort &= ~_csPinMask;
+    *_csDdr &= ~_csPinMask;
+
+    // switch off the SPI hardware
+    SPCR = 0;
+    SPSR = 0;
+
+    // clear signals and forget
+    _spiReadySyn.clearSignals();
+    _spiReadySyn.clear();
 }
 
 
@@ -126,7 +147,7 @@ void SpiMemory::read(void* dest, const uint32_t srcAddr, const uint32_t numBytes
 }
 
 
-void SpiMemory::write(void* src, const uint32_t destAddress, const uint32_t numBytes)
+void SpiMemory::write(const void* src, const uint32_t destAddress, const uint32_t numBytes)
 {
     // wait until there's no controller using the SPI
     while (_curController);

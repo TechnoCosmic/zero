@@ -7,6 +7,8 @@
 
 
 public:
+    ~SpiMemory();
+
     // fake private
     void select();
     void deselect();
