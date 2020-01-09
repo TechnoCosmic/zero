@@ -70,8 +70,8 @@ Once the transfer has begun, control wil return to your code. Once the transfer 
 ```
 int spiMemoryDemo
 {
-    SignalField sramReadySig = me.allocateSignal();
-    SpiMemory* extSram = new SpiMemory(
+    auto sramReadySig = me.allocateSignal();
+    auto extSram = new SpiMemory(
         131072ULL,                  // I'm using a 23LCV1024 (1Mbit)
         &DDRB,
         &PORTB,
