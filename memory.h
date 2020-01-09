@@ -17,12 +17,16 @@
 
 namespace zero {
 
-    namespace memory {
+	namespace memory {
 
-      void* allocate(const uint16_t bytesRqed, uint16_t* allocatedBytes, const SearchStrategy strategy);
-      void free(const void* address, uint16_t numBytes);
+		void* allocate(
+			const uint16_t bytesRqed,
+			uint16_t* allocatedBytes = 0UL,
+			const SearchStrategy strategy = memory::SearchStrategy::BottomUp);
 
-    }
+		void free(const void* address, uint16_t numBytes);
+
+	}
 
 }
 

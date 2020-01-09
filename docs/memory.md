@@ -11,16 +11,16 @@ Allocates SRAM for use by the caller.
 ```
     void* memory::allocate(
         const uint16_t bytesReqd,
-        uint16_t* allocatedBytes,
-        SearchStrategy strategy
+        uint16_t* allocatedBytes = 0UL,
+        SearchStrategy strategy = SearchStrategy::BottomUp
         )
 ```
 ### Parameters
 |Param|Description|
 |-----|-----------|
 |```bytesReqd```|The number of bytes required.|
-|```allocatedBytes```|A place to store the actual number of bytes assigned by the kernel. May be null.|
-|```strategy```|How should the heap be searched? ```BottomUp``` or ```TopDown```?|
+|```allocatedBytes```|A place to store the actual number of bytes assigned by the kernel. Optional, may be null.|
+|```strategy```|How should the heap be searched? ```BottomUp``` or ```TopDown```? Optional.|
 
 ### Notes
 - Because zero uses a page-based memory allocator, the number of bytes actually allocated by any call to ```allocate()``` will always be a multiple of the page size (default is 16 bytes, adjustable in the ```makefile```, search for ```PAGE_BYTES```). If your program can make use of any 'extra' bytes assigned, you may pass a pointer to a ```uint16_t``` as the second argument to learn how many bytes you can actually use.

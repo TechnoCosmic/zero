@@ -112,7 +112,7 @@ void memory::free(const void* address, const uint16_t numBytes)
 // overloads for new and delete
 void* operator new(size_t size)
 {
-    void* rc = memory::allocate(size, 0UL, memory::SearchStrategy::BottomUp);
+    void* rc = memory::allocate(size);
     return rc;
 }
 

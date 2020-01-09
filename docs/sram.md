@@ -89,7 +89,7 @@ int spiMemoryDemo
     // ...
 
     // allocate somewhere to put the incoming data
-    auto buffer = (char*) memory::allocate(19, 0UL, memory::SearchStrategy::BottomUp);
+    auto buffer = (char*) memory::allocate(19);
 
     // wait for it to be done, then read it back
     me.wait(sramReadySig);
