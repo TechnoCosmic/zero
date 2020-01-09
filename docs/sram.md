@@ -101,7 +101,7 @@ int spiMemoryDemo
     me.wait(sramReadySig);
 
     // it's here, do something with it...
-    dbg(buffer);
+    debug::print(buffer);
 
     // clean up
     memory:free(buffer, 19);
