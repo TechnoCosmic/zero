@@ -13,9 +13,9 @@
 #include <avr/power.h>
 #include <util/atomic.h>
 
-#include "thread.h"
-#include "memory.h"
-#include "doublebuffer.h"
+#include "../thread.h"
+#include "../memory.h"
+#include "../doublebuffer.h"
 #include "suart.h"
 
 

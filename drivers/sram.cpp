@@ -11,7 +11,7 @@
 
 #include "spi.h"
 #include "sram.h"
-#include "thread.h"
+#include "../thread.h"
 
 
 using namespace zero;
@@ -74,11 +74,11 @@ SpiMemory::SpiMemory(
     // make sure ISRs for SPI are off
     setSpiIsrEnable(false);
 
-    // Full-speed MASTER mode SPI, kkplzthx
+    // full-speed MASTER mode SPI, kkplzthx
     SPCR = (1 << SPE) | (1 << MSTR);
     SPSR |= (1 << SPI2X);
 
-    // Signal the Synapse that we're ready to go
+    // signal the Synapse that we're ready to go
     _spiReadySyn = readySyn;
     _spiReadySyn.signal();
 }
@@ -90,13 +90,13 @@ SpiMemory::~SpiMemory()
     // stop interrupting me!
     setSpiIsrEnable(false);
 
-    // return the CS line to floating
-    *_csPort &= ~_csPinMask;
-    *_csDdr &= ~_csPinMask;
-
     // switch off the SPI hardware
     SPCR = 0;
     SPSR = 0;
+
+    // return the CS line to floating
+    *_csPort &= ~_csPinMask;
+    *_csDdr &= ~_csPinMask;
 
     // clear signals and forget
     _spiReadySyn.clearSignals();

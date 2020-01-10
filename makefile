@@ -94,6 +94,7 @@ endif
 
 CC = avr-gcc
 SRC := $(wildcard *.cpp)
+SRC += $(wildcard drivers/*.cpp)
 
 
 .PHONY: push fuses upload clean gettools

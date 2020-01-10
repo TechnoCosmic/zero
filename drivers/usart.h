@@ -17,8 +17,8 @@
 #ifdef UCSR0B
 
 
-#include "thread.h"
-#include "doublebuffer.h"
+#include "../thread.h"
+#include "../doublebuffer.h"
 #include "serial.h"
 
 
