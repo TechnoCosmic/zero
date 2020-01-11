@@ -97,8 +97,8 @@ void memory::free(const void* address, const uint16_t numBytes)
 {
     if (address == 0UL) return;
 
-	uint16_t numPages = getNumPagesForBytes(numBytes);
-	uint16_t startPage = getPageForAddress((uint16_t) address);
+    uint16_t numPages = getNumPagesForBytes(numBytes);
+    uint16_t startPage = getPageForAddress((uint16_t) address);
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
         // simply run from the first page to the last, ensuring the bit map says 'free'
