@@ -28,6 +28,7 @@ namespace zero {
         virtual bool enable(const uint16_t bufferSize, Synapse rxSyn, Synapse ovfSyn) = 0;
         virtual void disable() = 0;
         virtual uint8_t* getCurrentBuffer(uint16_t& numBytes) = 0;
+        virtual void flush() = 0;
     };
 
 }

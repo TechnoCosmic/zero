@@ -23,8 +23,9 @@ namespace zero {
 
         bool write(const uint8_t d);
         uint8_t* getCurrentBuffer(uint16_t& numBytes);
+        void flush();
 
-    #include "doublebuffer_private.h"
+        #include "doublebuffer_private.h"
     };
 
 

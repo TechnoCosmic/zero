@@ -53,7 +53,8 @@ namespace zero {
         bool enable(const uint16_t bufferSize, Synapse dataRecdSyn, Synapse overflowSyn) override;
         void disable() override;
         uint8_t* getCurrentBuffer(uint16_t& numBytes) override;
-
+        void flush() override;
+        
         uint8_t _deviceNum = 0;
         DoubleBuffer* _rxBuffer = 0UL;
         Synapse _rxDataReceivedSyn;
