@@ -93,9 +93,6 @@ void DoubleBuffer::flush()
     const uint8_t oldSreg = SREG;
     cli();
         
-    _buffer = 0UL;
-    _bufferSize = 0UL;
-    _pivot = 0UL;
     _writeOffset = 0UL;
     _usedBytes = 0UL;
         
