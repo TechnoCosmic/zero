@@ -90,9 +90,14 @@ uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes)
 
 void DoubleBuffer::flush()
 {
+    const uint8_t oldSreg = SREG;
+    cli();
+        
     _buffer = 0UL;
     _bufferSize = 0UL;
     _pivot = 0UL;
     _writeOffset = 0UL;
     _usedBytes = 0UL;
+        
+    SREG = oldSreg;
 }

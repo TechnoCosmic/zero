@@ -255,9 +255,7 @@ uint8_t* UsartRx::getCurrentBuffer(uint16_t& numBytes)
 
 void UsartRx::flush()
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        _rxBuffer->flush();       
-    }
+    _rxBuffer->flush();       
 }
 
 
