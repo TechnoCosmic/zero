@@ -17,22 +17,15 @@
 #include "thread.h"
 #include "memory.h"
 #include "debug.h"
-#include "usart.h"
-#include "suart.h"
 #include "util.h"
-#include "sram.h"
+
+#include "drivers/usart.h"
+#include "drivers/suart.h"
+#include "drivers/sram.h"
 
 
 using namespace zero;
 
 
-int idleThreadEntry()
-{
-    while (true);
-}
-
-
-void startup_sequence()
-{
-    ;
-}
+void startup_sequence() {}
+int idleThreadEntry() { while(1); }
