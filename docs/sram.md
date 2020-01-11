@@ -1,5 +1,5 @@
 # SRAM
-```zero/sram.h```
+```zero/drivers/sram.h```
 
 The ```SpiMemory``` class provides high-speed background memory transfers to supported external SPI memory ICs.
 

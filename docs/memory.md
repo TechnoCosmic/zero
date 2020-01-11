@@ -32,7 +32,7 @@ Allocates SRAM for use by the caller.
 |```BottomUp```|The allocator searches for free memory, starting at the bottom of it's heap, and working up towards higher addresses.|
 |```TopDown```|The allocator searches for free memory, starting at the top of it's heap, and working down towards lower addresses.|
 
-```SearchStrategy``` exists to support a very simple page-based allocation concept, rather than the traditional free-list implementation. For this reason, allocations are more costly in terms of time, but the benefit is less complicated code. By implementing the idea of a search strategy, you can compensate for the more costly allocation by having short-lived blocks of memory always allocated at one end, and longer-lived stuff at the other. This will reduce allocation time if used appropriately.
+```SearchStrategy``` exists to support a very simple page-based allocation concept, rather than the traditional free-list implementation. For this reason, allocations are more costly in terms of time, but the benefit is less complicated code. By implementing the idea of a search strategy, you can compensate for the more costly allocation by having short-lived blocks of memory always allocated at one end of the address space, and longer-lived stuff at the other. This will reduce allocation time if used appropriately.
 
 ### Example
 ```

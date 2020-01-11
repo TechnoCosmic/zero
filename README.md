@@ -46,6 +46,9 @@ Transmission is complete when the transmitter signals the ```Synapse``` that it 
 
 #### Example
 ```
+#include "thread.h"
+#include "drivers/usart.h"
+
 int txDemoThread()
 {
     SignalField txReadySig = me.allocateSignal();
@@ -78,6 +81,9 @@ When you enable a ```Receiver```, you hand it three (3) pieces of information...
 
 To receive data, your Thread should ```wait()``` on the signal it allocated for the "data available" ```Synapse```. When this signal is set, you can ask the receiver for the current receive buffer...
 ```
+#include "thread.h"
+#include "drivers/usart.h"
+
 int mySerialThread()
 {
     // allocate signals for rx interaction
@@ -113,6 +119,7 @@ int mySerialThread()
     }
 }
 ```
+
 ### Notes
 The receiver uses a double-buffered approach. Because of this, the actual size of the active receive buffer is half that specified in the ```enable()``` call. One half of the buffer is filling with incoming data while your code is processing the data contained in the other half. ```getCurrentBuffer()``` returns a pointer to the data received since the last call to ```getCurrentBuffer()```. ***It does not return of copy of that data***. If there is no data available, ```getCurrentBuffer()``` will return a null pointer, and the supplied reference argument, ```numBytes```, will be set to zero (0).
 

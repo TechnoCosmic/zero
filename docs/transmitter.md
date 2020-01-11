@@ -1,5 +1,5 @@
 # Transmitter
-```zero/serial.h```
+```zero/drivers/serial.h```
 
 The ```Transmitter``` is an abstract base class for device drivers implementing a serial interface. Also refer to the documentation for ```Receiver```.
 
