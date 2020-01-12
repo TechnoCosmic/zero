@@ -11,6 +11,7 @@
 
 
 #include <stdint.h>
+#include <avr/io.h>
 
 
 #define ROUND_UP(v,r) ((((v)-1)|((r)-1))+1)

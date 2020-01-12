@@ -177,7 +177,7 @@ void UsartTx::byteTxComplete() {
 
 UsartRx::UsartRx(const uint8_t deviceNum)
 {
-    if (deviceNum < 2) {
+    if (deviceNum < NUM_DEVICES) {
         _deviceNum = deviceNum;
         _usartRx[deviceNum] = this;
     }

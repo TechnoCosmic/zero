@@ -54,7 +54,7 @@ namespace zero {
         void disable() override;
         uint8_t* getCurrentBuffer(uint16_t& numBytes) override;
         void flush() override;
-        
+    
         uint8_t _deviceNum = 0;
         DoubleBuffer* _rxBuffer = 0UL;
         Synapse _rxDataReceivedSyn;

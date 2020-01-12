@@ -128,7 +128,9 @@ namespace {
         TCCR0A = (1 << WGM01);      // CTC
         TCCR0B = (1 << CS02);       // /256 prescalar
         OCR0A = SCALE(63U)-1;       // 1ms
+        OCR0B = SCALE(63U)-1;       // 1ms
         TIMSK0 |= (1 << OCIE0A);    // enable ISR
+        TIMSK0 |= (1 << OCIE0B);    // enable ISR
     }
 
 }
@@ -449,12 +451,8 @@ static void yield()
 }
 
 
-// The Timer tick - the main heartbeat
-ISR(TIMER0_COMPA_vect, ISR_NAKED)
+ISR(TIMER0_COMPB_vect)
 {
-    // save what we need in order to do basic stuff (non ctx switching)
-    saveInitialContext();
-
     _ms++;
 
     // check sleepers
@@ -475,6 +473,14 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
             }
         }
     }
+}
+
+
+// The Timer tick - the main heartbeat
+ISR(TIMER0_COMPA_vect, ISR_NAKED)
+{
+    // save what we need in order to do basic stuff (non ctx switching)
+    saveInitialContext();
 
     // let's figure out switching
     if (_currentThread) {
