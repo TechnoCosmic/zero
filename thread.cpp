@@ -448,7 +448,7 @@ ISR(TIMER0_COMPB_vect)
         while (true) {
             curSleeper = _timeoutList.getHead();
 
-            if (curSleeper && curSleeper->_timeoutOffset == 0ULL) {
+            if (curSleeper && !curSleeper->_timeoutOffset) {
                 _timeoutList.remove(*curSleeper);
                 curSleeper->signal(SIG_TIMEOUT);
 
@@ -480,8 +480,7 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
             goto exit;
         }
 
-        // we're switching, so we need to save the rest of the context
-        // saveExtendedContext();
+        // we're switching, so we need to save the SP
         _currentThread->_sp = SP;
 
         // send it to the expired list
