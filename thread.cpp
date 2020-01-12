@@ -50,10 +50,8 @@ int NAKED main();
 // these ones are inline because we specifically don't want
 // any stack/register shenanigans because that's what these
 // functions are here to do, but in our own controlled way
-static void INLINE saveInitialContext();
-static void INLINE saveExtendedContext();
-static void INLINE restoreInitialContext();
-static void INLINE restoreExtendedContext();
+static void INLINE saveContext();
+static void INLINE restoreContext();
 
 
 namespace {
@@ -282,8 +280,8 @@ Thread::Thread(
     // onto it (zeroed out). So we need to set a new SP that reflects
     // the 32 registers + SREG/RAMPZ + PC pushed onto it.
     // The reason is because the way that a thread is launched ultimately
-    // ends with a call to restoreInitialContext(), which pops all these
-    // null values off the stack and into the registers proper
+    // ends with a call to restoreContext(), which pops all these null
+    // values off the stack and into the registers proper
     _sp = newStackTop;
 
     // Signal defaults
@@ -312,8 +310,8 @@ Thread::~Thread()
 }
 
 
-// Saves enough of the register set that we can do some basic things inside a naked ISR.
-static void inline saveInitialContext()
+// Saves the register set
+static void inline saveContext()
 {
     asm volatile ("push r0");
 
@@ -336,12 +334,6 @@ static void inline saveInitialContext()
     asm volatile ("push r27");
     asm volatile ("push r28");
     asm volatile ("push r29");
-}
-
-
-// Save the remainder of the register set that wasn't saved by saveInitialContext()
-static void inline saveExtendedContext()
-{
     asm volatile ("push r30");
     asm volatile ("push r31");
     asm volatile ("push r2");
@@ -363,9 +355,27 @@ static void inline saveExtendedContext()
 }
 
 
-// Restores the basic minimal register set
-static void inline restoreInitialContext()
+// Restores the register set
+static void inline restoreContext()
 {
+    asm volatile ("pop r17");
+    asm volatile ("pop r16");
+    asm volatile ("pop r15");
+    asm volatile ("pop r14");
+    asm volatile ("pop r13");
+    asm volatile ("pop r12");
+    asm volatile ("pop r11");
+    asm volatile ("pop r10");
+    asm volatile ("pop r9");
+    asm volatile ("pop r8");
+    asm volatile ("pop r7");
+    asm volatile ("pop r6");
+    asm volatile ("pop r5");
+    asm volatile ("pop r4");
+    asm volatile ("pop r3");
+    asm volatile ("pop r2");
+    asm volatile ("pop r31");
+    asm volatile ("pop r30");
     asm volatile ("pop r29");
     asm volatile ("pop r28");
     asm volatile ("pop r27");
@@ -390,30 +400,6 @@ static void inline restoreInitialContext()
 }
 
 
-// Restores the extended register set
-static void inline restoreExtendedContext()
-{
-    asm volatile ("pop r17");
-    asm volatile ("pop r16");
-    asm volatile ("pop r15");
-    asm volatile ("pop r14");
-    asm volatile ("pop r13");
-    asm volatile ("pop r12");
-    asm volatile ("pop r11");
-    asm volatile ("pop r10");
-    asm volatile ("pop r9");
-    asm volatile ("pop r8");
-    asm volatile ("pop r7");
-    asm volatile ("pop r6");
-    asm volatile ("pop r5");
-    asm volatile ("pop r4");
-    asm volatile ("pop r3");
-    asm volatile ("pop r2");
-    asm volatile ("pop r31");
-    asm volatile ("pop r30");
-}
-
-
 // Voluntarily hands control of the MCU over to another thread. Called by wait().
 static void yield()
 {
@@ -422,8 +408,7 @@ static void yield()
 
     if (_currentThread) {
         // save current context for when we unblock
-        saveInitialContext();
-        saveExtendedContext();
+        saveContext();
         _currentThread->_sp = SP;
 
         // take it out of the running
@@ -443,8 +428,7 @@ static void yield()
 
     // restore it's context
     SP = _currentThread->_sp;
-    restoreExtendedContext();
-    restoreInitialContext();
+    restoreContext();
 
     // and off we go
     reti();
@@ -480,7 +464,7 @@ ISR(TIMER0_COMPB_vect)
 ISR(TIMER0_COMPA_vect, ISR_NAKED)
 {
     // save what we need in order to do basic stuff (non ctx switching)
-    saveInitialContext();
+    saveContext();
 
     // let's figure out switching
     if (_currentThread) {
@@ -491,14 +475,13 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
 
         // if the Thread has more time to run, or switching is disabled, bail
         if (_currentThread->_ticksRemaining || !_switchingEnabled) {
-            restoreInitialContext();
-
-            // return, enabling interrupts
-            reti();
+            // strategic goto to save undue additional
+            // expansion of inline restoreContext();
+            goto exit;
         }
 
         // we're switching, so we need to save the rest of the context
-        saveExtendedContext();
+        // saveExtendedContext();
         _currentThread->_sp = SP;
 
         // send it to the expired list
@@ -522,9 +505,10 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
     // bring the new thread online
     SP = _currentThread->_sp;
 
+exit:
+
     // and of course we need to do a full restore because context switch
-    restoreExtendedContext();
-    restoreInitialContext();
+    restoreContext();
 
     // return, enabling interrupts
     reti();
@@ -726,8 +710,7 @@ int main()
     SP = _currentThread->_sp;
 
     // restore the (brand new) context for the chosen thread
-    restoreExtendedContext();
-    restoreInitialContext();
+    restoreContext();
 
     // this enables global interrupts as well as returning
     reti();
