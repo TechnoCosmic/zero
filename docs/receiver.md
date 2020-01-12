@@ -39,6 +39,9 @@ Returns a buffer that contains the currently unprocessed received data.
 |-----|-----------|
 |```numBytes```|A reference to a ```uint16_t``` used to tell the caller how many bytes are in the returned buffer.|
 
+## flush()
+Discards the current input buffer.
+
 ## Example
 ```
 #include "thread.h"
