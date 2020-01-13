@@ -2,7 +2,7 @@
 zero is a tiny pre-emptive multitasking kernel for AVR microcontrollers. Specifically, zero is built with the ATmega328, ATmega644, and ATmega1284 in mind, though many others will work with the appropriate tweaks. Initial expeirmentation with ATtiny85 support has begun.
 
 ## Features
-- Small footprint - core multitasking kernel and memory manager, but without communications drivers is smaller than 4KB, and uses 128 bytes of SRAM on ATmega328P (even less SRAM used on ATtiny85)
+- Small footprint - core multitasking kernel and memory manager, but without communications drivers is smaller than 4KB, and uses 128 bytes of SRAM on ATmega328 (even less SRAM used on ATtiny85)
 - O(1) scheduler
 - Dynamic memory allocation
 - Drivers for on-chip hardware USART peripherals
