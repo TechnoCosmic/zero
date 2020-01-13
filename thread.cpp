@@ -50,8 +50,8 @@ int NAKED main();
 // these ones are inline because we specifically don't want
 // any stack/register shenanigans because that's what these
 // functions are here to do, but in our own controlled way
-static void INLINE saveContext();
-static void INLINE restoreContext();
+static void INLINE saveRegisters();
+static void INLINE restoreRegisters();
 
 
 namespace {
@@ -118,6 +118,10 @@ namespace {
     void initTimer0()
     {
         #define SCALE(x) (( F_CPU * (x)) / 16'000'000ULL)
+
+        #ifndef TIMSK0
+        #define TIMSK0 TIMSK
+        #endif
 
         // 8-bit Timer/Counter0
         power_timer0_enable();      // switch it on
@@ -292,6 +296,9 @@ Thread::Thread(
     // sleeping time
     _timeoutOffset = 0ULL;
 
+    // give it it's initial quantum
+    _ticksRemaining = QUANTUM_TICKS;
+
     // ready to run?
     if (flags & TF_READY) {
         // add the Thread into the ready list
@@ -311,7 +318,7 @@ Thread::~Thread()
 
 
 // Saves the register set
-static void inline saveContext()
+static void inline saveRegisters()
 {
     asm volatile ("push r0");
 
@@ -356,7 +363,7 @@ static void inline saveContext()
 
 
 // Restores the register set
-static void inline restoreContext()
+static void inline restoreRegisters()
 {
     asm volatile ("pop r17");
     asm volatile ("pop r16");
@@ -408,7 +415,7 @@ static void yield()
 
     if (_currentThread) {
         // save current context for when we unblock
-        saveContext();
+        saveRegisters();
         _currentThread->_sp = SP;
 
         // take it out of the running
@@ -428,7 +435,7 @@ static void yield()
 
     // restore it's context
     SP = _currentThread->_sp;
-    restoreContext();
+    restoreRegisters();
 
     // and off we go
     reti();
@@ -463,8 +470,8 @@ ISR(TIMER0_COMPB_vect)
 // The Timer tick - the main heartbeat
 ISR(TIMER0_COMPA_vect, ISR_NAKED)
 {
-    // save what we need in order to do basic stuff (non ctx switching)
-    saveContext();
+    // save registers
+    saveRegisters();
 
     // let's figure out switching
     if (_currentThread) {
@@ -507,7 +514,7 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
 exit:
 
     // and of course we need to do a full restore because context switch
-    restoreContext();
+    restoreRegisters();
 
     // return, enabling interrupts
     reti();
@@ -699,18 +706,6 @@ int main()
     // start Timer0 (does not enable global ints)
     initTimer0();
 
-    // bring the first thread on-line
-    _currentThread = selectNextThread();
-
-    // top up its quantum
-    _currentThread->_ticksRemaining = QUANTUM_TICKS;
-
-    // set the current stack pointer to first thread's
-    SP = _currentThread->_sp;
-
-    // restore the (brand new) context for the chosen thread
-    restoreContext();
-
-    // this enables global interrupts as well as returning
-    reti();
+    // Go!
+    yield();
 }

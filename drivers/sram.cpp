@@ -6,6 +6,9 @@
 //
 
 
+#ifdef ZERO_DRIVERS_SPIMEM
+
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
@@ -249,3 +252,5 @@ void SpiMemory::sendWriteCommand(const uint32_t addr)
     sendAddress(addr);
 }
 
+
+#endif

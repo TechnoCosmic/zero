@@ -6,6 +6,9 @@
 //
 
 
+#ifdef ZERO_DRIVERS_SUART
+
+
 #include <stdint.h>
 
 #include <avr/io.h>
@@ -188,3 +191,6 @@ ISR(TIMER2_COMPA_vect)
         _suartTx->_txReg >>= 1;
     }
 }
+
+
+#endif

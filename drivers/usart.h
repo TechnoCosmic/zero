@@ -6,6 +6,9 @@
 //
 
 
+#ifdef ZERO_DRIVERS_USART
+
+
 #ifndef TCRI_ZERO_USART_H
 #define TCRI_ZERO_USART_H
 
@@ -62,6 +65,9 @@ namespace zero {
     };
 
 }
+
+
+#endif
 
 
 #endif

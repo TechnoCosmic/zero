@@ -6,6 +6,9 @@
 //
 
 
+#ifdef ZERO_DRIVERS_SPIMEM
+
+
 #ifndef TCRI_ZERO_SRAM_H
 #define TCRI_ZERO_SRAM_H
 
@@ -41,6 +44,9 @@ namespace zero {
 
 
 }
+
+
+#endif
 
 
 #endif

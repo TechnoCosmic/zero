@@ -6,6 +6,9 @@
 //
 
 
+#ifdef ZERO_DRIVERS_USART
+
+
 #include <stdint.h>
 
 #include <avr/io.h>
@@ -412,6 +415,9 @@ ISR(USART3_RX_vect)
         _usartRx[3]->_rxOverflowSyn.signal();
     }
 }
+
+
+#endif
 
 
 #endif

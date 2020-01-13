@@ -6,6 +6,9 @@
 //
 
 
+#ifdef ZERO_DRIVERS_SUART
+
+
 #ifndef TCRI_ZERO_SUART_H
 #define TCRI_ZERO_SUART_H
 
@@ -32,6 +35,9 @@ namespace zero {
     };
 
 }
+
+
+#endif
 
 
 #endif
