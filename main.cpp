@@ -28,9 +28,9 @@ void startup_sequence()
 // this reason, you cannot block in the idle thread. You must be busy
 // the whole time. This function has been exposed to the developer so
 // that she can change the idle thread to perhaps flash an LED, or
-// send some debugging text via debug::print() - something to let you
-// know when the idle thread is running. Most of the time, you can use
-// the supplied idle thread code and leave it that.
+// send some debugging text via debug::print() - something to indicate
+// when the idle thread is running. Most of the time, you can use the
+// supplied idle thread code and leave it that.
 int idleThreadEntry()
 {
     while (true);
