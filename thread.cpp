@@ -38,14 +38,10 @@ using namespace zero;
 #define EXPIRED_LIST        _readyLists[EXPIRED_LIST_NUM]
 
 
-// 'naked' means 'no save/restore of regs' but it will still
-// put the caller's PC on the stack because it's not inline,
-// and that is crucial for yield() to work correctly
-static void NAKED yield();
-
 // main() is naked because we don't care for the setup upon
 // entry, and we use reti at the end of main() to start everything
 int NAKED main();
+static void yield();
 
 // these ones are inline because we specifically don't want
 // any stack/register shenanigans because that's what these
@@ -55,7 +51,6 @@ static void INLINE restoreRegisters();
 
 
 namespace {
-
     // globals
     List<Thread> _readyLists[2];                // the threads that will run
     List<Thread> _timeoutList;                  // the list of Threads wanting to sleep for a time
@@ -545,7 +540,8 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
             }
     
         } else {
-            for (auto i = 0; i < SIGNAL_BITS; i++) {
+            // start checking after the reserved signals, for speed
+            for (auto i = RESERVED_SIGS; i < SIGNAL_BITS; i++) {
                 if (tryAllocateSignal(i)) {
                     return 1L << i;
                 }

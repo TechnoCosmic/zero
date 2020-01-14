@@ -25,8 +25,11 @@ namespace zero {
     const ThreadFlags TF_SELF_DESTRUCT = (1L << 1);
     const ThreadFlags TF_FIRE_AND_FORGET = TF_READY | TF_SELF_DESTRUCT;
     
+    // reserved signals
+    const auto RESERVED_SIGS = 1;
     const SignalField SIG_TIMEOUT = (1L << 0);
 
+    // Thread class
     class Thread {
     public:
         // Life cycle
