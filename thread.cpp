@@ -427,9 +427,6 @@ static void yield()
         }
     }
 
-    // kernel stack
-    SP = RAMEND;
-
     // select the next thread to run
     _currentThread = selectNextThread();
 
@@ -442,42 +439,43 @@ static void yield()
 }
 
 
-ISR(TIMER0_COMPB_vect)
+ISR(TIMER0_COMPA_vect)
 {
-    _ms++;
-
     // check sleepers
     if (Thread* curSleeper = _timeoutList.getHead()) {
-        if (curSleeper->_timeoutOffset > 0ULL) {
+        if (curSleeper->_timeoutOffset) {
             curSleeper->_timeoutOffset--;
         }
         
-        while (true) {
+        while (curSleeper && !curSleeper->_timeoutOffset) {
+            _timeoutList.remove(*curSleeper);
+            curSleeper->signal(SIG_TIMEOUT);
+
             curSleeper = _timeoutList.getHead();
-
-            if (curSleeper && !curSleeper->_timeoutOffset) {
-                _timeoutList.remove(*curSleeper);
-                curSleeper->signal(SIG_TIMEOUT);
-
-            } else {
-                break;
-            }
         }
     }
 }
 
 
 // The Timer tick - the main heartbeat
-ISR(TIMER0_COMPA_vect, ISR_NAKED)
+ISR(TIMER0_COMPB_vect, ISR_NAKED)
 {
     // save registers
     saveRegisters();
+
+    _ms++;
 
     // let's figure out switching
     if (_currentThread) {
         // only subtract time if there's time to subtract
         if (_currentThread->_ticksRemaining) {
             _currentThread->_ticksRemaining--;
+        }
+
+        // faux priorities - if we're not the head of the active list, then
+        // a switch is required so that we run the current head instead
+        if (_currentThread != ACTIVE_LIST.getHead()) {
+            _currentThread->_ticksRemaining = 0UL;
         }
 
         // if the Thread has more time to run, or switching is disabled, bail
@@ -496,9 +494,6 @@ ISR(TIMER0_COMPA_vect, ISR_NAKED)
             EXPIRED_LIST.append(*_currentThread);
         }
     }
-
-    // kernel stack
-    SP = RAMEND;
 
     // choose the next thread
     _currentThread = selectNextThread();
@@ -677,9 +672,9 @@ void Thread::signal(const SignalField sigs)
                 _timeoutList.remove(*this);
             }
 
+            // put it at the top of the active list, ready to go
             ACTIVE_LIST.remove(*this);
             ACTIVE_LIST.prepend(*this);
-            _currentThread->_ticksRemaining = 1;
         }
     }
 }
