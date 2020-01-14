@@ -98,6 +98,7 @@ FLAGS += -DPROJ_NAME=\"$(OUTPUT)\"
 FLAGS += -DQUANTUM_TICKS=$(QUANTUM_TICKS)
 FLAGS += -DSPI_CFG=$(SPI_CFG)
 
+# drivers
 ifeq ($(ZERO_DRIVERS_SPIMEM),1)
 	FLAGS += -DZERO_DRIVERS_SPIMEM
 endif
@@ -118,6 +119,8 @@ ifneq ($(DEBUG_PORT),)
 	FLAGS += -DDEBUG_BAUD=$(DEBUG_BAUD)
 endif
 
+
+# build targets
 CC = avr-gcc
 SRC := $(wildcard *.cpp)
 SRC += $(wildcard drivers/*.cpp)
