@@ -280,11 +280,7 @@ Thread::Thread(
     SRAM[newStackTop + getOffsetForParameter(6) - 1] = (((uint16_t) exitCode) >> 8) & 0xFF;
 
     // The prepared stack has all the registers + SREG + RAMPZ 'pushed'
-    // onto it (zeroed out). So we need to set a new SP that reflects
-    // the 32 registers + SREG/RAMPZ + PC pushed onto it.
-    // The reason is because the way that a thread is launched ultimately
-    // ends with a call to restoreContext(), which pops all these null
-    // values off the stack and into the registers proper
+    // onto it (zeroed out). This new stack top represents that.
     _sp = newStackTop;
 
     // Signal defaults
@@ -294,9 +290,6 @@ Thread::Thread(
 
     // sleeping time
     _timeoutOffset = 0ULL;
-
-    // give it it's initial quantum
-    _ticksRemaining = QUANTUM_TICKS;
 
     // ready to run?
     if (flags & TF_READY) {
@@ -449,6 +442,7 @@ static void yield()
 }
 
 
+// Millisecond timer and timeout controller
 ISR(TIMER0_COMPA_vect)
 {
     _ms++;
@@ -469,9 +463,10 @@ ISR(TIMER0_COMPA_vect)
 }
 
 
+// Pre-emptive context switch
 ISR(TIMER0_COMPB_vect, ISR_NAKED)
 {
-    // save registers
+    // save registers enough to do basic checking
     saveInitialRegisters();
 
     // let's figure out switching
@@ -614,7 +609,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
     SignalField rc = 0;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {    
-        // A Thread can wait only on its own Signals.
+        // A Thread can wait only on it's own Signals.
         if (_currentThread != this) return 0;
 
         // build the final field from scratch
@@ -658,7 +653,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         // clear the recd Signals so that we can see repeats of them
         clearSignals(rc);
 
-        // make the the Timeout is diabled
+        // make the the timeout is disabled
         _currentThread->_timeoutOffset = 0ULL;
 
         // return the Signals that woke us
@@ -675,7 +670,12 @@ void Thread::signal(const SignalField sigs)
 
         _currentSignals |= (sigs & _allocatedSignals);
 
+        // - if we're not signalling ourselves and,
+        // - this thread isn't already in the active list, and,
+        // - it now has signals that would wake it up,
+        // then move it to the active list ready to run
         if (_currentThread != this && !alreadySignalled && getActiveSignals()) {
+            // if it's on the timeout list, take it off
             if (_timeoutOffset) {
                 this->_timeoutOffset = 0ULL;
                 _timeoutList.remove(*this);
