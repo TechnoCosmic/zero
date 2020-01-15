@@ -6,10 +6,8 @@
 //
 
 
+#include <stdint.h>
 #include <string.h>
-#include <avr/io.h>
-#include <avr/eeprom.h>
-#include <avr/pgmspace.h>
 
 #include "memory.h"
 #include "thread.h"
@@ -57,7 +55,7 @@ void* memory::allocate(
     uint16_t* allocatedBytes,
     const SearchStrategy strategy)
 {
-    uint8_t* rc = 0UL;
+    void* rc = 0UL;
 
     if (allocatedBytes) {
         *allocatedBytes = 0UL;
@@ -65,9 +63,8 @@ void* memory::allocate(
 
     // critical section - one Thread allocating at a time, thank you
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-
         const uint16_t numPages = getNumPagesForBytes(numBytesRequested);
-        int16_t startPage = _sram.findFreePages(numPages, strategy);
+        const int16_t startPage = _sram.findFreePages(numPages, strategy);
 
         // if there was a chunk the size we wanted
         if (startPage >= 0) {
@@ -82,7 +79,7 @@ void* memory::allocate(
             }
 
             // outta here
-            rc = (uint8_t*) getAddressForPage(startPage);
+            rc = (void*) getAddressForPage(startPage);
         }
     }
 
@@ -97,8 +94,8 @@ void memory::free(const void* address, const uint16_t numBytes)
 {
     if (address == 0UL) return;
 
-    uint16_t numPages = getNumPagesForBytes(numBytes);
-    uint16_t startPage = getPageForAddress((uint16_t) address);
+    const uint16_t numPages = getNumPagesForBytes(numBytes);
+    const uint16_t startPage = getPageForAddress((uint16_t) address);
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
         // simply run from the first page to the last, ensuring the bit map says 'free'
@@ -112,8 +109,7 @@ void memory::free(const void* address, const uint16_t numBytes)
 // overloads for new and delete
 void* operator new(size_t size)
 {
-    void* rc = memory::allocate(size);
-    return rc;
+    return memory::allocate(size);
 }
 
 
@@ -123,6 +119,7 @@ void operator delete(void* p, size_t size)
 }
 
 
+// GCC housekeeping stuff
 __extension__ typedef int __guard __attribute__((mode (__DI__)));
 
 
