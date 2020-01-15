@@ -165,10 +165,16 @@ ISR(TIMER2_COMPA_vect)
     if (!_suartTx->_txReg) {
         uint8_t nextByte;
 
-        if (!_suartTx->getNextTxByte(nextByte)) {
-            // switch off transmission
-            _suartTx->stopTxTimer();
+        // Switch off transmission, even if there are more bytes.
+        // We will restart the timer if we need to transmit more
+        // data. This improves transmission accuracy when the MCU
+        // is experiencing a lot of task switching and ISRs are
+        // being switched on and off and so on. This helps prevent
+        // bit errors under load. Sadly, it doesn't complete
+        // eliminate them.
+        _suartTx->stopTxTimer();
 
+        if (!_suartTx->getNextTxByte(nextByte)) {
             // signal and tidy up
             _suartTx->_txBuffer = 0UL;
             _suartTx->_txReadySyn.signal();
@@ -176,6 +182,7 @@ ISR(TIMER2_COMPA_vect)
         } else {
             // load next byte
             _suartTx->_txReg = _suartTx->formatForSerial(nextByte);
+            _suartTx->startTxTimer();
         }
     }
 

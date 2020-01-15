@@ -112,7 +112,7 @@ namespace {
     // zero's heartbeat
     void initTimer0()
     {
-        #define SCALE(x) (( F_CPU * (x)) / 16'000'000ULL)
+        #define SCALE(x) (( F_CPU * (x)) / 16'000'000.0)
 
         #ifndef TIMSK0
         #define TIMSK0 TIMSK
@@ -124,9 +124,11 @@ namespace {
         TCNT0 = 0;                  // reset counter to 0
         TCCR0A = (1 << WGM01);      // CTC
         TCCR0B = (1 << CS02);       // /256 prescalar
-        OCR0A = SCALE(63U)-1;       // 1ms
-        OCR0B = SCALE(63U)-1;       // 1ms
+
+        OCR0A = SCALE(62.5)-1;      // 1ms
         TIMSK0 |= (1 << OCIE0A);    // enable ISR
+
+        OCR0B = SCALE(62.5)-1;      // 1ms
         TIMSK0 |= (1 << OCIE0B);    // enable ISR
     }
 
@@ -436,6 +438,8 @@ static void yield()
 
 ISR(TIMER0_COMPA_vect)
 {
+    _ms++;
+
     // check sleepers
     if (Thread* curSleeper = _timeoutList.getHead()) {
         if (curSleeper->_timeoutOffset) {
@@ -452,13 +456,10 @@ ISR(TIMER0_COMPA_vect)
 }
 
 
-// The Timer tick - the main heartbeat
 ISR(TIMER0_COMPB_vect, ISR_NAKED)
 {
     // save registers
     saveRegisters();
-
-    _ms++;
 
     // let's figure out switching
     if (_currentThread) {
@@ -469,7 +470,7 @@ ISR(TIMER0_COMPB_vect, ISR_NAKED)
 
         // faux priorities - if we're not the head of the active list, then
         // a switch is required so that we run the current head instead
-        if (_currentThread != ACTIVE_LIST.getHead()) {
+        if (_switchingEnabled && _currentThread != ACTIVE_LIST.getHead()) {
             _currentThread->_ticksRemaining = 0UL;
         }
 
