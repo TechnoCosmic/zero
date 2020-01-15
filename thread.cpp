@@ -46,8 +46,10 @@ static void yield();
 // these ones are inline because we specifically don't want
 // any stack/register shenanigans because that's what these
 // functions are here to do, but in our own controlled way
-static void INLINE saveRegisters();
-static void INLINE restoreRegisters();
+static void INLINE saveInitialRegisters();
+static void INLINE saveExtendedRegisters();
+static void INLINE restoreExtendedRegisters();
+static void INLINE restoreInitialRegisters();
 
 
 namespace {
@@ -315,7 +317,7 @@ Thread::~Thread()
 
 
 // Saves the register set
-static void inline saveRegisters()
+static void inline saveInitialRegisters()
 {
     asm volatile ("push r0");
 
@@ -340,6 +342,11 @@ static void inline saveRegisters()
     asm volatile ("push r29");
     asm volatile ("push r30");
     asm volatile ("push r31");
+}
+
+// Saves the register set
+static void inline saveExtendedRegisters()
+{
     asm volatile ("push r2");
     asm volatile ("push r3");
     asm volatile ("push r4");
@@ -360,7 +367,7 @@ static void inline saveRegisters()
 
 
 // Restores the register set
-static void inline restoreRegisters()
+static void inline restoreExtendedRegisters()
 {
     asm volatile ("pop r17");
     asm volatile ("pop r16");
@@ -378,6 +385,12 @@ static void inline restoreRegisters()
     asm volatile ("pop r4");
     asm volatile ("pop r3");
     asm volatile ("pop r2");
+}
+
+
+// Restores the register set
+static void inline restoreInitialRegisters()
+{
     asm volatile ("pop r31");
     asm volatile ("pop r30");
     asm volatile ("pop r29");
@@ -412,7 +425,8 @@ static void yield()
 
     if (_currentThread) {
         // save current context for when we unblock
-        saveRegisters();
+        saveInitialRegisters();
+        saveExtendedRegisters();
         _currentThread->_sp = SP;
 
         // take it out of the running
@@ -429,9 +443,8 @@ static void yield()
 
     // restore it's context
     SP = _currentThread->_sp;
-    restoreRegisters();
-
-    // and off we go
+    restoreExtendedRegisters();
+    restoreInitialRegisters();
     reti();
 }
 
@@ -459,7 +472,7 @@ ISR(TIMER0_COMPA_vect)
 ISR(TIMER0_COMPB_vect, ISR_NAKED)
 {
     // save registers
-    saveRegisters();
+    saveInitialRegisters();
 
     // let's figure out switching
     if (_currentThread) {
@@ -477,11 +490,12 @@ ISR(TIMER0_COMPB_vect, ISR_NAKED)
         // if the Thread has more time to run, or switching is disabled, bail
         if (_currentThread->_ticksRemaining || !_switchingEnabled) {
             // strategic goto to save undue additional
-            // expansion of inline restoreContext();
+            // expansion of inline restoreRegisters()
             goto exit;
         }
 
-        // we're switching, so we need to save the SP
+        // we're switching, so we need to save the rest
+        saveExtendedRegisters();
         _currentThread->_sp = SP;
 
         // send it to the expired list
@@ -501,13 +515,11 @@ ISR(TIMER0_COMPB_vect, ISR_NAKED)
 
     // bring the new thread online
     SP = _currentThread->_sp;
+    restoreExtendedRegisters();
 
 exit:
 
-    // and of course we need to do a full restore because context switch
-    restoreRegisters();
-
-    // return, enabling interrupts
+    restoreInitialRegisters();
     reti();
 }
 
