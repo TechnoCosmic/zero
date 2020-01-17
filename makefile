@@ -123,7 +123,9 @@ endif
 # build targets
 CC = avr-gcc
 SRC := $(wildcard *.cpp)
+SRC += $(wildcard core/*.cpp)
 SRC += $(wildcard drivers/*.cpp)
+SRC += $(wildcard helpers/*.cpp)
 
 
 .PHONY: push fuses upload clean gettools

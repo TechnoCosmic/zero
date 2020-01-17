@@ -11,7 +11,7 @@
 
 
 #include <stdint.h>
-#include "../thread.h"
+#include "../core/thread.h"
 
 
 namespace zero {

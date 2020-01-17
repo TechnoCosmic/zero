@@ -18,8 +18,8 @@
 #include "thread.h"
 #include "memory.h"
 #include "debug.h"
-#include "list.h"
-#include "util.h"
+#include "../helpers/list.h"
+#include "../helpers/util.h"
 
 
 using namespace zero;
@@ -693,10 +693,10 @@ void Thread::signal(const SignalField sigs)
 int main()
 {
     // startup_sequence is the developer-supplied main() replacement
-    void startup_sequence();
+    extern void startup_sequence();
 
     // idleThreadEntry is the developer-supplied "do nothing" idle thread
-    int idleThreadEntry();
+    extern int idleThreadEntry();
     
     // initialize the debug serial TX first so that anything can use it
     debug::init();

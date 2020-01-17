@@ -20,8 +20,8 @@
 #ifdef UCSR0B
 
 
-#include "../thread.h"
-#include "../doublebuffer.h"
+#include "../core/thread.h"
+#include "../helpers/doublebuffer.h"
 #include "serial.h"
 
 

@@ -16,7 +16,7 @@
 
 #include "spi.h"
 #include "sram.h"
-#include "../thread.h"
+#include "../core/thread.h"
 
 
 using namespace zero;

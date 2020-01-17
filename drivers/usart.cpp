@@ -20,9 +20,9 @@
 
 #include <util/atomic.h>
 
-#include "../thread.h"
-#include "../memory.h"
-#include "../doublebuffer.h"
+#include "../core/thread.h"
+#include "../core/memory.h"
+#include "../helpers/doublebuffer.h"
 #include "usart.h"
 
 
