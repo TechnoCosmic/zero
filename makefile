@@ -74,7 +74,7 @@ endif
 
 PC_COUNT = 2
 
-
+# general flags
 FLAGS += -g
 FLAGS += -Os
 FLAGS += --std=c++17
