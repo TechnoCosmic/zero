@@ -12,6 +12,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#include <util/atomic.h>
+
 #include "spi.h"
 #include "sram.h"
 #include "../thread.h"
@@ -22,7 +24,7 @@ using namespace zero;
 
 namespace {
 
-    auto _spiXferMode = SpiXferMode::Exchange;
+    auto _spiXferMode = SpiXferMode::Tx;
     uint8_t _dummyTxByte = 0;
     volatile uint8_t* _txCursor = 0UL;
     volatile uint8_t* _rxCursor = 0UL;
@@ -121,65 +123,69 @@ void SpiMemory::deselect()
 
 void SpiMemory::read(void* dest, const uint32_t srcAddr, const uint32_t numBytes)
 {
-    // wait until there's no controller using the SPI
-    while (_curController);
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        // wait until there's no controller using the SPI
+        while (_curController);
 
-    // tell the ISR who we are
-    _curController = this;
+        // tell the ISR who we are
+        _curController = this;
 
-    // make sure no-one falls through while we're working
-    _spiReadySyn.clearSignals();
+        // make sure no-one falls through while we're working
+        _spiReadySyn.clearSignals();
 
-    // tell the SPI chip that we want to play a game
-    select();
+        // tell the SPI chip that we want to play a game
+        select();
 
-    // tell it that we want to read data starting at SPI-SRAM address of srcAddress
-    sendReadCommand(srcAddr);
+        // tell it that we want to read data starting at SPI-SRAM address of srcAddress
+        sendReadCommand(srcAddr);
 
-    // set up the housekeeping
-    _txCursor = 0UL;
-    _rxCursor = (uint8_t*) dest;
-    _xferBytes = numBytes;
-    _spiXferMode = SpiXferMode::Rx;
+        // set up the housekeeping
+        _txCursor = 0UL;                        // we are reading data, so no TX buffer
+        _rxCursor = (uint8_t*) dest;
+        _xferBytes = numBytes;
+        _spiXferMode = SpiXferMode::Rx;        
 
-    // enable the ISR
-    setSpiIsrEnable(true);
+        // enable the ISR
+        setSpiIsrEnable(true);
 
-    // push the first one out to kickstart it
-    SPDR = _dummyTxByte;
+        // push the first one out to kickstart it
+        SPDR = _dummyTxByte;
+    }
 }
 
 
 void SpiMemory::write(const void* src, const uint32_t destAddress, const uint32_t numBytes)
 {
-    // wait until there's no controller using the SPI
-    while (_curController);
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        // wait until there's no controller using the SPI
+        while (_curController);
 
-    // tell the ISR who we are
-    _curController = this;
+        // tell the ISR who we are
+        _curController = this;
 
-    // make sure no-one falls through while we're working
-    _spiReadySyn.clearSignals();
+        // make sure no-one falls through while we're working
+        _spiReadySyn.clearSignals();
 
-    // tell the SPI chip that we want to play a game
-    select();
+        // tell the SPI chip that we want to play a game
+        select();
 
-    // tell it that we want to read data starting at SPI-SRAM address of srcAddress
-    sendWriteCommand(destAddress);
+        // tell it that we want to read data starting at SPI-SRAM address of srcAddress
+        sendWriteCommand(destAddress);
 
-    // set up the housekeeping
-    _rxCursor = 0UL;
-    _txCursor = (uint8_t*) src;
-    _xferBytes = numBytes;
-    _spiXferMode = SpiXferMode::Tx;
+        // set up the housekeeping
+        _rxCursor = 0UL;
+        _txCursor = (uint8_t*) src;
+        _xferBytes = numBytes;
+        _spiXferMode = SpiXferMode::Tx;
 
-    // enable the ISR
-    setSpiIsrEnable(true);
+        // enable the ISR
+        setSpiIsrEnable(true);
 
-    // push the first one out to kickstart it
-    const uint8_t firstByte = *_txCursor++;
+        // push the first one out to kickstart it
+        const uint8_t firstByte = *_txCursor++;
 
-    SPDR = firstByte;
+        SPDR = firstByte;
+    }
 }
 
 
@@ -189,7 +195,7 @@ ISR(SPI_STC_vect)
     bool storeRxByte = false;
 
     // capture the input
-    if (_spiXferMode == SpiXferMode::Rx || _spiXferMode == SpiXferMode::Exchange) {
+    if (_spiXferMode == SpiXferMode::Rx) {
         rxByte = SPDR;
         storeRxByte = true;
     }
@@ -200,7 +206,7 @@ ISR(SPI_STC_vect)
     if (_xferBytes) {
 
         // send the correct output
-        if (_spiXferMode == SpiXferMode::Exchange || _spiXferMode == SpiXferMode::Tx) {
+        if (_spiXferMode == SpiXferMode::Tx) {
             SPDR = *_txCursor++;
 
         } else {

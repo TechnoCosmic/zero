@@ -23,7 +23,6 @@ namespace zero {
     enum class SpiXferMode {
         Tx,
         Rx,
-        Exchange,
     };
 
 
