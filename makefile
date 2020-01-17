@@ -42,13 +42,6 @@ EFUSE = 0xFF
 DYNAMIC_BYTES = "((RAMEND - 255) - 1024)"
 
 # MCU mappings
-ifeq ($(AVRDUDE_PART),t85)
-	# 128bytes for allocator
-	MCU = attiny85
-	SPI_CFG = 0
-	DYNAMIC_BYTES = "128"
-endif
-
 ifeq ($(AVRDUDE_PART),m328)
 	# 1KB for allocator
 	MCU = atmega328
