@@ -221,7 +221,7 @@ bool UsartRx::enable(
     delete _rxBuffer;
     _rxBuffer = 0UL;
 
-    if (_rxBuffer = new DoubleBuffer(bufferSize)) {
+    if ((_rxBuffer = new DoubleBuffer(bufferSize))) {
         rc = true;
 
         _rxDataReceivedSyn = rxSyn;

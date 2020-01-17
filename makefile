@@ -82,7 +82,6 @@ endif
 PC_COUNT = 2
 
 
-# probably don't adjust these so much :)
 FLAGS += -g
 FLAGS += -Os
 FLAGS += --std=c++17
@@ -100,6 +99,11 @@ FLAGS += -DDYNAMIC_BYTES=$(DYNAMIC_BYTES)
 FLAGS += -DPROJ_NAME=\"$(OUTPUT)\"
 FLAGS += -DQUANTUM_TICKS=$(QUANTUM_TICKS)
 FLAGS += -DSPI_CFG=$(SPI_CFG)
+
+# warnings control
+FLAGS += -Wall
+FLAGS += -Wno-unknown-pragmas
+FLAGS += -Wno-return-type
 
 # drivers
 ifeq ($(ZERO_DRIVERS_SPIMEM),1)
@@ -134,7 +138,7 @@ SRC += $(wildcard drivers/*.cpp)
 
 $(OUTPUT).elf: $(SRC)
 	@echo -n "Building..."
-	@$(CC) $(FLAGS) $(LDFLAGS) -o $@ $^
+	@$(CC) $(FLAGS) -o $@ $^
 	@echo " done"
 	@avr-size -A -x --mcu=$(MCU) $@
 	@avr-size -C -x --mcu=$(MCU) $@

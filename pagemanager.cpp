@@ -123,7 +123,7 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
     const uint16_t numPagesRequired,
     const memory::SearchStrategy strat)
 {
-    int16_t startPage = -1;
+    uint16_t startPage = (uint16_t) -1;
     uint16_t pageCount = 0;
 
     for (uint16_t curStep = 0; curStep < PAGE_COUNT; curStep++) {
@@ -131,7 +131,7 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
 
         // if the search strategy no longer
         // has any more pages in its scope
-        if (curPage == -1) {
+        if (curPage == (uint16_t) -1) {
             break;
         }
 
@@ -141,7 +141,7 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
             pageCount++;
 
             // if we didn't have a startPage, we do now
-            if (startPage == -1) {
+            if (startPage == (uint16_t) -1) {
                 startPage = curPage;
             }
 

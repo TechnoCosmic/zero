@@ -99,7 +99,7 @@ void memory::free(const void* address, const uint16_t numBytes)
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
         // simply run from the first page to the last, ensuring the bit map says 'free'
-        for (int curPage = startPage; curPage < startPage + numPages; curPage++) {
+        for (uint16_t curPage = startPage; curPage < startPage + numPages; curPage++) {
             _sram.markAsFree(curPage);
         }
     }
