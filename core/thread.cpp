@@ -693,10 +693,10 @@ void Thread::signal(const SignalField sigs)
 int main()
 {
     // startup_sequence is the developer-supplied main() replacement
-    extern void startup_sequence();
+    void startup_sequence();
 
     // idleThreadEntry is the developer-supplied "do nothing" idle thread
-    extern int idleThreadEntry();
+    int idleThreadEntry();
     
     // initialize the debug serial TX first so that anything can use it
     debug::init();
