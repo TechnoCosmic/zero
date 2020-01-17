@@ -88,6 +88,9 @@ FLAGS += -Os
 FLAGS += --std=c++17
 FLAGS += -mmcu=$(MCU)
 FLAGS += -fshort-enums
+FLAGS += -ffunction-sections
+FLAGS += -fdata-sections
+FLAGS += -Wl,-gc-sections
 
 # #define pass-throughs
 FLAGS += -DF_CPU=$(F_CPU)ULL
