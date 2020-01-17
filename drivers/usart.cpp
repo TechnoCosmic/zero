@@ -55,6 +55,10 @@ volatile uint8_t* _UDR_base = &UDR0;
 #define UDR(p) *((volatile uint8_t*) (_UDR_base+(p*8)))
 
 
+#define TX_BITS ((1 << TXEN0) | (1 << TXCIE0))
+#define RX_BITS ((1 << RXEN0) | (1 << RXCIE0))
+
+
 #if defined(UCSR3B)
     const int NUM_DEVICES = 4;
 
@@ -105,9 +109,6 @@ void UsartTx::setCommsParams(const uint32_t baud)
     UBRRH(_deviceNum) = (uint8_t) pre >> 8;
     UBRRL(_deviceNum) = (uint8_t) pre;
 }
-
-
-#define TX_BITS ((1 << TXEN0) | (1 << TXCIE0))
 
 
 bool UsartTx::enable(Synapse txReadySyn)
@@ -205,9 +206,6 @@ void UsartRx::setCommsParams(const uint32_t baud)
     UBRRH(_deviceNum) = (uint8_t) pre >> 8;
     UBRRL(_deviceNum) = (uint8_t) pre;
 }
-
-
-#define RX_BITS ((1 << RXEN0) | (1 << RXCIE0))
 
 
 bool UsartRx::enable(
