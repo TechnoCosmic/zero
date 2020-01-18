@@ -55,8 +55,8 @@ void debug::print(char d)
     while (reg) {
         if (reg & 1) {
             DEBUG_PORT |= DEBUG_PIN_MASK;
-
-        } else {
+        }
+        else {
             DEBUG_PORT &= ~DEBUG_PIN_MASK;
         }
 

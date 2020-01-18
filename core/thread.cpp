@@ -546,8 +546,8 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
             if (tryAllocateSignal(reqdSignalNumber)) {
                 return 1L << reqdSignalNumber;
             }
-    
-        } else {
+        }
+        else {
             // start checking after the reserved signals, for speed
             for (auto i = RESERVED_SIGS; i < SIGNAL_BITS; i++) {
                 if (tryAllocateSignal(i)) {
@@ -620,8 +620,8 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
 
         if (_timeoutOffset) {
             _waitingSignals |= SIG_TIMEOUT;
-
-        } else {
+        }
+        else {
             // force the flag off, in case it was specified, but with no
             // timeoutMs value supplied
             _waitingSignals &= ~SIG_TIMEOUT;

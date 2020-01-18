@@ -178,8 +178,8 @@ ISR(TIMER2_COMPA_vect)
             // signal and tidy up
             _suartTx->_txBuffer = 0UL;
             _suartTx->_txReadySyn.signal();
-
-        } else {
+        }
+        else {
             // load next byte
             _suartTx->_txReg = _suartTx->formatForSerial(nextByte);
             _suartTx->startTxTimer();
@@ -190,8 +190,8 @@ ISR(TIMER2_COMPA_vect)
         // we're mid-byte, keep pumping out the bits
         if (_suartTx->_txReg & 1) {
             *_suartTx->_port |= _suartTx->_pinMask;
-
-        } else {
+        }
+        else {
             *_suartTx->_port &= ~_suartTx->_pinMask;
         }
 

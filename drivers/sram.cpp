@@ -41,8 +41,8 @@ namespace {
     {
         if (en) {
             SPCR |= (1 << SPIE);
-
-        } else {
+        }
+        else {
             SPCR &= ~(1 << SPIE);
         }
     }
@@ -211,8 +211,8 @@ ISR(SPI_STC_vect)
         // send the correct output
         if (_spiXferMode == SpiXferMode::Tx) {
             SPDR = *_txCursor++;
-
-        } else {
+        }
+        else {
             SPDR = _dummyTxByte;
         }
     }
@@ -235,11 +235,11 @@ ISR(SPI_STC_vect)
 
 void SpiMemory::sendAddress(const uint32_t addr)
 {
-    if (_capacityBytes > 16777216ULL) {
+    if (_capacityBytes > (1ULL << 24)) {
         spiXfer(addr >> 24);
     }
 
-    if (_capacityBytes > 65536ULL) {
+    if (_capacityBytes > (1ULL << 16)) {
         spiXfer(addr >> 16);
     }
 

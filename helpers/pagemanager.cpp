@@ -150,8 +150,8 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
                 startPage = MIN(startPage, curPage);
                 break;
             }
-
-        } else {
+        }
+        else {
             // wasn't free? start the search from scratch
             startPage = -1;
             pageCount = 0;

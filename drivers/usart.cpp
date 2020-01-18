@@ -274,8 +274,8 @@ ISR(USART_UDRE_vect)
 
     if (!_usartTx[0]->getNextTxByte(nextByte)) {
         UCSR0B &= ~(1 << UDRIE0);
-
-    } else {
+    }
+    else {
         UDR0 = nextByte;
     }
 }
@@ -288,8 +288,8 @@ ISR(USART_RX_vect)
     // received data
     if (_usartRx[0]->_rxBuffer->write(newByte)) {
         _usartRx[0]->_rxDataReceivedSyn.signal();
-
-    } else {
+    }
+    else {
         _usartRx[0]->_rxOverflowSyn.signal();
     }
 }
@@ -312,8 +312,8 @@ ISR(USART1_UDRE_vect)
 
     if (!_usartTx[1]->getNextTxByte(nextByte)) {
         UCSR1B &= ~(1 << UDRIE1);
-
-    } else {
+    }
+    else {
         UDR1 = nextByte;
     }
 }
@@ -326,8 +326,8 @@ ISR(USART1_RX_vect)
     // received data
     if (_usartRx[1]->_rxBuffer->write(newByte)) {
         _usartRx[1]->_rxDataReceivedSyn.signal();
-
-    } else {
+    }
+    else {
         _usartRx[1]->_rxOverflowSyn.signal();
     }
 }
@@ -353,8 +353,8 @@ ISR(USART2_UDRE_vect)
 
     if (!_usartTx[2]->getNextTxByte(nextByte)) {
         UCSR2B &= ~(1 << UDRIE2);
-
-    } else {
+    }
+    else {
         UDR2 = nextByte;
     }
 }
@@ -367,8 +367,8 @@ ISR(USART2_RX_vect)
     // received data
     if (_usartRx[2]->_rxBuffer->write(newByte)) {
         _usartRx[2]->_rxDataReceivedSyn.signal();
-
-    } else {
+    }
+    else {
         _usartRx[2]->_rxOverflowSyn.signal();
     }
 }
@@ -394,8 +394,8 @@ ISR(USART3_UDRE_vect)
 
     if (!_usartTx[3]->getNextTxByte(nextByte)) {
         UCSR3B &= ~(1 << UDRIE3);
-
-    } else {
+    }
+    else {
         UDR3 = nextByte;
     }
 }
@@ -408,8 +408,8 @@ ISR(USART3_RX_vect)
     // received data
     if (_usartRx[3]->_rxBuffer->write(newByte)) {
         _usartRx[3]->_rxDataReceivedSyn.signal();
-
-    } else {
+    }
+    else {
         _usartRx[3]->_rxOverflowSyn.signal();
     }
 }
