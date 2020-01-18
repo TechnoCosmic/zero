@@ -124,6 +124,6 @@ int mySerialThread()
 The receiver uses a double-buffered approach. Because of this, the actual size of the active receive buffer is half that specified in the ```enable()``` call. One half of the buffer is filling with incoming data while your code is processing the data contained in the other half. ```getCurrentBuffer()``` returns a pointer to the data received since the last call to ```getCurrentBuffer()```. ***It does not return of copy of that data***. If there is no data available, ```getCurrentBuffer()``` will return a null pointer, and the supplied reference argument, ```numBytes```, will be set to zero (0).
 
 ## External SPI Memory
-zero supports the use of external SPI memory ICs, namely those that are protocol-compatible with Atmel/Microchip's 23LCVxxx and 25LCVxxx memory chips. You can also use multiple of these devices on the same SPI bus, each with the same or different capacities.
+zero supports the use of external SPI memory ICs, namely those that are protocol-compatible with Atmel/Microchip's 23LCxxxx and 25LCxxxx memory chips. You can also use multiple of these devices on the same SPI bus, each with the same or different capacities.
 
 Using a very straightforward read/write model, you begin an asynchronous transfer between on-board SRAM and external memory, and ```wait()``` on a signal to learn when it's complete. See ```docs/sram.md``` for API reference.
