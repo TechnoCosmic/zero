@@ -24,6 +24,9 @@ using namespace zero;
 
 namespace {
 
+    const uint8_t CMD_READ = 3;
+    const uint8_t CMD_WRITE = 2;
+
     auto _spiXferMode = SpiXferMode::Tx;
     uint8_t _dummyTxByte = 0;
     volatile uint8_t* _txCursor = 0UL;
@@ -123,27 +126,27 @@ void SpiMemory::deselect()
 
 void SpiMemory::read(void* dest, const uint32_t srcAddr, const uint32_t numBytes)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        // wait until there's no controller using the SPI
-        while (_curController);
+    // wait until there's no controller using the SPI
+    while (_curController);
 
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         // tell the ISR who we are
         _curController = this;
 
         // make sure no-one falls through while we're working
         _spiReadySyn.clearSignals();
 
-        // tell the SPI chip that we want to play a game
-        select();
-
-        // tell it that we want to read data starting at SPI-SRAM address of srcAddress
-        sendReadCommand(srcAddr);
-
         // set up the housekeeping
         _txCursor = 0UL;                        // we are reading data, so no TX buffer
         _rxCursor = (uint8_t*) dest;
         _xferBytes = numBytes;
         _spiXferMode = SpiXferMode::Rx;        
+
+        // tell the SPI chip that we want to play a game
+        select();
+
+        // tell it that we want to read data starting at SPI-SRAM address of srcAddress
+        sendReadCommand(srcAddr);
 
         // enable the ISR
         setSpiIsrEnable(true);
@@ -156,27 +159,27 @@ void SpiMemory::read(void* dest, const uint32_t srcAddr, const uint32_t numBytes
 
 void SpiMemory::write(const void* src, const uint32_t destAddress, const uint32_t numBytes)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        // wait until there's no controller using the SPI
-        while (_curController);
+    // wait until there's no controller using the SPI
+    while (_curController);
 
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         // tell the ISR who we are
         _curController = this;
 
         // make sure no-one falls through while we're working
         _spiReadySyn.clearSignals();
 
-        // tell the SPI chip that we want to play a game
-        select();
-
-        // tell it that we want to read data starting at SPI-SRAM address of srcAddress
-        sendWriteCommand(destAddress);
-
         // set up the housekeeping
         _rxCursor = 0UL;
         _txCursor = (uint8_t*) src;
         _xferBytes = numBytes;
         _spiXferMode = SpiXferMode::Tx;
+
+        // tell the SPI chip that we want to play a game
+        select();
+
+        // tell it that we want to read data starting at SPI-SRAM address of srcAddress
+        sendWriteCommand(destAddress);
 
         // enable the ISR
         setSpiIsrEnable(true);
@@ -247,14 +250,14 @@ void SpiMemory::sendAddress(const uint32_t addr)
 
 void SpiMemory::sendReadCommand(const uint32_t addr)
 {
-    spiXfer(3);
+    spiXfer(CMD_READ);
     sendAddress(addr);
 }
 
 
 void SpiMemory::sendWriteCommand(const uint32_t addr)
 {
-    spiXfer(2);
+    spiXfer(CMD_WRITE);
     sendAddress(addr);
 }
 
