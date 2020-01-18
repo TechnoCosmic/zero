@@ -48,8 +48,8 @@ Once a transmission is finished, the transmitter will signal the ```txReadySyn``
 
 ## Example
 ```
-#include "thread.h"
-#include "suart.h"
+#include "core/thread.h"
+#include "drivers/suart.h"
 
 int txDemo()
 {

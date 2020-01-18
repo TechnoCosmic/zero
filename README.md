@@ -46,7 +46,7 @@ Transmission is complete when the transmitter signals the ```Synapse``` that it 
 
 #### Example
 ```
-#include "thread.h"
+#include "core/thread.h"
 #include "drivers/usart.h"
 
 int txDemoThread()
@@ -81,7 +81,7 @@ When you enable a ```Receiver```, you hand it three (3) pieces of information...
 
 To receive data, your Thread should ```wait()``` on the signal it allocated for the "data available" ```Synapse```. When this signal is set, you can ask the receiver for the current receive buffer...
 ```
-#include "thread.h"
+#include "core/thread.h"
 #include "drivers/usart.h"
 
 int mySerialThread()

@@ -1,5 +1,5 @@
 # Synapse
-```zero/thread.h```
+```zero/core/thread.h```
 
 ```Synapse``` is simple class that pairs a ```Thread*``` with a ```SignalField```, in order to make it easy to pass around an object representing the endpoint, or target, of a signal.
 

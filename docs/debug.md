@@ -1,5 +1,5 @@
 # Debug
-```zero/debug.h```
+```zero/core/debug.h```
 
 The ```debug``` class provides a simple (non-ISR) software TX for debugging output.
 

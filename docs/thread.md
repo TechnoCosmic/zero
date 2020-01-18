@@ -1,5 +1,5 @@
 # Thread
-```zero/thread.h```
+```zero/core/thread.h```
 
 The ```Thread``` class handles the management of individual Threads within the zero kernel.
 
@@ -41,7 +41,7 @@ Constructs a new Thread object, and begins executing it.
 
 ### Example
 ```
-#include "thread.h"
+#include "core/thread.h"
 
 int myAsyncThread()
 {

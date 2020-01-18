@@ -1,5 +1,5 @@
 # Memory
-```zero/memory.h```
+```zero/core/memory.h```
 
 The ```memory``` namespace handles the management of dynamically allocated SRAM.
 
@@ -36,7 +36,7 @@ Allocates SRAM for use by the caller.
 
 ### Example
 ```
-#include "memory.h"
+#include "core/memory.h"
 
 int memoryDemo()
 {

@@ -68,6 +68,9 @@ Once the transfer has begun, control wil return to your code. Once the transfer 
 
 ## Example
 ```
+#include "core/thread.h"
+#include "drivers/sram.h"
+
 int spiMemoryDemo
 {
     auto sramReadySig = me.allocateSignal();
