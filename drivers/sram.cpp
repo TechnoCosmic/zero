@@ -55,7 +55,6 @@ namespace {
         return SPDR;
     }
 
-
 }
 
 
