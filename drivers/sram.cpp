@@ -37,6 +37,7 @@ namespace {
     SpiMemory* _curController = 0UL;
 
 
+    // switches the SPI transfer-complete ISR on and off
     void setSpiIsrEnable(const bool en)
     {
         if (en) {
@@ -48,6 +49,7 @@ namespace {
     }
 
 
+    // busy-poll exchanges one byte over SPI
     uint8_t spiXfer(const uint8_t c)
     {
         SPDR = c;
@@ -111,19 +113,25 @@ SpiMemory::~SpiMemory()
 }
 
 
+// select the chip, by pulling CS low
 void SpiMemory::select()
 {
     *_csPort &= ~_csPinMask;
 }
 
 
+// deselect the chip, by pulling CS high
 void SpiMemory::deselect()
 {
     *_csPort |= _csPinMask;
 }
 
 
-void SpiMemory::read(void* dest, const uint32_t srcAddr, const uint32_t numBytes)
+// Reads data from the external memory into the local SRAM
+void SpiMemory::read(
+    void* dest,                                 // destination address, in local SRAM
+    const uint32_t srcAddr,                     // source address for the data, in external SPI memory
+    const uint32_t numBytes)                    // number of bytes to read
 {
     // wait until there's no controller using the SPI
     while (_curController);
@@ -141,7 +149,7 @@ void SpiMemory::read(void* dest, const uint32_t srcAddr, const uint32_t numBytes
         _xferBytes = numBytes;
         _spiXferMode = SpiXferMode::Rx;        
 
-        // tell the SPI chip that we want to play a game
+        // tell the SPI chip that we want to talk to it
         select();
 
         // tell it that we want to read data starting at SPI-SRAM address of srcAddress
@@ -156,7 +164,11 @@ void SpiMemory::read(void* dest, const uint32_t srcAddr, const uint32_t numBytes
 }
 
 
-void SpiMemory::write(const void* src, const uint32_t destAddress, const uint32_t numBytes)
+// Writes data from the local SRAM to the external memory chip
+void SpiMemory::write(
+    const void* src,                            // source data address, in local SRAM
+    const uint32_t destAddress,                 // destination address, in external SPI memory
+    const uint32_t numBytes)                    // number of the bytes to write
 {
     // wait until there's no controller using the SPI
     while (_curController);
@@ -174,23 +186,22 @@ void SpiMemory::write(const void* src, const uint32_t destAddress, const uint32_
         _xferBytes = numBytes;
         _spiXferMode = SpiXferMode::Tx;
 
-        // tell the SPI chip that we want to play a game
+        // tell the SPI chip that we want to talk to it
         select();
 
-        // tell it that we want to read data starting at SPI-SRAM address of srcAddress
+        // tell it that we want to write data to SPI-SRAM address of srcAddress
         sendWriteCommand(destAddress);
 
         // enable the ISR
         setSpiIsrEnable(true);
 
         // push the first one out to kickstart it
-        const uint8_t firstByte = *_txCursor++;
-
-        SPDR = firstByte;
+        SPDR = *_txCursor++;
     }
 }
 
 
+// This ISR is run whenever the SPI hardware finishes exchanging a single byte
 ISR(SPI_STC_vect)
 {
     uint8_t rxByte = 0;
@@ -205,8 +216,8 @@ ISR(SPI_STC_vect)
     // another 1 bytes the dust
     _xferBytes--;
 
+    // if there's more data to transfer...
     if (_xferBytes) {
-
         // send the correct output
         if (_spiXferMode == SpiXferMode::Tx) {
             SPDR = *_txCursor++;
@@ -216,22 +227,22 @@ ISR(SPI_STC_vect)
         }
     }
 
+    // remember the received byte
     if (storeRxByte) {
         *_rxCursor++ = rxByte;
     }
 
+    // disable things if we're done
     if (!_xferBytes) {
         setSpiIsrEnable(false);
-
-        // transfer complete
         _spiReadySyn.signal();
         _curController->deselect();
         _curController = 0UL;
     }
-
 }
 
 
+// sends an address to the memory chip
 void SpiMemory::sendAddress(const uint32_t addr)
 {
     if (_capacityBytes > (1ULL << 24)) {
@@ -247,6 +258,7 @@ void SpiMemory::sendAddress(const uint32_t addr)
 }
 
 
+// sends a CMD_READ to the memory chip
 void SpiMemory::sendReadCommand(const uint32_t addr)
 {
     spiXfer(CMD_READ);
@@ -254,6 +266,7 @@ void SpiMemory::sendReadCommand(const uint32_t addr)
 }
 
 
+// sends a CMD_WRITE to the memory chip
 void SpiMemory::sendWriteCommand(const uint32_t addr)
 {
     spiXfer(CMD_WRITE);

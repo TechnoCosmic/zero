@@ -30,12 +30,14 @@ namespace {
 }
 
 
+// ctor
 SuartTx::SuartTx()
 {
     _suartTx = this;
 }
 
 
+// dtor
 SuartTx::~SuartTx()
 {
     disable();
@@ -43,6 +45,7 @@ SuartTx::~SuartTx()
 }
 
 
+// convert the data byte into a formatted UART byte (meaning: adds start and stop bits)
 uint16_t SuartTx::formatForSerial(const uint8_t d)
 {
     uint16_t rc = 0UL;
@@ -54,6 +57,8 @@ uint16_t SuartTx::formatForSerial(const uint8_t d)
     return rc;
 }
 
+
+// starts the periodic bit-timer for transmission
 void SuartTx::startTxTimer()
 {
     #define SCALE(x) ((F_CPU * (x)) / 16'000'000ULL)    // to scale the Timer for MCU clock speed
@@ -67,6 +72,7 @@ void SuartTx::startTxTimer()
 }
 
 
+// stops the bit-timer
 void SuartTx::stopTxTimer()
 {
     TIMSK2 &= ~(1 << OCIE2A);                           // disable Timer ISR
@@ -75,6 +81,7 @@ void SuartTx::stopTxTimer()
 }
 
 
+// Enables the software transmitter
 bool SuartTx::enable(Synapse txReadySyn)
 {
     if (!txReadySyn.isValid()) return false;
@@ -91,6 +98,7 @@ bool SuartTx::enable(Synapse txReadySyn)
 }
 
 
+// disables the software transmitter
 void SuartTx::disable()
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -108,11 +116,12 @@ void SuartTx::disable()
 }
 
 
+// Sets the communications parameters for the software transmitter
 void SuartTx::setCommsParams(
-    const uint32_t baud,
-    volatile uint8_t* ddr,
-    volatile uint8_t* port,
-    const uint8_t pin)
+    const uint32_t baud,                            // the speed of the communications
+    volatile uint8_t* ddr,                          // address of the DDR for the software TX pin
+    volatile uint8_t* port,                         // address of the PORT for the software TX pin
+    const uint8_t pin)                              // the pin number for the TX (0-7)
 {
     disable();
 
@@ -123,6 +132,7 @@ void SuartTx::setCommsParams(
 }
 
 
+// Transmit a buffer via the software TX pin
 bool SuartTx::transmit(const void* buffer, const uint16_t sz)
 {
     if (_txBuffer) return false;
@@ -133,7 +143,7 @@ bool SuartTx::transmit(const void* buffer, const uint16_t sz)
 
     // remember the buffer data
     _txBuffer = (uint8_t*) buffer;
-    _txSize = sz;
+    _txBytesRemaining = sz;
 
     // enable the ISR that starts the transmission
     startTxTimer();
@@ -142,15 +152,16 @@ bool SuartTx::transmit(const void* buffer, const uint16_t sz)
 }
 
 
+// Gets the next byte from the transmission buffer, if there is one
 bool SuartTx::getNextTxByte(uint8_t& data)
 {
     bool rc = false;
 
     data = 0;
 
-    if (_txSize) {
+    if (_txBytesRemaining) {
         data = *_txBuffer++;
-        _txSize--;
+        _txBytesRemaining--;
 
         rc = true;
     }
@@ -159,43 +170,53 @@ bool SuartTx::getNextTxByte(uint8_t& data)
 }
 
 
-ISR(TIMER2_COMPA_vect)
+void SuartTx::onTick()
 {
     // just in time fetch of data to send
-    if (!_suartTx->_txReg) {
+    if (!_txReg) {
+        // Switch off transmission, even if there are more bytes.
+        // We will reset and restart the timer if we need to
+        // transmit more data. This improves transmission
+        // accuracy when the MCU is experiencing a lot of task
+        // switching and ISRs are being switched on and off and
+        // so on. This helps prevent bit errors under load, but
+        // doesn't completely eliminate them.
+        stopTxTimer();
+
+        // the next byte to send is fetched by reference
         uint8_t nextByte;
 
-        // Switch off transmission, even if there are more bytes.
-        // We will restart the timer if we need to transmit more
-        // data. This improves transmission accuracy when the MCU
-        // is experiencing a lot of task switching and ISRs are
-        // being switched on and off and so on. This helps prevent
-        // bit errors under load. Sadly, it doesn't complete
-        // eliminate them.
-        _suartTx->stopTxTimer();
-
-        if (!_suartTx->getNextTxByte(nextByte)) {
-            // signal and tidy up
-            _suartTx->_txBuffer = 0UL;
-            _suartTx->_txReadySyn.signal();
+        if (!getNextTxByte(nextByte)) {
+            // no more data to send? tidy up, and signal readiness to go again
+            _txBuffer = 0UL;
+            _txReadySyn.signal();
         }
         else {
             // load next byte
-            _suartTx->_txReg = _suartTx->formatForSerial(nextByte);
-            _suartTx->startTxTimer();
+            _txReg = formatForSerial(nextByte);
+            startTxTimer();
         }
     }
 
-    if (_suartTx->_txReg) {
+    if (_txReg) {
         // we're mid-byte, keep pumping out the bits
-        if (_suartTx->_txReg & 1) {
-            *_suartTx->_port |= _suartTx->_pinMask;
+        if (_txReg & 1) {
+            *_port |= _pinMask;
         }
         else {
-            *_suartTx->_port &= ~_suartTx->_pinMask;
+            *_port &= ~_pinMask;
         }
 
-        _suartTx->_txReg >>= 1;
+        _txReg >>= 1;
+    }
+}
+
+
+// Timer tick ISR for the bit-clock
+ISR(TIMER2_COMPA_vect)
+{
+    if (_suartTx) {
+        _suartTx->onTick();
     }
 }
 

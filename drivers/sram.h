@@ -35,8 +35,15 @@ namespace zero {
             const uint8_t csPin,                        // pin number for CS
             Synapse readySyn);                          // Synapse to fire when ready to transfer
 
-        void write(const void* src, const uint32_t destAddress, const uint32_t numBytes);
-        void read(void* dest, const uint32_t srcAddr, const uint32_t numBytes);
+        void read(
+            void* dest,                                 // destination address, in local SRAM
+            const uint32_t srcAddr,                     // source address for the data, in external SPI memory
+            const uint32_t numBytes);                   // number of bytes to read
+
+        void write(
+            const void* src,                            // source data address, in local SRAM
+            const uint32_t destAddress,                 // destination address, in external SPI memory
+            const uint32_t numBytes);                   // number of the bytes to write
 
         #include "sram_private.h"
     };

@@ -11,10 +11,11 @@ public:
     void startTxTimer();
     void stopTxTimer();
     uint16_t formatForSerial(uint8_t data);
+    void onTick();
 
     // buffer-level stuff
     uint8_t* _txBuffer = 0UL;
-    uint16_t _txSize = 0UL;
+    uint16_t _txBytesRemaining = 0UL;
     Synapse _txReadySyn;
 
     // sub-byte management
