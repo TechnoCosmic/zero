@@ -82,6 +82,7 @@ namespace {
 } 
 
 
+// ctor
 UsartTx::UsartTx(const uint8_t deviceNum)
 {
     if (deviceNum < NUM_DEVICES) {
@@ -91,6 +92,7 @@ UsartTx::UsartTx(const uint8_t deviceNum)
 }
 
 
+// dtor
 UsartTx::~UsartTx()
 {
     disable();
@@ -98,16 +100,17 @@ UsartTx::~UsartTx()
 }
 
 
+// Sets the communications parameters
 void UsartTx::setCommsParams(const uint32_t baud)
 {
-    const uint16_t pre = (F_CPU / (16UL * baud)) - 1;
+    const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
 
     // 8-none-1
     UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
 
     // speed
-    UBRRH(_deviceNum) = (uint8_t) pre >> 8;
-    UBRRL(_deviceNum) = (uint8_t) pre;
+    UBRRH(_deviceNum) = (uint8_t) scaledMs >> 8;
+    UBRRL(_deviceNum) = (uint8_t) scaledMs;
 }
 
 
@@ -197,14 +200,14 @@ UsartRx::~UsartRx()
 
 void UsartRx::setCommsParams(const uint32_t baud)
 {
-    const uint16_t pre = (F_CPU / (16UL * baud)) - 1;
+    const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
 
     // 8-none-1
     UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
 
     // speed
-    UBRRH(_deviceNum) = (uint8_t) pre >> 8;
-    UBRRL(_deviceNum) = (uint8_t) pre;
+    UBRRH(_deviceNum) = (uint8_t) scaledMs >> 8;
+    UBRRL(_deviceNum) = (uint8_t) scaledMs;
 }
 
 

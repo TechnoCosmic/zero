@@ -61,12 +61,12 @@ uint16_t SuartTx::formatForSerial(const uint8_t d)
 // starts the periodic bit-timer for transmission
 void SuartTx::startTxTimer()
 {
-    #define SCALE(x) ((F_CPU * (x)) / 16'000'000ULL)    // to scale the Timer for MCU clock speed
+    const uint16_t scaledMs = (F_CPU / (16UL * _baud)) - 1;
 
     TCCR2B = 0;                                         // make sure timer is stopped
     TCNT2 = 0;                                          // reset the counter
     TCCR2A = (1 << WGM21);                              // CTC
-    OCR2A = SCALE(500000ULL / _baud) - 1;               // scaled for F_CPU
+    OCR2A = (scaledMs / 2) - 1;                         // scaled for F_CPU
     TIMSK2 |= (1 << OCIE2A);                            // enable Timer2 ISR
     TCCR2B = ((1 << CS21) | (1 << CS20));               // start Timer2 with pre-scaler 32
 }
