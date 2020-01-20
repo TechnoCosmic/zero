@@ -19,7 +19,7 @@ AVRDUDE_PART = m328p
 AVRDUDE_CFG = pi
 
 # general kernel settings
-F_CPU = 16'000'000
+F_CPU_MHZ = 16
 QUANTUM_TICKS = 15
 PAGE_BYTES = 16
 
@@ -85,7 +85,8 @@ FLAGS += -fdata-sections
 FLAGS += -Wl,-gc-sections
 
 # #define pass-throughs
-FLAGS += -DF_CPU=$(F_CPU)ULL
+FLAGS += -DF_CPU=$(F_CPU_MHZ)'000'000ULL
+FLAGS += -DF_CPU_MHZ=$(F_CPU_MHZ)U
 FLAGS += -DPC_COUNT=$(PC_COUNT)
 FLAGS += -DPAGE_BYTES=$(PAGE_BYTES)
 FLAGS += -DDYNAMIC_BYTES=$(DYNAMIC_BYTES)
