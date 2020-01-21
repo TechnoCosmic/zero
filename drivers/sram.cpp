@@ -62,11 +62,11 @@ namespace {
 
 // ctor
 SpiMemory::SpiMemory(
-    const uint32_t capacityBytes,               // how many bytes does the chip hold?
-    volatile uint8_t* csDdr,                    // DDR for the CS for the chip
-    volatile uint8_t* csPort,                   // PORT for CS
-    const uint8_t csPin,                        // pin number for CS
-    Synapse readySyn)                           // Synapse to fire when ready to transfer
+    const uint32_t capacityBytes,                       // how many bytes does the chip hold?
+    volatile uint8_t* csDdr,                            // DDR for the CS for the chip
+    volatile uint8_t* csPort,                           // PORT for CS
+    const uint8_t csPin,                                // pin number for CS
+    Synapse readySyn)                                   // Synapse to fire when ready to transfer
 {
     _capacityBytes = capacityBytes;
     _csDdr = csDdr;
@@ -129,9 +129,9 @@ void SpiMemory::deselect()
 
 // Reads data from the external memory into the local SRAM
 void SpiMemory::read(
-    void* dest,                                 // destination address, in local SRAM
-    const uint32_t srcAddr,                     // source address for the data, in external SPI memory
-    const uint32_t numBytes)                    // number of bytes to read
+    void* dest,                                         // destination address, in local SRAM
+    const uint32_t srcAddr,                             // source address for the data, in external SPI memory
+    const uint32_t numBytes)                            // number of bytes to read
 {
     // wait until there's no controller using the SPI
     while (_curController);
@@ -144,7 +144,7 @@ void SpiMemory::read(
         _spiReadySyn.clearSignals();
 
         // set up the housekeeping
-        _txCursor = 0UL;                        // we are reading data, so no TX buffer
+        _txCursor = 0UL;                                // we are reading data, so no TX buffer
         _rxCursor = (uint8_t*) dest;
         _xferBytes = numBytes;
         _spiXferMode = SpiXferMode::Rx;        
@@ -166,9 +166,9 @@ void SpiMemory::read(
 
 // Writes data from the local SRAM to the external memory chip
 void SpiMemory::write(
-    const void* src,                            // source data address, in local SRAM
-    const uint32_t destAddress,                 // destination address, in external SPI memory
-    const uint32_t numBytes)                    // number of the bytes to write
+    const void* src,                                    // source data address, in local SRAM
+    const uint32_t destAddress,                         // destination address, in external SPI memory
+    const uint32_t numBytes)                            // number of the bytes to write
 {
     // wait until there's no controller using the SPI
     while (_curController);

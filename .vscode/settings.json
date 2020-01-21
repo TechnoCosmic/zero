@@ -1,4 +1,24 @@
 {
     "C_Cpp.errorSquiggles": "Disabled",
-    "C_Cpp.dimInactiveRegions": false
+    "C_Cpp.dimInactiveRegions": false,
+
+    "window.zoomLevel": 0,
+
+    "workbench.colorCustomizations": {
+        "editor.background": "#020202",
+        "editorRuler.foreground": "#181818",
+        "sideBar.background": "#0A0A0A",
+    },
+
+    "terminal.integrated.rendererType": "dom",
+    
+    "diffEditor.ignoreTrimWhitespace": true,
+
+    "editor.fontFamily": "'JetBrains Mono', 'Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",
+    "editor.highlightActiveIndentGuide": false,
+    
+    "editor.minimap.enabled": false,
+    "editor.minimap.maxColumn": 80,
+    
+    "editor.rulers": [56, 90, 120],
 }

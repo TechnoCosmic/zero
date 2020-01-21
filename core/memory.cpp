@@ -69,7 +69,10 @@ void* memory::allocate(
         // if there was a chunk the size we wanted
         if (startPage >= 0) {
             // mark the pages as no longer available
-            for (uint16_t curPageNumber = startPage; curPageNumber < startPage + numPages; curPageNumber++) {
+            for (uint16_t curPageNumber = startPage;
+                curPageNumber < startPage + numPages;
+                curPageNumber++)
+            {
                 _sram.markAsUsed(curPageNumber);
             }
 
@@ -87,9 +90,10 @@ void* memory::allocate(
 }
 
 
-// Frees up a chunk of previously allocated memory. In the interests of performance,
-// there is no checking that the Thread 'owns' the memory being freed, nor is there
-// a check to see if the memory was even allocated in the first place.
+// Frees up a chunk of previously allocated memory. In the interests of
+// performance, there is no checking that the Thread 'owns' the memory being
+// freed, nor is there a check to see if the memory was even allocated in the
+// first place.
 void memory::free(const void* address, const uint16_t numBytes)
 {
     if (address == 0UL) return;
@@ -98,8 +102,11 @@ void memory::free(const void* address, const uint16_t numBytes)
     const uint16_t startPage = getPageForAddress((uint16_t) address);
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
-        // simply run from the first page to the last, ensuring the bit map says 'free'
-        for (uint16_t curPage = startPage; curPage < startPage + numPages; curPage++) {
+        // run from the first page to the last, ensuring the bitmap says 'free'
+        for (uint16_t curPage = startPage;
+            curPage < startPage + numPages;
+            curPage++)
+        {
             _sram.markAsFree(curPage);
         }
     }

@@ -27,16 +27,16 @@ namespace zero {
         ~SuartTx();
 
         void setCommsParams(
-            const uint32_t baud,                    // the speed of the communications
-            volatile uint8_t* ddr,                  // address of the DDR for the software TX pin
-            volatile uint8_t* port,                 // address of the PORT for the software TX pin
-            const uint8_t pin);                     // the pin number for the TX (0-7)
+            const uint32_t baud,                        // the speed of the communications
+            volatile uint8_t* ddr,                      // address of the DDR for the software TX pin
+            volatile uint8_t* port,                     // address of the PORT for the software TX pin
+            const uint8_t pin);                         // the pin number for the TX (0-7)
 
         bool enable(const Synapse txReadySyn) override;
         void disable() override;
         bool transmit(const void* buffer, const uint16_t sz) override;
 
-        #include "suart_private.h"
+    #include "suart_private.h"
     };
 
 }

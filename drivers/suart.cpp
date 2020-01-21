@@ -51,8 +51,8 @@ uint16_t SuartTx::formatForSerial(const uint8_t d)
     uint16_t rc = 0UL;
 
     rc = d << 1;
-    rc &= ~(1L << 0);             // force start bit low
-    rc |= (1L << 9);              // stop bit high (so it ends high)
+    rc &= ~(1L << 0);                                   // force start bit low
+    rc |= (1L << 9);                                    // stop bit high (so it ends high)
 
     return rc;
 }
@@ -118,10 +118,10 @@ void SuartTx::disable()
 
 // Sets the communications parameters for the software transmitter
 void SuartTx::setCommsParams(
-    const uint32_t baud,                            // the speed of the communications
-    volatile uint8_t* ddr,                          // address of the DDR for the software TX pin
-    volatile uint8_t* port,                         // address of the PORT for the software TX pin
-    const uint8_t pin)                              // the pin number for the TX (0-7)
+    const uint32_t baud,                                // the speed of the communications
+    volatile uint8_t* ddr,                              // address of the DDR for the software TX pin
+    volatile uint8_t* port,                             // address of the PORT for the software TX pin
+    const uint8_t pin)                                  // the pin number for the TX (0-7)
 {
     disable();
 

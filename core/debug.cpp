@@ -45,8 +45,8 @@ void debug::print(char d)
 
     // setup the output 'register'
     uint16_t reg = (d << 1);
-    reg &= ~(1 << 0);                           // start bit forced low
-    reg |= (1 << 9);                            // stop is high (so that TX remains idle high)
+    reg &= ~(1 << 0);                                   // start bit forced low
+    reg |= (1 << 9);                                    // stop is high (so that TX remains idle high)
 
     // stop interrupts because timing is critical
     const uint8_t oldSreg = SREG;

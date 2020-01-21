@@ -54,13 +54,13 @@ static void INLINE restoreInitialRegisters();
 
 namespace {
     // globals
-    List<Thread> _readyLists[2];                // the threads that will run
-    List<Thread> _timeoutList;                  // the list of Threads wanting to sleep for a time
-    Thread* _currentThread = 0UL;               // the currently executing thread
-    Thread* _idleThread = 0UL;                  // to run when there's nothing else to do, and only then
-    volatile uint8_t _activeListNum = 0;        // which of the two ready lists are we using as the active list?
-    volatile uint32_t _ms = 0ULL;               // 49 day millisecond counter
-    volatile bool _switchingEnabled = true;     // context switching ISR enabled?
+    List<Thread> _readyLists[2];                        // the threads that will run
+    List<Thread> _timeoutList;                          // the list of Threads wanting to sleep for a time
+    Thread* _currentThread = 0UL;                       // the currently executing thread
+    Thread* _idleThread = 0UL;                          // to run when there's nothing else to do, and only then
+    volatile uint8_t _activeListNum = 0;                // which of the two ready lists are we using as the active list?
+    volatile uint32_t _ms = 0ULL;                       // 49 day millisecond counter
+    volatile bool _switchingEnabled = true;             // context switching ISR enabled?
 
     // constants
     const uint8_t SIGNAL_BITS = sizeof(SignalField) * 8;
@@ -74,8 +74,9 @@ namespace {
 
     const uint16_t MIN_STACK_BYTES = 96;
     
-    // the offsets from the stack top (as seen AFTER all the registers have been pushed onto the stack already)
-    // of each of the nine (9) parameters that are register-passed by GCC
+    // the offsets from the stack top (as seen AFTER all the registers have been pushed
+    // onto the stack already) of each of the nine (9) parameters that are register-passed
+    // by GCC
     const PROGMEM uint8_t _paramOffsets[] = { 24, 26, 28, 30, 2, 4, 6, 8, 10 };
 
 
@@ -121,17 +122,17 @@ namespace {
         #endif
 
         // 8-bit Timer/Counter0
-        power_timer0_enable();      // switch it on
-        TCCR0B = 0;                 // stop the clock
-        TCNT0 = 0;                  // reset counter to 0
-        TCCR0A = (1 << WGM01);      // CTC
-        TCCR0B = (1 << CS02);       // /256 prescalar
+        power_timer0_enable();                          // switch it on
+        TCCR0B = 0;                                     // stop the clock
+        TCNT0 = 0;                                      // reset counter to 0
+        TCCR0A = (1 << WGM01);                          // CTC
+        TCCR0B = (1 << CS02);                           // /256 prescalar
 
-        OCR0A = SCALE(62.5)-1;      // 1ms
-        TIMSK0 |= (1 << OCIE0A);    // enable ISR
+        OCR0A = SCALE(62.5)-1;                          // 1ms
+        TIMSK0 |= (1 << OCIE0A);                        // enable ISR
 
-        OCR0B = SCALE(62.5)-1;      // 1ms
-        TIMSK0 |= (1 << OCIE0B);    // enable ISR
+        OCR0B = SCALE(62.5)-1;                          // 1ms
+        TIMSK0 |= (1 << OCIE0B);                        // enable ISR
     }
 
 }
@@ -314,10 +315,10 @@ static void inline saveInitialRegisters()
 {
     asm volatile ("push r0");
 
-    asm volatile ("in r0, __SREG__");               // status register
+    asm volatile ("in r0, __SREG__");                   // status register
     asm volatile ("push r0");
 #ifdef RAMPZ
-    asm volatile ("in r0, __RAMPZ__");              // RAMPZ
+    asm volatile ("in r0, __RAMPZ__");                  // RAMPZ
     asm volatile ("push r0");
 #endif
     asm volatile ("push r1");
