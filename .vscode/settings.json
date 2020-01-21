@@ -5,16 +5,16 @@
     "window.zoomLevel": 0,
 
     "workbench.colorCustomizations": {
-        "editor.background": "#020202",
+        "editor.background": "#010101",
         "editorRuler.foreground": "#181818",
-        "sideBar.background": "#0A0A0A",
+        "sideBar.background": "#060606",
     },
 
     "terminal.integrated.rendererType": "dom",
     
     "diffEditor.ignoreTrimWhitespace": false,
 
-    "editor.fontFamily": "'JetBrains Mono', 'Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",
+    "editor.fontFamily": "'JetBrains Mono', 'Consolas', 'Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",
     "editor.highlightActiveIndentGuide": false,
     
     "editor.minimap.enabled": false,
