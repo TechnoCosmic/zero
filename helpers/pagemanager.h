@@ -42,11 +42,7 @@ namespace zero {
         uint16_t getUsedPageCount();
         uint16_t getFreePageCount();
 
-        // higher level operations
-        int16_t findFreePages(const uint16_t numPagesRequired, const memory::SearchStrategy strat);
-
-    private:
-        uint8_t _memoryMap[ROUND_UP(PAGE_COUNT, 8) / 8];
+        #include "pagemanager_private.h"
     };
 
 }
