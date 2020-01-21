@@ -221,16 +221,17 @@ bool Thread::isSwitchingEnabled()
 
 // ctor
 Thread::Thread(
-    const uint16_t stackSize,
-    const ThreadEntry entry,
-    const ThreadFlags flags,
-    const SignalField termSigs,
-    uint16_t* exitCode)
+    const uint16_t stackSize,                           // size of the stack, in bytes
+    const ThreadEntry entry,                            // the Thread's entry function
+    const ThreadFlags flags,                            // Optional flags
+    const SignalField termSigs,                         // Signal to set when Thread dies
+    uint16_t* exitCode)                                 // Place to put Thread's return code
 {    
     // allocate a stack from the heap
     _stackBottom = (uint8_t*) memory::allocate(
         MAX(stackSize, MIN_STACK_BYTES),
-        &_stackSize, memory::SearchStrategy::TopDown);
+        &_stackSize, memory::SearchStrategy::TopDown
+    );
 
     const uint16_t stackTop = (uint16_t) _stackBottom + _stackSize - 1;
     const uint16_t newStackTop = stackTop - (PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT);
