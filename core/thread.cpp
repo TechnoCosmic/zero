@@ -230,8 +230,7 @@ Thread::Thread(
     // allocate a stack from the heap
     _stackBottom = (uint8_t*) memory::allocate(
         MAX(stackSize, MIN_STACK_BYTES),
-        &_stackSize, memory::SearchStrategy::TopDown
-    );
+        &_stackSize, memory::SearchStrategy::TopDown);
 
     const uint16_t stackTop = (uint16_t) _stackBottom + _stackSize - 1;
     const uint16_t newStackTop = stackTop - (PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT);

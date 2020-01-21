@@ -40,7 +40,12 @@ namespace zero {
         static void permit();
         static bool isSwitchingEnabled();
 
-        Thread(const uint16_t stackSize, const ThreadEntry entry, const ThreadFlags flags = TF_READY, const SignalField termSigs = 0UL, uint16_t* exitCode = 0UL);
+        Thread(
+            const uint16_t stackSize,                   // size of the stack, in bytes
+            const ThreadEntry entry,                    // the Thread's entry function
+            const ThreadFlags flags = TF_READY,         // Optional flags
+            const SignalField termSigs = 0UL,           // Signal to set when Thread dies
+            uint16_t* exitCode = 0UL);                  // Place to put Thread's return code
         
         // Signals
         SignalField allocateSignal(const uint16_t reqdSignalNumber = -1);
