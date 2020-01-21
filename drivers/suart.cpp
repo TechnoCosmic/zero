@@ -73,15 +73,17 @@ bool SuartTx::enable(Synapse txReadySyn)
 {
     if (!txReadySyn.isValid()) return false;
 
-    *_ddr |= _pinMask;                                  // output
-    *_port |= _pinMask;                                 // idle-high
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        *_ddr |= _pinMask;                              // output
+        *_port |= _pinMask;                             // idle-high
 
-    power_timer2_enable();                              // power the Timer
+        power_timer2_enable();                          // power the Timer
 
-    _txReadySyn = txReadySyn;
-    _txReadySyn.signal();
-    
-    return true;
+        _txReadySyn = txReadySyn;
+        _txReadySyn.signal();
+        
+        return true;
+    }
 }
 
 
