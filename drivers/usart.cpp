@@ -79,7 +79,7 @@ volatile uint8_t* _UDR_base = &UDR0;
 namespace {
     UsartTx* _usartTx[NUM_DEVICES];
     UsartRx* _usartRx[NUM_DEVICES];
-} 
+}
 
 
 // ctor

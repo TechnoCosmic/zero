@@ -12,7 +12,7 @@
 
     "terminal.integrated.rendererType": "dom",
     
-    "diffEditor.ignoreTrimWhitespace": true,
+    "diffEditor.ignoreTrimWhitespace": false,
 
     "editor.fontFamily": "'JetBrains Mono', 'Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",
     "editor.highlightActiveIndentGuide": false,

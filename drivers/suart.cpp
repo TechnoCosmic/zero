@@ -174,13 +174,11 @@ void SuartTx::onTick()
 {
     // just in time fetch of data to send
     if (!_txReg) {
-        // Switch off transmission, even if there are more bytes.
-        // We will reset and restart the timer if we need to
-        // transmit more data. This improves transmission
-        // accuracy when the MCU is experiencing a lot of task
-        // switching and ISRs are being switched on and off and
-        // so on. This helps prevent bit errors under load, but
-        // doesn't completely eliminate them.
+        // Switch off transmission, even if there are more bytes. We will reset and
+        // restart the timer if we need to transmit more data. This improves transmission
+        // accuracy when the MCU is experiencing a lot of task switching and ISRs are
+        // being switched on and off and so on. This helps prevent bit errors under load,
+        // but doesn't completely eliminate them.
         stopTxTimer();
 
         // the next byte to send is fetched by reference
