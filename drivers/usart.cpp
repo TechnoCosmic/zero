@@ -103,14 +103,16 @@ UsartTx::~UsartTx()
 // Sets the communications parameters
 void UsartTx::setCommsParams(const uint32_t baud)
 {
-    const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+        const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
 
-    // 8-none-1
-    UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
+        // 8-none-1
+        UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
 
-    // speed
-    UBRRH(_deviceNum) = (uint8_t) scaledMs >> 8;
-    UBRRL(_deviceNum) = (uint8_t) scaledMs;
+        // speed
+        UBRRH(_deviceNum) = (uint8_t) scaledMs >> 8;
+        UBRRL(_deviceNum) = (uint8_t) scaledMs;
+    }
 }
 
 
@@ -118,18 +120,20 @@ bool UsartTx::enable(Synapse txReadySyn)
 {
     if (!txReadySyn.isValid()) return false;
 
-    UCSRB(_deviceNum) |= TX_BITS;
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+        UCSRB(_deviceNum) |= TX_BITS;
 
-    _txReadySyn = txReadySyn;
-    _txReadySyn.signal();
+        _txReadySyn = txReadySyn;
+        _txReadySyn.signal();
 
-    return true;
+        return true;
+    }
 }
 
 
 void UsartTx::disable()
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
         _txReadySyn.clearSignals();
         _txReadySyn.clear();
 
@@ -140,20 +144,22 @@ void UsartTx::disable()
 
 bool UsartTx::transmit(const void* buffer, const uint16_t sz)
 {
-    if (_txBuffer) return false;
-    if (!buffer) return false;
-    if (!sz) return false;
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+        if (_txBuffer) return false;
+        if (!buffer) return false;
+        if (!sz) return false;
 
-    _txReadySyn.clearSignals();
+        _txReadySyn.clearSignals();
 
-    // prime the buffer data
-    _txBuffer = (uint8_t*) buffer;
-    _txSize = sz;
+        // prime the buffer data
+        _txBuffer = (uint8_t*) buffer;
+        _txSize = sz;
 
-    // enable the ISR that starts the transmission
-    UCSRB(_deviceNum) |= (1 << UDRIE0);
+        // enable the ISR that starts the transmission
+        UCSRB(_deviceNum) |= (1 << UDRIE0);
 
-    return true;
+        return true;
+    }
 }
 
 
@@ -200,14 +206,16 @@ UsartRx::~UsartRx()
 
 void UsartRx::setCommsParams(const uint32_t baud)
 {
-    const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+        const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
 
-    // 8-none-1
-    UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
+        // 8-none-1
+        UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
 
-    // speed
-    UBRRH(_deviceNum) = (uint8_t) scaledMs >> 8;
-    UBRRL(_deviceNum) = (uint8_t) scaledMs;
+        // speed
+        UBRRH(_deviceNum) = (uint8_t) scaledMs >> 8;
+        UBRRL(_deviceNum) = (uint8_t) scaledMs;
+    }
 }
 
 
@@ -216,30 +224,32 @@ bool UsartRx::enable(
     Synapse rxSyn,
     Synapse ovfSyn)
 {
-    bool rc = false;
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+        bool rc = false;
 
-    _rxDataReceivedSyn.clear();
-    _rxOverflowSyn.clear();
+        _rxDataReceivedSyn.clear();
+        _rxOverflowSyn.clear();
 
-    delete _rxBuffer;
-    _rxBuffer = 0UL;
+        delete _rxBuffer;
+        _rxBuffer = 0UL;
 
-    if ((_rxBuffer = new DoubleBuffer(bufferSize))) {
-        rc = true;
+        if ((_rxBuffer = new DoubleBuffer(bufferSize))) {
+            rc = true;
 
-        _rxDataReceivedSyn = rxSyn;
-        _rxOverflowSyn = ovfSyn;
+            _rxDataReceivedSyn = rxSyn;
+            _rxOverflowSyn = ovfSyn;
 
-        UCSRB(_deviceNum) |= RX_BITS;
+            UCSRB(_deviceNum) |= RX_BITS;
+        }
+        
+        return rc;
     }
-    
-    return rc;
 }
 
 
 void UsartRx::disable()
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
         UCSRB(_deviceNum) &= ~RX_BITS;
 
         delete _rxBuffer;
@@ -259,7 +269,7 @@ uint8_t* UsartRx::getCurrentBuffer(uint16_t& numBytes)
 
 void UsartRx::flush()
 {
-    _rxBuffer->flush();       
+    _rxBuffer->flush();     
 }
 
 

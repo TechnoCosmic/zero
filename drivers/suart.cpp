@@ -73,7 +73,7 @@ bool SuartTx::enable(Synapse txReadySyn)
 {
     if (!txReadySyn.isValid()) return false;
 
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
         *_ddr |= _pinMask;                              // output
         *_port |= _pinMask;                             // idle-high
 
@@ -90,7 +90,7 @@ bool SuartTx::enable(Synapse txReadySyn)
 // disables the software transmitter
 void SuartTx::disable()
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
         stopTxTimer();
         power_timer2_disable();                         // depower the Timer
 
@@ -112,32 +112,36 @@ void SuartTx::setCommsParams(
     volatile uint8_t* port,                             // address of the PORT for the software TX pin
     const uint8_t pin)                                  // the pin number for the TX (0-7)
 {
-    disable();
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+        disable();
 
-    _baud = baud;
-    _ddr = ddr;
-    _port = port;
-    _pinMask = (1 << pin);
+        _baud = baud;
+        _ddr = ddr;
+        _port = port;
+        _pinMask = (1 << pin);
+    }
 }
 
 
 // Transmit a buffer via the software TX pin
 bool SuartTx::transmit(const void* buffer, const uint16_t sz)
 {
-    if (_txBuffer) return false;
-    if (!buffer) return false;
-    if (!sz) return false;
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+        if (_txBuffer) return false;
+        if (!buffer) return false;
+        if (!sz) return false;
 
-    _txReadySyn.clearSignals();
+        _txReadySyn.clearSignals();
 
-    // remember the buffer data
-    _txBuffer = (uint8_t*) buffer;
-    _txBytesRemaining = sz;
+        // remember the buffer data
+        _txBuffer = (uint8_t*) buffer;
+        _txBytesRemaining = sz;
 
-    // enable the ISR that starts the transmission
-    startTxTimer();
+        // enable the ISR that starts the transmission
+        startTxTimer();
 
-    return true;
+        return true;
+    }
 }
 
 
