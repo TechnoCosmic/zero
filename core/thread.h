@@ -33,12 +33,12 @@ namespace zero {
     class Thread {
     public:
         // Life cycle
-        static Thread& getCurrentThread();
-        static uint32_t now();
+        static Thread& getCurrentThread();              // Returns the current Thread
+        static uint32_t now();                          // Elapsed milliseconds since boot
 
-        static void forbid();
-        static void permit();
-        static bool isSwitchingEnabled();
+        static void forbid();                           // Disable context switching
+        static void permit();                           // Enable context switching
+        static bool isSwitchingEnabled();               // Determines if switching is on
 
         Thread(
             const uint16_t stackSize,                   // size of the stack, in bytes
@@ -66,7 +66,10 @@ namespace zero {
         Thread* thread;
         SignalField signals;
 
-        Synapse() {}
+        Synapse()
+        {
+            clear();
+        }
 
         Synapse(const SignalField sigs)
         {
