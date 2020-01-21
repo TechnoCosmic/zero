@@ -36,7 +36,7 @@ namespace zero {
         void disable() override;
         bool transmit(const void* buffer, const uint16_t sz) override;
 
-    #include "suart_private.h"
+        #include "suart_private.h"
     };
 
 }

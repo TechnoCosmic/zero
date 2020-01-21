@@ -45,19 +45,6 @@ SuartTx::~SuartTx()
 }
 
 
-// convert the data byte into a formatted UART byte (meaning: adds start and stop bits)
-uint16_t SuartTx::formatForSerial(const uint8_t d)
-{
-    uint16_t rc = 0UL;
-
-    rc = d << 1;
-    rc &= ~(1L << 0);                                   // force start bit low
-    rc |= (1L << 9);                                    // stop bit high (so it ends high)
-
-    return rc;
-}
-
-
 // starts the periodic bit-timer for transmission
 void SuartTx::startTxTimer()
 {

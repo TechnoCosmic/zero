@@ -27,7 +27,7 @@ namespace zero {
 
 
 #define dbg(x) zero::debug::print(x)
-#define dbg_pgm(x) zero::debug::print(PSTR(x), true)
+#define dbg_pgm(x) zero::debug::print((char*)(PSTR(x)), true)
 
 
 #endif

@@ -10,7 +10,6 @@ public:
     bool getNextTxByte(uint8_t& data);
     void startTxTimer();
     void stopTxTimer();
-    uint16_t formatForSerial(uint8_t data);
     void onTick();
 
     // buffer-level stuff

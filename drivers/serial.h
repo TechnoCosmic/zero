@@ -34,4 +34,7 @@ namespace zero {
 }
 
 
+uint16_t formatForSerial(const uint8_t d);
+
+
 #endif
