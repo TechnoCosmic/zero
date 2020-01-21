@@ -26,7 +26,7 @@ Outputs a character or string to the ```DEBUG_PORT``` on ```DEBUG_PIN``` at ```D
 ### Notes
 These are static methods. These are also blocking calls - control returns to the caller only after the transmission is complete.
 
-Interrupts are disabled while each character is transmitted in a tight-loop (approximately 1ms per character at 9600bps). Interrupts are re-enabled between each character.
+Interrupts are disabled while each character is transmitted in a tight-loop (approximately 1ms per character at 9600bps). Interrupts are enabled between each character.
 
 No set up or initialization is required by your code - just be sure that the ```makefile``` has the ```DEBUG_*``` settings to your liking, and then call these functions.
 

@@ -11,7 +11,10 @@
             "cppStandard": "c++17",
             "intelliSenseMode": "clang-x64",
             "compilerArgs": [
-                "-mmcu=atmega1284p"
+                "-mmcu=atmega1284p",
+                "-Icore/",
+                "-Idrivers/",
+                "-Ihelpers/"
             ]
         }
     ],
