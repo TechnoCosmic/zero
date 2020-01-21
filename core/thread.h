@@ -108,9 +108,6 @@ namespace zero {
 #define me Thread::getCurrentThread()
 
 
-#pragma region ********* ATOMIC BLOCK
-
-
 // Funky little ATOMIC_BLOCK macro clones for context switching
 static __inline__ uint8_t __iForbidRetVal() {
     zero::Thread::forbid();
@@ -130,12 +127,6 @@ static __inline__ void __iZeroRestore(const uint8_t* __tmr_save) {
 #define ZERO_ATOMIC_FORCEON         uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t) 1)
 
 
-#pragma endregion
-
-
-#pragma region ********* SIGNALS BLOCK
-
-
 // Funky little ATOMIC_BLOCK macro clones for allocating and freeing Signals
 static __inline__ void __iSignalsRestore(const zero::SignalField* __signalsToFree) {
     if (*__signalsToFree) {
@@ -145,9 +136,6 @@ static __inline__ void __iSignalsRestore(const zero::SignalField* __signalsToFre
 
 
 #define ZERO_SIGNAL(n)      for ( SignalField n __attribute__((__cleanup__(__iSignalsRestore))) = (SignalField)(zero::Thread::getCurrentThread().allocateSignal()), __ToDo = 1; __ToDo ; __ToDo = 0 )
-
-
-#pragma endregion
 
 
 #endif

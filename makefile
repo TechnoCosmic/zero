@@ -101,7 +101,6 @@ FLAGS += -DSPI_CFG=$(SPI_CFG)
 
 # warnings control
 FLAGS += -Wall
-FLAGS += -Wno-unknown-pragmas
 FLAGS += -Wno-return-type
 
 # drivers
