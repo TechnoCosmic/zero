@@ -11,8 +11,10 @@
 
 
 #include <stdint.h>
+#include "pagemanager.h"
 
-#include "../helpers/pagemanager.h"
+
+#define ALIGNED(x) __attribute__((__aligned__((x))))
 
 
 namespace zero {
@@ -29,5 +31,6 @@ namespace zero {
 	}
 
 }
+
 
 #endif

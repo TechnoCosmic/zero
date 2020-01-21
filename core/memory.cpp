@@ -11,7 +11,7 @@
 
 #include "memory.h"
 #include "thread.h"
-#include "../helpers/util.h"
+#include "util.h"
 
 
 using namespace zero;
@@ -20,7 +20,7 @@ using namespace zero::memory;
 
 namespace {
     // The SRAM that the dynamic allocator can hand out to callers
-    uint8_t _memoryArea[DYNAMIC_BYTES] __attribute__((__aligned__(64)));
+    uint8_t ALIGNED(64) _memoryArea[DYNAMIC_BYTES];
 
     // The bit mapped page manager
     PageManager<SRAM_PAGES> _sram;

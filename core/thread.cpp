@@ -18,8 +18,8 @@
 #include "thread.h"
 #include "memory.h"
 #include "debug.h"
-#include "../helpers/list.h"
-#include "../helpers/util.h"
+#include "list.h"
+#include "util.h"
 
 
 using namespace zero;

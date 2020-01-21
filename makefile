@@ -84,6 +84,11 @@ FLAGS += -ffunction-sections
 FLAGS += -fdata-sections
 FLAGS += -Wl,-gc-sections
 
+# paths
+FLAGS += -Icore/
+FLAGS += -Idrivers/
+FLAGS += -Ihelpers/
+
 # #define pass-throughs
 FLAGS += -DF_CPU=$(F_CPU_MHZ)'000'000ULL
 FLAGS += -DF_CPU_MHZ=$(F_CPU_MHZ)U

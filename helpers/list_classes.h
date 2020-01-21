@@ -6,7 +6,7 @@
 //
 
 
-#include "../core/thread.h"
+#include "thread.h"
 
 
 template class List<Thread>;

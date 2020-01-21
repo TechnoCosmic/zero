@@ -12,7 +12,7 @@
 #include <avr/interrupt.h>
 
 #include "doublebuffer.h"
-#include "../core/memory.h"
+#include "memory.h"
 
 
 using namespace zero;
