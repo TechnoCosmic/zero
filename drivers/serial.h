@@ -31,10 +31,8 @@ namespace zero {
         virtual void flush() = 0;
     };
 
+    uint16_t formatForSerial(const uint8_t d);
 }
-
-
-uint16_t formatForSerial(const uint8_t d);
 
 
 #endif

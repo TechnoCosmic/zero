@@ -13,7 +13,7 @@ using namespace zero;
 
 
 // convert the data byte into a formatted UART byte (meaning: adds start and stop bits)
-uint16_t formatForSerial(const uint8_t d)
+uint16_t zero::formatForSerial(const uint8_t d)
 {
     uint16_t rc = d << 1;
 
