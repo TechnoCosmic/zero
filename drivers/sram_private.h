@@ -10,13 +10,13 @@ public:
     ~SpiMemory();
 
     // fake private
-    void select();
-    void deselect();
+    void select() const;
+    void deselect() const;
 
 private:
-    void sendAddress(const uint32_t addr);
-    void sendReadCommand(const uint32_t addr);
-    void sendWriteCommand(const uint32_t addr);
+    void sendAddress(const uint32_t addr) const;
+    void sendReadCommand(const uint32_t addr) const;
+    void sendWriteCommand(const uint32_t addr) const;
 
     uint32_t _capacityBytes;
     volatile uint8_t* _csDdr;

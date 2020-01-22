@@ -51,7 +51,7 @@ namespace zero {
         SignalField allocateSignal(const uint16_t reqdSignalNumber = -1);
         void freeSignals(const SignalField signals);
 
-        SignalField getCurrentSignals();
+        SignalField getCurrentSignals() const;
         SignalField clearSignals(const SignalField sigs);
         
         SignalField wait(const SignalField sigs, const uint32_t timeoutMs = 0ULL);
@@ -83,19 +83,19 @@ namespace zero {
             signals = 0UL;
         }
 
-        bool isValid()
+        bool isValid() const
         {
             return (thread != 0UL && signals != 0UL);
         }
 
-        void signal()
+        void signal() const
         {
             if (isValid()) {
                 thread->signal(signals);
             }
         }
 
-        void clearSignals() {
+        void clearSignals() const {
             if (isValid()) {
                 thread->clearSignals(signals);
             }

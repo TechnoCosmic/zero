@@ -32,7 +32,7 @@ using namespace zero;
 
 // Has the page been marked as used, or is it free?
 template <uint16_t PAGE_COUNT>
-bool PageManager<PAGE_COUNT>::isPageAvailable(const uint16_t pageNumber)
+bool PageManager<PAGE_COUNT>::isPageAvailable(const uint16_t pageNumber) const
 {
     return IS_PAGE_AVAIL(pageNumber);
 }
@@ -56,7 +56,7 @@ void PageManager<PAGE_COUNT>::markAsUsed(const uint16_t pageNumber)
 
 // Returns the number of pages being managed
 template <uint16_t PAGE_COUNT>
-uint16_t PageManager<PAGE_COUNT>::getTotalPageCount()
+uint16_t PageManager<PAGE_COUNT>::getTotalPageCount() const
 {
     return PAGE_COUNT;
 }
@@ -64,7 +64,7 @@ uint16_t PageManager<PAGE_COUNT>::getTotalPageCount()
 
 // Returns the number of currently available pages
 template <uint16_t PAGE_COUNT>
-uint16_t PageManager<PAGE_COUNT>::getFreePageCount()
+uint16_t PageManager<PAGE_COUNT>::getFreePageCount() const
 {
     uint16_t rc = 0UL;
 
@@ -80,7 +80,7 @@ uint16_t PageManager<PAGE_COUNT>::getFreePageCount()
 
 // Returns the number of currently allocated pages
 template <uint16_t PAGE_COUNT>
-uint16_t PageManager<PAGE_COUNT>::getUsedPageCount()
+uint16_t PageManager<PAGE_COUNT>::getUsedPageCount() const
 {
     return getTotalPageCount() - getFreePageCount();
 }
@@ -121,7 +121,7 @@ static int16_t (*_strategies[])(const uint16_t, const uint16_t) = {
 template <uint16_t PAGE_COUNT>
 int16_t PageManager<PAGE_COUNT>::findFreePages(
     const uint16_t numPagesRequired,
-    const memory::SearchStrategy strat)
+    const memory::SearchStrategy strat) const
 {
     uint16_t startPage = (uint16_t) -1;
     uint16_t pageCount = 0;

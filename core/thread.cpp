@@ -578,7 +578,7 @@ void Thread::freeSignals(const SignalField signals)
 
 
 // Returns a SignalField showing which Signals are currently active
-SignalField Thread::getActiveSignals()
+SignalField Thread::getActiveSignals() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return (_currentSignals & _waitingSignals & _allocatedSignals);
@@ -587,7 +587,7 @@ SignalField Thread::getActiveSignals()
 
 
 // Returns a SignalField showing which Signals are currently active
-SignalField Thread::getCurrentSignals()
+SignalField Thread::getCurrentSignals() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         return _currentSignals;

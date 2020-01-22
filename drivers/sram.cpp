@@ -113,14 +113,14 @@ SpiMemory::~SpiMemory()
 
 
 // select the chip, by pulling CS low
-void SpiMemory::select()
+void SpiMemory::select() const
 {
     *_csPort &= ~_csPinMask;
 }
 
 
 // deselect the chip, by pulling CS high
-void SpiMemory::deselect()
+void SpiMemory::deselect() const
 {
     *_csPort |= _csPinMask;
 }
@@ -242,7 +242,7 @@ ISR(SPI_STC_vect)
 
 
 // sends an address to the memory chip
-void SpiMemory::sendAddress(const uint32_t addr)
+void SpiMemory::sendAddress(const uint32_t addr) const
 {
     if (_capacityBytes > (1ULL << 24)) {
         spiXfer(addr >> 24);
@@ -258,7 +258,7 @@ void SpiMemory::sendAddress(const uint32_t addr)
 
 
 // sends a CMD_READ to the memory chip
-void SpiMemory::sendReadCommand(const uint32_t addr)
+void SpiMemory::sendReadCommand(const uint32_t addr) const
 {
     spiXfer(CMD_READ);
     sendAddress(addr);
@@ -266,7 +266,7 @@ void SpiMemory::sendReadCommand(const uint32_t addr)
 
 
 // sends a CMD_WRITE to the memory chip
-void SpiMemory::sendWriteCommand(const uint32_t addr)
+void SpiMemory::sendWriteCommand(const uint32_t addr) const
 {
     spiXfer(CMD_WRITE);
     sendAddress(addr);

@@ -34,13 +34,13 @@ namespace zero {
     class PageManager {
     public:
         // low-level functions
-        bool isPageAvailable(const uint16_t pageNumber);
+        bool isPageAvailable(const uint16_t pageNumber) const;
         void markAsFree(const uint16_t pageNumber);
         void markAsUsed(const uint16_t pageNumber);
 
-        uint16_t getTotalPageCount();
-        uint16_t getUsedPageCount();
-        uint16_t getFreePageCount();
+        uint16_t getTotalPageCount() const;
+        uint16_t getUsedPageCount() const;
+        uint16_t getFreePageCount() const;
 
         #include "pagemanager_private.h"
     };

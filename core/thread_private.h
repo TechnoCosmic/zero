@@ -16,7 +16,7 @@ public:
     uint32_t _timeoutOffset;
 
 private:
-    SignalField getActiveSignals();
+    SignalField getActiveSignals() const;
     bool tryAllocateSignal(const uint16_t signalNumber);
     
     uint8_t* _stackBottom;

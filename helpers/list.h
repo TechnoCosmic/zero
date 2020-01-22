@@ -17,8 +17,8 @@ namespace zero {
     public:
         List();
 
-        T* getHead();
-        T* getTail();
+        T* getHead() const;
+        T* getTail() const;
 
         void prepend(T& item);
         void append(T& item);

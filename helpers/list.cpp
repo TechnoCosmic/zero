@@ -21,14 +21,14 @@ List<T>::List()
 
 
 template <class T>
-T* List<T>::getHead()
+T* List<T>::getHead() const
 {
     return _head;
 }
 
 
 template <class T>
-T* List<T>::getTail()
+T* List<T>::getTail() const
 {
     return _tail;
 }
