@@ -7,7 +7,7 @@
 
 
 private:
-    uint8_t* _buffer = 0UL;
+    uint8_t* _buffer = nullptr;
     uint16_t _bufferSize = 0UL;
     uint16_t _pivot = 0UL;
     uint16_t _writeOffset = 0UL;

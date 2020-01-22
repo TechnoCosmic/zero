@@ -8,6 +8,6 @@
 
 public:
     uint8_t _deviceNum = 0;
-    DoubleBuffer* _rxBuffer = 0UL;
+    DoubleBuffer* _rxBuffer = nullptr;
     Synapse _rxDataReceivedSyn;
     Synapse _rxOverflowSyn;

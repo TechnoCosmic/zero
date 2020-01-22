@@ -56,8 +56,8 @@ namespace {
     // globals
     List<Thread> _readyLists[2];                        // the threads that will run
     List<Thread> _timeoutList;                          // the list of Threads wanting to sleep for a time
-    Thread* _currentThread = 0UL;                       // the currently executing thread
-    Thread* _idleThread = 0UL;                          // to run when there's nothing else to do, and only then
+    Thread* _currentThread = nullptr;                   // the currently executing thread
+    Thread* _idleThread = nullptr;                      // to run when there's nothing else to do, and only then
     volatile uint8_t _activeListNum = 0;                // which of the two ready lists are we using as the active list?
     volatile uint32_t _ms = 0ULL;                       // 49 day millisecond counter
     volatile bool _switchingEnabled = true;             // context switching ISR enabled?
@@ -166,7 +166,7 @@ static void globalThreadEntry(
 
     // forget us so that no context is remembered
     // superfluously in the yield() below
-    _currentThread = 0UL;
+    _currentThread = nullptr;
 
     // tidy up, maybe
     if (flags & TF_SELF_DESTRUCT) {
@@ -305,8 +305,6 @@ Thread::~Thread()
 {
     // deallocate the stack
     memory::free(_stackBottom, _stackSize);
-    _stackBottom = 0UL;
-    _stackSize = 0UL;
 }
 
 

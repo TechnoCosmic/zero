@@ -68,8 +68,8 @@ Once the transfer has begun, control wil return to your code. Once the transfer 
 
 ## Example
 ```
-#include "core/thread.h"
-#include "drivers/sram.h"
+#include "thread.h"
+#include "sram.h"
 
 int spiMemoryDemo
 {
@@ -108,10 +108,10 @@ int spiMemoryDemo
 
     // clean up
     memory:free(buffer, 19);
-    buffer = 0UL;
+    buffer = nullptr;
 
     delete extSram;
-    extSram = 0UL;
+    extSram = nullptr;
 
     me.freeSignals(sramReadySig);
 }

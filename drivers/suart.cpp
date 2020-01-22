@@ -26,7 +26,7 @@ using namespace zero;
 
 
 namespace {
-    SuartTx* _suartTx = 0UL;
+    SuartTx* _suartTx = nullptr;
 }
 
 
@@ -41,7 +41,7 @@ SuartTx::SuartTx()
 SuartTx::~SuartTx()
 {
     disable();
-    _suartTx = 0UL;
+    _suartTx = nullptr;
 }
 
 
@@ -179,7 +179,7 @@ void SuartTx::onTick()
 
         if (!getNextTxByte(nextByte)) {
             // no more data to send? tidy up, and signal readiness to go again
-            _txBuffer = 0UL;
+            _txBuffer = nullptr;
             _txReadySyn.signal();
         }
         else {

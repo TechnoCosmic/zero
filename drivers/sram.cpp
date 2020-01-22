@@ -28,12 +28,12 @@ namespace {
     const uint8_t CMD_WRITE = 2;
 
     auto _spiXferMode = SpiXferMode::Tx;
-    volatile uint8_t* _txCursor = 0UL;
-    volatile uint8_t* _rxCursor = 0UL;
+    volatile uint8_t* _txCursor = nullptr;
+    volatile uint8_t* _rxCursor = nullptr;
     volatile uint32_t _xferBytes = 0ULL;
 
     Synapse _spiReadySyn;
-    SpiMemory* _curController = 0UL;
+    SpiMemory* _curController = nullptr;
 
 
     // switches the SPI transfer-complete ISR on and off
@@ -143,7 +143,7 @@ void SpiMemory::read(
         _spiReadySyn.clearSignals();
 
         // set up the housekeeping
-        _txCursor = 0UL;                                // we are reading data, so no TX buffer
+        _txCursor = nullptr;                            // we are reading data, so no TX buffer
         _rxCursor = (uint8_t*) dest;
         _xferBytes = numBytes;
         _spiXferMode = SpiXferMode::Rx;        
@@ -180,7 +180,7 @@ void SpiMemory::write(
         _spiReadySyn.clearSignals();
 
         // set up the housekeeping
-        _rxCursor = 0UL;
+        _rxCursor = nullptr;                            // writing means no RX buffer
         _txCursor = (uint8_t*) src;
         _xferBytes = numBytes;
         _spiXferMode = SpiXferMode::Tx;
@@ -236,7 +236,7 @@ ISR(SPI_STC_vect)
         setSpiIsrEnable(false);
         _spiReadySyn.signal();
         _curController->deselect();
-        _curController = 0UL;
+        _curController = nullptr;
     }
 }
 

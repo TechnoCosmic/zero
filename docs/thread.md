@@ -93,7 +93,7 @@ int myFirstThread()
         // the Thread ourselves...
         
         delete async;
-        async = 0UL;
+        async = nullptr;
 
         // and we don't need the termination signal
         // anymore, so we can free that up also

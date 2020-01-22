@@ -55,7 +55,7 @@ void* memory::allocate(
     uint16_t* allocatedBytes,
     const SearchStrategy strategy)
 {
-    void* rc = 0UL;
+    void* rc = nullptr;
 
     if (allocatedBytes) {
         *allocatedBytes = 0UL;
@@ -96,7 +96,7 @@ void* memory::allocate(
 // first place.
 void memory::free(const void* address, const uint16_t numBytes)
 {
-    if (address == 0UL) return;
+    if (address == nullptr) return;
 
     const uint16_t numPages = getNumPagesForBytes(numBytes);
     const uint16_t startPage = getPageForAddress((uint16_t) address);

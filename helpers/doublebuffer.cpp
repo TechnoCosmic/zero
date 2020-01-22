@@ -33,8 +33,6 @@ DoubleBuffer::DoubleBuffer(const uint16_t size)
 DoubleBuffer::~DoubleBuffer()
 {
     memory::free(_buffer, _bufferSize);
-    _buffer = 0UL;
-    _bufferSize = 0UL;
 }
 
 
@@ -65,7 +63,7 @@ uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes)
     const uint8_t oldSreg = SREG;
     cli();
     
-    uint8_t* rc = 0UL;
+    uint8_t* rc = nullptr;
 
     // tell the caller how many bytes we have
     numBytes = _usedBytes;

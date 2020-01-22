@@ -41,7 +41,7 @@ namespace zero {
         void byteTxComplete();
         
         uint8_t _deviceNum = 0;
-        uint8_t* _txBuffer = 0UL;
+        uint8_t* _txBuffer = nullptr;
         uint16_t _txSize = 0UL;
         Synapse _txReadySyn;
     };

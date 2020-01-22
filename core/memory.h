@@ -23,7 +23,7 @@ namespace zero {
 
 		void* allocate(
 			const uint16_t bytesRqed,
-			uint16_t* allocatedBytes = 0UL,
+			uint16_t* allocatedBytes = nullptr,
 			const SearchStrategy strategy = memory::SearchStrategy::BottomUp);
 
 		void free(const void* address, uint16_t numBytes);

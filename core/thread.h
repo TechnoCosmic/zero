@@ -45,7 +45,7 @@ namespace zero {
             const ThreadEntry entry,                    // the Thread's entry function
             const ThreadFlags flags = TF_READY,         // Optional flags
             const SignalField termSigs = 0UL,           // Signal to set when Thread dies
-            uint16_t* exitCode = 0UL);                  // Place to put Thread's return code
+            uint16_t* exitCode = nullptr);              // Place to put Thread's return code
         
         // Signals
         SignalField allocateSignal(const uint16_t reqdSignalNumber = -1);
@@ -62,7 +62,8 @@ namespace zero {
     };
 
     // the target of a signal. Is a Thread/SignalField pair.
-    struct Synapse {
+    class Synapse {
+    public:
         Thread* thread;
         SignalField signals;
 
@@ -79,13 +80,13 @@ namespace zero {
 
         void clear()
         {
-            thread = 0UL;
+            thread = nullptr;
             signals = 0UL;
         }
 
         bool isValid() const
         {
-            return (thread != 0UL && signals != 0UL);
+            return (thread != nullptr && signals != 0UL);
         }
 
         void signal() const

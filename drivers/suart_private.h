@@ -13,7 +13,7 @@ public:
     void onTick();
 
     // buffer-level stuff
-    uint8_t* _txBuffer = 0UL;
+    uint8_t* _txBuffer = nullptr;
     uint16_t _txBytesRemaining = 0UL;
     Synapse _txReadySyn;
 
@@ -22,6 +22,6 @@ public:
 
     // GPIO and comms
     uint32_t _baud = 0ULL;
-    volatile uint8_t* _ddr = 0UL;
-    volatile uint8_t* _port = 0UL;
+    volatile uint8_t* _ddr = nullptr;
+    volatile uint8_t* _port = nullptr;
     uint8_t _pinMask = 0;

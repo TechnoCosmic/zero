@@ -11,7 +11,7 @@ Allocates SRAM for use by the caller.
 ```
     void* memory::allocate(
         const uint16_t bytesReqd,
-        uint16_t* allocatedBytes = 0UL,
+        uint16_t* allocatedBytes = nullptr,
         SearchStrategy strategy = SearchStrategy::BottomUp
         )
 ```
@@ -36,7 +36,7 @@ Allocates SRAM for use by the caller.
 
 ### Example
 ```
-#include "core/memory.h"
+#include "memory.h"
 
 int memoryDemo()
 {
@@ -47,7 +47,7 @@ int memoryDemo()
 
     // free it
     memory::free(myBuffer, allocatedBytes);
-    myBuffer = 0UL;
+    myBuffer = nullptr;
     allocatedBytes = 0UL;
 }
 ```
