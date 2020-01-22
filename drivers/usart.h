@@ -27,7 +27,7 @@
 
 namespace zero {
 
-    class UsartTx  : public Transmitter {
+    class UsartTx : public Transmitter {
     public:
         UsartTx(const uint8_t deviceNum);
         ~UsartTx();
