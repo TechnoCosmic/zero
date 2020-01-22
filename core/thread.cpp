@@ -338,6 +338,7 @@ static void inline saveInitialRegisters()
     asm volatile ("push r31");
 }
 
+
 // Saves the register set
 static void inline saveExtendedRegisters()
 {

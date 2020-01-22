@@ -28,7 +28,6 @@ namespace {
     const uint8_t CMD_WRITE = 2;
 
     auto _spiXferMode = SpiXferMode::Tx;
-    uint8_t _dummyTxByte = 0;
     volatile uint8_t* _txCursor = 0UL;
     volatile uint8_t* _rxCursor = 0UL;
     volatile uint32_t _xferBytes = 0ULL;
@@ -159,7 +158,7 @@ void SpiMemory::read(
         setSpiIsrEnable(true);
 
         // push the first one out to kickstart it
-        SPDR = _dummyTxByte;
+        SPDR = 0;
     }
 }
 
@@ -223,7 +222,7 @@ ISR(SPI_STC_vect)
             SPDR = *_txCursor++;
         }
         else {
-            SPDR = _dummyTxByte;
+            SPDR = 0;
         }
     }
 
