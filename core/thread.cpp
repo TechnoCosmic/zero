@@ -410,7 +410,8 @@ static void inline restoreInitialRegisters()
 }
 
 
-// Voluntarily hands control of the MCU over to another thread. Called by wait().
+// Voluntarily hands control of the MCU over to another thread.
+// Called by wait(), globalThreadEntry(), and main().
 static void yield()
 {
     // DND
