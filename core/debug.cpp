@@ -40,7 +40,7 @@ void debug::init()
 
 
 // Transmit a single byte via software bit-banging and no ISRs
-void debug::print(char d)
+void debug::print(const char d)
 {
 #ifdef DEBUG_ENABLED
 
@@ -74,7 +74,7 @@ void debug::print(char d)
 
 
 // Transmits a NULL-terminated string via software TX
-void debug::print(char* s, const bool fromFlash)
+void debug::print(const char* s, const bool fromFlash)
 {
 #ifdef DEBUG_ENABLED
 

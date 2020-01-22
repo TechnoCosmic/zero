@@ -16,8 +16,8 @@ namespace zero {
     public:
 
         // public
-        static void print(char c);
-        static void print(char* s, const bool fromFlash = false);
+        static void print(const char c);
+        static void print(const char* s, const bool fromFlash = false);
 
         // private
         static void init();
