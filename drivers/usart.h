@@ -37,13 +37,7 @@ namespace zero {
         void disable() override;
         bool transmit(const void* buffer, const uint16_t sz) override;
 
-        bool getNextTxByte(uint8_t& data);
-        void byteTxComplete();
-        
-        uint8_t _deviceNum = 0;
-        uint8_t* _txBuffer = nullptr;
-        uint16_t _txSize = 0UL;
-        Synapse _txReadySyn;
+        #include "usarttx_private.h"
     };
 
 
@@ -58,7 +52,7 @@ namespace zero {
         uint8_t* getCurrentBuffer(uint16_t& numBytes) override;
         void flush() override;
     
-        #include "usart_private.h"
+        #include "usartrx_private.h"
     };
 
 }
