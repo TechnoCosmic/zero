@@ -20,12 +20,6 @@
 namespace zero {
 
 
-    enum class SpiXferMode {
-        Tx,
-        Rx,
-    };
-
-
     class SpiMemory {
     public:
         SpiMemory(

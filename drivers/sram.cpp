@@ -24,6 +24,11 @@ using namespace zero;
 
 namespace {
 
+    enum class SpiXferMode {
+        Tx,
+        Rx,
+    };
+
     const uint8_t CMD_READ = 3;
     const uint8_t CMD_WRITE = 2;
 
