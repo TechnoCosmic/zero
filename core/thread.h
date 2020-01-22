@@ -32,7 +32,7 @@ namespace zero {
     // Thread class
     class Thread {
     public:
-        // Life cycle
+        // Meta
         static Thread& getCurrentThread();              // Returns the current Thread
         static uint32_t now();                          // Elapsed milliseconds since boot
 
@@ -40,6 +40,7 @@ namespace zero {
         static void permit();                           // Enable context switching
         static bool isSwitchingEnabled();               // Determines if switching is on
 
+        // constructor
         Thread(
             const uint16_t stackSize,                   // size of the stack, in bytes
             const ThreadEntry entry,                    // the Thread's entry function
@@ -47,7 +48,7 @@ namespace zero {
             const SignalField termSigs = 0UL,           // Signal to set when Thread dies
             uint16_t* exitCode = nullptr);              // Place to put Thread's return code
         
-        // Signals
+        // Signals Management
         SignalField allocateSignal(const uint16_t reqdSignalNumber = -1);
         void freeSignals(const SignalField signals);
 
@@ -116,7 +117,7 @@ static __inline__ uint8_t __iForbidRetVal() {
 }
 
 
-static __inline__ void __iZeroRestore(const uint8_t* __tmr_save) {
+static __inline__ void __iZeroRestore(const uint8_t* const __tmr_save) {
     if (*__tmr_save) {
         zero::Thread::permit();
     }
@@ -124,19 +125,22 @@ static __inline__ void __iZeroRestore(const uint8_t* __tmr_save) {
 
 
 #define ZERO_ATOMIC_BLOCK(t)        for ( t, __ToDo = __iForbidRetVal(); __ToDo ; __ToDo = 0 )
-#define ZERO_ATOMIC_RESTORESTATE    uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t)(zero::Thread::isSwitchingEnabled())
 #define ZERO_ATOMIC_FORCEON         uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t) 1)
+#define ZERO_ATOMIC_RESTORESTATE    uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = \
+                                        (uint8_t)(zero::Thread::isSwitchingEnabled())
 
 
-// Funky little ATOMIC_BLOCK macro clones for allocating and freeing Signals
-static __inline__ void __iSignalsRestore(const zero::SignalField* __signalsToFree) {
+// Funky little ATOMIC_BLOCK macro clone for allocating and freeing Signals
+static __inline__ void __iSignalsRestore(const zero::SignalField* const __signalsToFree) {
     if (*__signalsToFree) {
         zero::Thread::getCurrentThread().freeSignals(*__signalsToFree);
     }
 }
 
 
-#define ZERO_SIGNAL(n)      for ( SignalField n __attribute__((__cleanup__(__iSignalsRestore))) = (SignalField)(zero::Thread::getCurrentThread().allocateSignal()), __ToDo = 1; __ToDo ; __ToDo = 0 )
+#define ZERO_SIGNAL(n)      for ( SignalField n __attribute__((__cleanup__(__iSignalsRestore))) = \
+                                (SignalField)(zero::Thread::getCurrentThread().allocateSignal()), \
+                                __ToDo = 1; __ToDo ; __ToDo = 0 )
 
 
 #endif

@@ -113,7 +113,7 @@ void memory::free(const void* address, const uint16_t numBytes)
 }
 
 
-// overloads for new and delete
+// overloads for new and delete operators
 void* operator new(size_t size)
 {
     return memory::allocate(size);

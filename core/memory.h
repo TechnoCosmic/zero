@@ -21,11 +21,13 @@ namespace zero {
 
 	namespace memory {
 
+		// allocate a contiguous chunk of memory
 		void* allocate(
 			const uint16_t bytesRqed,
 			uint16_t* allocatedBytes = nullptr,
 			const SearchStrategy strategy = memory::SearchStrategy::BottomUp);
 
+		// deallocate a contiguous chunk of memory
 		void free(const void* address, uint16_t numBytes);
 
 	}
