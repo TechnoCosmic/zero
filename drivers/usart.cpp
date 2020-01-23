@@ -96,7 +96,7 @@ UsartTx::UsartTx(const uint8_t deviceNum)
 UsartTx::~UsartTx()
 {
     disable();
-    _usartTx[_deviceNum] = 0UL;
+    _usartTx[_deviceNum] = nullptr;
 }
 
 
@@ -181,8 +181,8 @@ bool UsartTx::getNextTxByte(uint8_t& data)
 
 
 void UsartTx::byteTxComplete() {
-    if (!_txSize && _txBuffer != 0UL) {
-        _txBuffer = 0UL;
+    if (!_txSize && _txBuffer != nullptr) {
+        _txBuffer = nullptr;
         _txReadySyn.signal();
     }
 }
@@ -200,7 +200,7 @@ UsartRx::UsartRx(const uint8_t deviceNum)
 UsartRx::~UsartRx()
 {
     disable();
-    _usartRx[_deviceNum] = 0UL;
+    _usartRx[_deviceNum] = nullptr;
 }
 
 
@@ -231,7 +231,7 @@ bool UsartRx::enable(
         _rxOverflowSyn.clear();
 
         delete _rxBuffer;
-        _rxBuffer = 0UL;
+        _rxBuffer = nullptr;
 
         if ((_rxBuffer = new DoubleBuffer(bufferSize))) {
             rc = true;
@@ -253,7 +253,7 @@ void UsartRx::disable()
         UCSRB(_deviceNum) &= ~RX_BITS;
 
         delete _rxBuffer;
-        _rxBuffer = 0UL;
+        _rxBuffer = nullptr;
 
         _rxDataReceivedSyn.clear();
         _rxOverflowSyn.clear();
