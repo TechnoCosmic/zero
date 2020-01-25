@@ -103,6 +103,14 @@ namespace zero {
             }
         }
         
+        void wait() const {
+            if (isValid()) {
+                if (thread == &Thread::getCurrentThread()) {
+                    thread->wait(signals);
+                }
+            }
+        }
+
     }; 
 }
 
