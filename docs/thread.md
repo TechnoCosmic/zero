@@ -20,7 +20,7 @@ Constructs a new Thread object, and begins executing it.
 |-----|-----------|
 |```stackBytes```|Size of the Thread's stack, in bytes. A minimum of 96 bytes will be allocated for the stack.|
 |```entryPoint```|The function that contains the main body of the Thread's code.|
-|```flags```|A bitfield controlling aspects of the Thread's behavior. **DEFAULT:** ```TF_READY```|
+|```flags```|A bitfield controlling aspects of the Thread's behavior. **DEFAULT:** ```TF_FIRE_FORGET```|
 |```termSignals```|Signals to set in the parent Thread when this new Thread terminates. Optional.|
 |```exitCode```|A pointer to a ```uint16_t``` to store the return code from the Thread's ```entry``` function. Optional.|
 
@@ -33,7 +33,7 @@ Constructs a new Thread object, and begins executing it.
 |----|-----------|
 |```TF_READY```|Makes the Thread immediately available to execute|
 |```TF_SELF_DESTRUCT```|Will clean up the Thread object after termination, and is for use in cases where you cannot call ```delete``` on the Thread object when its finished, such as those Threads launched from ```startup_sequence()``` (the ```main()``` replacement function for zero programs)
-|```TF_FIRE_AND_FORGET```|Shortcut for both ```TF_READY``` and ```TF_SELF_DESTRUCT``` combined|
+|```TF_FIRE_FORGET```|Shortcut for both ```TF_READY``` and ```TF_SELF_DESTRUCT``` combined|
 
 - If you want to know when a child Thread terminates, allocate a signal via ```allocateSignal()``` and pass that as ```termSignals```. When the child Thread terminates, that signal will be set, and can be checked by calling ```getCurrentSignals()``` or by ```wait()```ing on it.
 
@@ -41,7 +41,7 @@ Constructs a new Thread object, and begins executing it.
 
 ### Example
 ```
-#include "core/thread.h"
+#include "thread.h"
 
 int myAsyncThread()
 {
@@ -109,7 +109,7 @@ int myFirstThread()
 void startup_sequence()
 {
     // start one simple Thread when the kernel fires up
-    new Thread(128, myFirstThread, TF_FIRE_AND_FORGET);
+    new Thread(128, myFirstThread, TF_FIRE_FORGET);
 }
 ```
 
