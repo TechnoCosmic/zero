@@ -5,9 +5,8 @@ The ```debug``` class provides a simple (non-ISR) software TX for debugging outp
 
 It is intended to be a very lightweight method of outputting data to a terminal for **debugging purposes**, even on devices lacking a hardware UART.
 
-## debug::print()
+## debug::print() - characters and null-terminated strings
 Outputs a character or string to the ```DEBUG_PORT``` on ```DEBUG_PIN``` at ```DEBUG_BAUD``` (see ```makefile```).
-
 ```
     static void debug::print(char c)
 
@@ -16,12 +15,28 @@ Outputs a character or string to the ```DEBUG_PORT``` on ```DEBUG_PIN``` at ```D
         const bool fromFlash = false
         )
 ```
+
 ### Parameters
 |Param|Description|
 |-----|-----------|
 |```c```|The character to transmit, or...|
 |```s```|The NULL-terminated string to transmit.|
 |```fromFlash```|Specifies that ```s``` points to an address in Flash memory (see ```PROGMEM``` macro in AVR-libc).|
+
+## debug::print() - integers
+Outputs a 16-bit integer number in a specified base.
+```
+    static void print(
+        const uint16_t n,
+        const int base = 10
+    )
+```
+
+### Parameters
+|Param|Description|
+|-----|-----------|
+|```n```|The number to output|
+|```base```|Optional base for the number. **Default: 10**.|
 
 ### Notes
 These are static methods. These are also blocking calls - control returns to the caller only after the transmission is complete.
