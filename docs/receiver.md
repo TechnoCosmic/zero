@@ -44,8 +44,8 @@ Discards the current input buffer.
 
 ## Example
 ```
-#include "core/thread.h"
-#include "drivers/usart.h"
+#include "thread.h"
+#include "usart.h"
 
 int rxDemo()
 {
