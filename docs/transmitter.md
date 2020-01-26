@@ -1,7 +1,6 @@
-# Transmitter
-```zero/drivers/serial.h```
-
-The ```Transmitter``` is an abstract base class for device drivers implementing a serial interface. Also refer to the documentation for ```Receiver```.
+# UsartTx/SuartTx
+```zero/drivers/usart.h```
+```zero/drivers/suart.h```
 
 ## enable()
 Enables the transmitter.

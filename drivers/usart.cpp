@@ -142,9 +142,17 @@ void UsartTx::disable()
 }
 
 
-bool UsartTx::transmit(const void* buffer, const uint16_t sz)
+bool UsartTx::transmit(
+    const void* buffer,
+    const uint16_t sz,
+    const bool allowBlock)
 {
+    if (allowBlock) {
+    _txReadySyn.wait();
+    }
+    
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+
         if (_txBuffer) return false;
         if (!buffer) return false;
         if (!sz) return false;
@@ -153,7 +161,7 @@ bool UsartTx::transmit(const void* buffer, const uint16_t sz)
 
         // prime the buffer data
         _txBuffer = (uint8_t*) buffer;
-        _txSize = sz;
+        _txBytesRemaining = sz;
 
         // enable the ISR that starts the transmission
         UCSRB(_deviceNum) |= (1 << UDRIE0);
@@ -169,9 +177,9 @@ bool UsartTx::getNextTxByte(uint8_t& data)
 
     data = 0;
 
-    if (_txSize) {
+    if (_txBytesRemaining) {
         data = *_txBuffer++;
-        _txSize--;
+        _txBytesRemaining--;
 
         rc = true;
     }
@@ -181,7 +189,7 @@ bool UsartTx::getNextTxByte(uint8_t& data)
 
 
 void UsartTx::byteTxComplete() {
-    if (!_txSize && _txBuffer != nullptr) {
+    if (!_txBytesRemaining && _txBuffer != nullptr) {
         _txBuffer = nullptr;
         _txReadySyn.signal();
     }

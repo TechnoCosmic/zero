@@ -22,35 +22,38 @@
 
 #include "thread.h"
 #include "doublebuffer.h"
-#include "serial.h"
 
 
 namespace zero {
 
-    class UsartTx : public Transmitter {
+    class UsartTx {
     public:
         UsartTx(const uint8_t deviceNum);
         ~UsartTx();
 
         void setCommsParams(const uint32_t baud);
-        bool enable(Synapse txReadySyn) override;
-        void disable() override;
-        bool transmit(const void* buffer, const uint16_t sz) override;
+        bool enable(Synapse txReadySyn);
+        void disable();
+
+        bool transmit(
+            const void* buffer,
+            const uint16_t sz,
+            const bool allowBlock = false);
 
         #include "usarttx_private.h"
     };
 
 
-    class UsartRx : public Receiver {
+    class UsartRx {
     public:
         UsartRx(const uint8_t deviceNum);
         ~UsartRx();
 
         void setCommsParams(const uint32_t baud);
-        bool enable(const uint16_t bufferSize, Synapse dataRecdSyn, Synapse overflowSyn) override;
-        void disable() override;
-        uint8_t* getCurrentBuffer(uint16_t& numBytes) override;
-        void flush() override;
+        bool enable(const uint16_t bufferSize, Synapse dataRecdSyn, Synapse overflowSyn);
+        void disable();
+        uint8_t* getCurrentBuffer(uint16_t& numBytes);
+        void flush();
     
         #include "usartrx_private.h"
     };

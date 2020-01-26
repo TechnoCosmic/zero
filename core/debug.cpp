@@ -14,7 +14,6 @@
 #include <util/delay.h>
 
 #include "debug.h"
-#include "serial.h"
 
 
 using namespace zero;
@@ -47,7 +46,10 @@ void debug::print(const char d)
 #ifdef DEBUG_ENABLED
 
     // setup the output 'register'
-    uint16_t reg = formatForSerial(d);
+    uint16_t reg = d << 1;
+
+    reg &= ~(1L << 0);                                   // force start bit low
+    reg |= (1L << 9);                                    // stop bit high (so it ends high)
 
     // stop interrupts because timing is critical
     const uint8_t oldSreg = SREG;

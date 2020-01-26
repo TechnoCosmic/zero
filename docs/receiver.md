@@ -1,10 +1,8 @@
-# Receiver
-```zero/drivers/serial.h```
-
-The ```Receiver``` is an abstract base class for device drivers implementing a serial interface. Also refer to the documentation for ```Transmitter```.
+# UsartRx
+```zero/drivers/usart.h```
 
 ## enable()
-Enables the receiver.
+Enables the USART receiver.
 ```
     virtual bool enable(
         const uint16_t bufferSize,
@@ -23,7 +21,7 @@ Enables the receiver.
 The serial device drivers in zero use the ```DoubleBuffer``` class to implement their receive buffers. For this reason, the effective buffer size at any given moment is only half of ```bufferSize```, since ```bufferSize``` specifies the total memory used by both buffers.
 
 ## disable()
-Disables the receiver, releases any resources used, and prevents further data reception.
+Disables the USART, releases any resources used, and prevents further data reception.
 ```
     virtual void disable()
 ```

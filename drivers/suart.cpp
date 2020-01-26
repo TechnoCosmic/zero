@@ -68,6 +68,24 @@ void SuartTx::stopTxTimer()
 }
 
 
+// Sets the communications parameters for the software transmitter
+void SuartTx::setCommsParams(
+    const uint32_t baud,                                // the speed of the communications
+    volatile uint8_t* ddr,                              // address of the DDR for the software TX pin
+    volatile uint8_t* port,                             // address of the PORT for the software TX pin
+    const uint8_t pin)                                  // the pin number for the TX (0-7)
+{
+    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+        disable();
+
+        _baud = baud;
+        _ddr = ddr;
+        _port = port;
+        _pinMask = (1 << pin);
+    }
+}
+
+
 // Enables the software transmitter
 bool SuartTx::enable(Synapse txReadySyn)
 {
@@ -105,27 +123,16 @@ void SuartTx::disable()
 }
 
 
-// Sets the communications parameters for the software transmitter
-void SuartTx::setCommsParams(
-    const uint32_t baud,                                // the speed of the communications
-    volatile uint8_t* ddr,                              // address of the DDR for the software TX pin
-    volatile uint8_t* port,                             // address of the PORT for the software TX pin
-    const uint8_t pin)                                  // the pin number for the TX (0-7)
-{
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-        disable();
-
-        _baud = baud;
-        _ddr = ddr;
-        _port = port;
-        _pinMask = (1 << pin);
-    }
-}
-
-
 // Transmit a buffer via the software TX pin
-bool SuartTx::transmit(const void* buffer, const uint16_t sz)
+bool SuartTx::transmit(
+    const void* buffer,
+    const uint16_t sz,
+    const bool allowBlock)
 {
+    if (allowBlock) {
+        _txReadySyn.wait();
+    }
+ 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
         if (_txBuffer) return false;
         if (!buffer) return false;
@@ -184,7 +191,11 @@ void SuartTx::onTick()
         }
         else {
             // load next byte
-            _txReg = formatForSerial(nextByte);
+            _txReg = nextByte << 1;
+
+            _txReg &= ~(1L << 0);                       // force start bit low
+            _txReg |= (1L << 9);                        // stop bit high (so it ends high)
+
             startTxTimer();
         }
     }

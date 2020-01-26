@@ -16,12 +16,11 @@
 #include <stdint.h>
 
 #include "thread.h"
-#include "serial.h"
 
 
 namespace zero {
 
-    class SuartTx : public Transmitter {
+    class SuartTx {
     public:
         SuartTx();
         ~SuartTx();
@@ -32,9 +31,13 @@ namespace zero {
             volatile uint8_t* port,                     // address of the PORT for the software TX pin
             const uint8_t pin);                         // the pin number for the TX (0-7)
 
-        bool enable(const Synapse txReadySyn) override;
-        void disable() override;
-        bool transmit(const void* buffer, const uint16_t sz) override;
+        bool enable(const Synapse txReadySyn);
+        void disable();
+        
+        bool transmit(
+            const void* buffer,
+            const uint16_t sz,
+            const bool allowBlock = false);
 
         #include "suart_private.h"
     };
