@@ -43,7 +43,6 @@ namespace zero {
         #include "usarttx_private.h"
     };
 
-
     class UsartRx {
     public:
         UsartRx(const uint8_t deviceNum);
