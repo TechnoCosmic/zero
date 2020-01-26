@@ -63,9 +63,8 @@ bool Pipe::read(uint8_t& data)
 
         while (isEmpty()) {
             _dataAvailSyn.wait();
+            cli();
         }
-
-        cli();
 
         // select the byte and invoke the filter
         bool doIt = true;
@@ -100,9 +99,8 @@ bool Pipe::write(const uint8_t data)
 
         while (isFull()) {
             _roomAvailSyn.wait();
+            cli();
         }
-
-        cli();
         
         uint16_t index = _startIndex + _length;
 
