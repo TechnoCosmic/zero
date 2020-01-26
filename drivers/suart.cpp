@@ -192,7 +192,6 @@ void SuartTx::onTick()
         else {
             // load next byte
             _txReg = nextByte << 1;
-
             _txReg &= ~(1L << 0);                       // force start bit low
             _txReg |= (1L << 9);                        // stop bit high (so it ends high)
 

@@ -81,8 +81,8 @@ When you enable a ```Receiver```, you hand it three (3) pieces of information...
 
 To receive data, your Thread should ```wait()``` on the signal it allocated for the "data available" ```Synapse```. When this signal is set, you can ask the receiver for the current receive buffer...
 ```
-#include "core/thread.h"
-#include "drivers/usart.h"
+#include "thread.h"
+#include "usart.h"
 
 int mySerialThread()
 {

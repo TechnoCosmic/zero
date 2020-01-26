@@ -34,8 +34,8 @@ namespace {
 void debug::init()
 {
 #ifdef DEBUG_ENABLED
-    DEBUG_DDR |= (1 << DEBUG_PIN);
-    DEBUG_PORT |= (1 << DEBUG_PIN);
+    DEBUG_DDR |= DEBUG_PIN_MASK;
+    DEBUG_PORT |= DEBUG_PIN_MASK;
 #endif
 }
 
@@ -47,7 +47,6 @@ void debug::print(const char d)
 
     // setup the output 'register'
     uint16_t reg = d << 1;
-
     reg &= ~(1L << 0);                                   // force start bit low
     reg |= (1L << 9);                                    // stop bit high (so it ends high)
 
