@@ -49,7 +49,12 @@ namespace zero {
         ~UsartRx();
 
         void setCommsParams(const uint32_t baud);
-        bool enable(const uint16_t bufferSize, Synapse dataRecdSyn, Synapse overflowSyn);
+
+        bool enable(
+            const uint16_t bufferSize,
+            Synapse dataRecdSyn,
+            Synapse overflowSyn);
+            
         void disable();
         uint8_t* getCurrentBuffer(uint16_t& numBytes);
         void flush();
