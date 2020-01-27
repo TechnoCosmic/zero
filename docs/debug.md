@@ -45,4 +45,4 @@ Interrupts are disabled while each character is transmitted in a tight-loop (app
 
 No set up or initialization is required by your code - just be sure that the ```makefile``` has the ```DEBUG_*``` settings to your liking, and then call these functions.
 
-For more comprehensive and better performing data transmission, see the ```UsartTx``` or ```SuartTx``` classes.
+For asynchronous and better performing data transmission, see the ```UsartTx``` or ```SuartTx``` classes.

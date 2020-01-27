@@ -35,7 +35,7 @@ See ```docs/thread.md``` for API reference.
 zero implements a simple page-based memory manager, with overrides for ```new``` and ```delete```. See ```docs/memory.md``` for API reference.
 
 ## Hardware USART Drivers
-zero's serial I/O model implemented by Transmitters and Receivers.
+zero's serial I/O model implemented by transmitters (```UsartTx``` and ```SuartTx```) and receivers (```UsartRx```).
 
 ### Transmitting Data
 After creating an instance of a serial transmitter class, such as ```UsartTx```, you set up the communications parameters (specific to the type of transmitter), and enable it. In the case of the AVR on-board USART devices, the only parameter needed is the baud rate. If you want to use zero's software serial transmitter, you will also need to specify the ```DDR```, ```PORT``` and pin for the TX line.

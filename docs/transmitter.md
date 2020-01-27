@@ -41,7 +41,7 @@ Sends information asynchronously.
 |```data```|A pointer to the information to transmit.|
 |```numBytes```|The number of bytes to send.|
 ### Notes
-A ```Transmitter``` is not required to copy the data you supply here before transmitting it. It is up to your code to ensure the supplied buffer stays current while the transmission is in progress.
+A transmitter is not required to copy the data you supply here before transmitting it. It is up to your code to ensure the supplied buffer stays current while the transmission is in progress.
 
 Once a transmission is finished, the transmitter will signal the ```txReadySyn``` ```Synapse``` supplied in the call to ```enable()```.
 
