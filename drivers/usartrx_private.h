@@ -9,5 +9,5 @@
 public:
     uint8_t _deviceNum = 0;
     DoubleBuffer* _rxBuffer = nullptr;
-    Synapse _rxDataReceivedSyn;
-    Synapse _rxOverflowSyn;
+    Synapse* _rxDataReceivedSyn;
+    Synapse* _rxOverflowSyn;

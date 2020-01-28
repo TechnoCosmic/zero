@@ -37,7 +37,7 @@ namespace {
     volatile uint8_t* _rxCursor = nullptr;
     volatile uint32_t _xferBytes = 0ULL;
 
-    Synapse _spiReadySyn;
+    Synapse* _spiReadySyn;
     SpiMemory* _curController = nullptr;
 
 
@@ -70,7 +70,7 @@ SpiMemory::SpiMemory(
     volatile uint8_t* csDdr,                            // DDR for the CS for the chip
     volatile uint8_t* csPort,                           // PORT for CS
     const uint8_t csPin,                                // pin number for CS
-    Synapse readySyn)                                   // Synapse to fire when ready to transfer
+    Synapse& readySyn)                                    // Synapse to fire when ready to transfer
 {
     _capacityBytes = capacityBytes;
     _csDdr = csDdr;
@@ -92,8 +92,8 @@ SpiMemory::SpiMemory(
     SPSR |= (1 << SPI2X);
 
     // signal the Synapse that we're ready to go
-    _spiReadySyn = readySyn;
-    _spiReadySyn.signal();
+    _spiReadySyn = &readySyn;
+    _spiReadySyn->signal();
 }
 
 
@@ -112,8 +112,10 @@ SpiMemory::~SpiMemory()
     *_csDdr &= ~_csPinMask;
 
     // clear signals and forget
-    _spiReadySyn.clearSignals();
-    _spiReadySyn.clear();
+    if (_spiReadySyn) {
+        _spiReadySyn->clearSignals();
+        _spiReadySyn = nullptr;
+    }
 }
 
 
@@ -145,7 +147,9 @@ void SpiMemory::read(
         _curController = this;
 
         // make sure no-one falls through while we're working
-        _spiReadySyn.clearSignals();
+        if (_spiReadySyn) {
+            _spiReadySyn->clearSignals();
+        }
 
         // set up the housekeeping
         _txCursor = nullptr;                            // we are reading data, so no TX buffer
@@ -182,8 +186,10 @@ void SpiMemory::write(
         _curController = this;
 
         // make sure no-one falls through while we're working
-        _spiReadySyn.clearSignals();
-
+        if (_spiReadySyn) {
+            _spiReadySyn->clearSignals();
+        }
+    
         // set up the housekeeping
         _rxCursor = nullptr;                            // writing means no RX buffer
         _txCursor = (uint8_t*) src;
@@ -239,7 +245,11 @@ ISR(SPI_STC_vect)
     // disable things if we're done
     if (!_xferBytes) {
         setSpiIsrEnable(false);
-        _spiReadySyn.signal();
+        
+        if (_spiReadySyn) {
+            _spiReadySyn->signal();
+        }
+
         _curController->deselect();
         _curController = nullptr;
     }

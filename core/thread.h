@@ -33,7 +33,7 @@ namespace zero {
     class Thread {
     public:
         // Meta
-        static Thread& getCurrentThread();              // Returns the current Thread
+        static Thread& getCurrent();              // Returns the current Thread
         static uint32_t now();                          // Elapsed milliseconds since boot
 
         static void forbid();                           // Disable context switching
@@ -65,7 +65,7 @@ namespace zero {
 }
 
 
-#define me Thread::getCurrentThread()
+#define me Thread::getCurrent()
 
 
 // Funky little ATOMIC_BLOCK macro clones for context switching
@@ -86,19 +86,6 @@ static __inline__ void __iZeroRestore(const uint8_t* const __tmr_save) {
 #define ZERO_ATOMIC_FORCEON         uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t) 1)
 #define ZERO_ATOMIC_RESTORESTATE    uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = \
                                         (uint8_t)(zero::Thread::isSwitchingEnabled())
-
-
-// Funky little ATOMIC_BLOCK macro clone for allocating and freeing Signals
-static __inline__ void __iSignalsRestore(const zero::SignalField* const __signalsToFree) {
-    if (*__signalsToFree) {
-        zero::Thread::getCurrentThread().freeSignals(*__signalsToFree);
-    }
-}
-
-
-#define ZERO_SIGNAL(n)      for ( SignalField n __attribute__((__cleanup__(__iSignalsRestore))) = \
-                                (SignalField)(zero::Thread::getCurrentThread().allocateSignal()), \
-                                __ToDo = 1; __ToDo ; __ToDo = 0 )
 
 
 #endif

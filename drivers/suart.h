@@ -16,6 +16,7 @@
 #include <stdint.h>
 
 #include "thread.h"
+#include "synapse.h"
 
 
 namespace zero {
@@ -31,7 +32,7 @@ namespace zero {
             volatile uint8_t* port,                     // address of the PORT for the software TX pin
             const uint8_t pin);                         // the pin number for the TX (0-7)
 
-        bool enable(const Synapse txReadySyn);
+        bool enable(Synapse& txReadySyn);
         void disable();
         
         bool transmit(

@@ -113,10 +113,10 @@ void startup_sequence()
 }
 ```
 
-## getCurrentThread()
+## getCurrent()
 Returns the currently executing ```Thread``` object.
 ```
-    static Thread& Thread::getCurrentThread()
+    static Thread& Thread::getCurrent()
 ```
 
 ### Notes
@@ -290,22 +290,6 @@ ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
 }
 ```
 There is also a zero equivalent of ```ATOMIC_FORCEON```, called ```ZERO_ATOMIC_FORCEON```, that behaves as you would expect.
-
-## ZERO_SIGNAL
-This macro provides an easy way to temporarily allocate a signal, and free it again when the code block is finished...
-
-```
-ZERO_SIGNAL(txDoneSig) {
-
-    // use the signal allocated
-    tx->enable(txDoneSig);
-
-    // do stuff using that signal...
-    // ...
-    // ...
-
-}
-```
 
 # startup_sequence()
 ```

@@ -17,16 +17,6 @@
 		],
 	},
 
-	"zero Signals Block": {
-		"prefix": [ "zero-signals", "zero-signals-block" ],
-		"body": [
-			"ZERO_SIGNAL(${1:name}) {",
-			"",
-			"\t$0",
-			"}",
-		],
-	},
-
 	"Source file beginning": {
 		"prefix": "begin",
 		"body": [

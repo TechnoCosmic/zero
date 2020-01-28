@@ -34,8 +34,8 @@ namespace zero {
         void setReadFilter(PipeFilter p);
         void setWriteFilter(PipeFilter p);
 
-        void setRoomAvailSynapse(Synapse s);
-        void setDataAvailSynapse(Synapse s);
+        void setRoomAvailSynapse(Synapse& s);
+        void setDataAvailSynapse(Synapse& s);
 
         #include "pipe_private.h"
     };

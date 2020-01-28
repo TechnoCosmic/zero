@@ -7,56 +7,59 @@
 
 
 #include "synapse.h"
+#include "thread.h"
 
 
 using namespace zero;
 
 
-Synapse::Synapse()
+Synapse::Synapse() :
+    _thread(&me),
+    _signals(me.allocateSignal())
 {
-    clear();
 }
 
 
-Synapse::Synapse(const SignalField sigs)
+Synapse::~Synapse()
 {
-    thread = &Thread::getCurrentThread();
-    signals = sigs;
+    _thread->freeSignals(_signals);
 }
 
 
-void Synapse::clear()
+Synapse::operator bool() const
 {
-    thread = nullptr;
-    signals = 0UL;
+    return (_signals != 0UL);
 }
 
 
-bool Synapse::isValid() const
+Synapse::operator SignalField() const
 {
-    return (thread != nullptr && signals != 0UL);
+    return _signals;
 }
 
 
 void Synapse::signal() const
 {
-    if (isValid()) {
-        thread->signal(signals);
+    if (*this) {
+        _thread->signal(_signals);
     }
 }
 
 
-void Synapse::clearSignals() const {
-    if (isValid()) {
-        thread->clearSignals(signals);
+void Synapse::clearSignals() const
+{
+    if (*this) {
+        _thread->clearSignals(_signals);
     }
 }
 
 
-void Synapse::wait() const {
-    if (isValid()) {
-        if (thread == &Thread::getCurrentThread()) {
-            thread->wait(signals);
-        }
+SignalField Synapse::wait() const
+{
+    if (*this && &me == _thread) {
+        return me.wait(_signals);
+    }
+    else {
+        return 0UL;
     }
 }

@@ -12,8 +12,8 @@ private:
     uint16_t _startIndex;
     uint16_t _length;
 
-    Synapse _roomAvailSyn;
-    Synapse _dataAvailSyn;
+    Synapse* _roomAvailSyn;
+    Synapse* _dataAvailSyn;
 
     PipeFilter _readFilter;
     PipeFilter _writeFilter;

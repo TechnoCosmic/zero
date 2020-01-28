@@ -122,15 +122,15 @@ void UsartTx::setCommsParams(const uint32_t baud)
 }
 
 
-bool UsartTx::enable(Synapse txReadySyn)
+bool UsartTx::enable(Synapse& txReadySyn)
 {
-    if (!txReadySyn.isValid()) return false;
+    if (!txReadySyn) return false;
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
         UCSRB(_deviceNum) |= TX_BITS;
 
-        _txReadySyn = txReadySyn;
-        _txReadySyn.signal();
+        _txReadySyn = &txReadySyn;
+        _txReadySyn->signal();
 
         return true;
     }
@@ -140,8 +140,10 @@ bool UsartTx::enable(Synapse txReadySyn)
 void UsartTx::disable()
 {
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-        _txReadySyn.clearSignals();
-        _txReadySyn.clear();
+        if (_txReadySyn) {
+            _txReadySyn->clearSignals();
+            _txReadySyn = nullptr;
+        }
 
         UCSRB(_deviceNum) &= ~TX_BITS;
     }
@@ -153,17 +155,18 @@ bool UsartTx::transmit(
     const uint16_t sz,
     const bool allowBlock)
 {
-    if (allowBlock) {
-    _txReadySyn.wait();
+    if (allowBlock && _txReadySyn) {
+        _txReadySyn->wait();
     }
     
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-
         if (_txBuffer) return false;
         if (!buffer) return false;
         if (!sz) return false;
 
-        _txReadySyn.clearSignals();
+        if (_txReadySyn) {
+            _txReadySyn->clearSignals();
+        }
 
         // prime the buffer data
         _txBuffer = (uint8_t*) buffer;
@@ -197,7 +200,10 @@ bool UsartTx::getNextTxByte(uint8_t& data)
 void UsartTx::byteTxComplete() {
     if (!_txBytesRemaining && _txBuffer != nullptr) {
         _txBuffer = nullptr;
-        _txReadySyn.signal();
+
+        if (_txReadySyn) {
+            _txReadySyn->signal();
+        }
     }
 }
 
@@ -241,14 +247,14 @@ void UsartRx::setCommsParams(const uint32_t baud)
 
 bool UsartRx::enable(
     const uint16_t bufferSize,
-    Synapse rxSyn,
-    Synapse ovfSyn)
+    Synapse& rxSyn,
+    Synapse* ovfSyn)
 {
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
         bool rc = false;
 
-        _rxDataReceivedSyn.clear();
-        _rxOverflowSyn.clear();
+        _rxDataReceivedSyn = nullptr;
+        _rxOverflowSyn = nullptr;
 
         delete _rxBuffer;
         _rxBuffer = nullptr;
@@ -256,7 +262,7 @@ bool UsartRx::enable(
         if ((_rxBuffer = new DoubleBuffer(bufferSize))) {
             rc = true;
 
-            _rxDataReceivedSyn = rxSyn;
+            _rxDataReceivedSyn = &rxSyn;
             _rxOverflowSyn = ovfSyn;
 
             UCSRB(_deviceNum) |= RX_BITS;
@@ -275,8 +281,15 @@ void UsartRx::disable()
         delete _rxBuffer;
         _rxBuffer = nullptr;
 
-        _rxDataReceivedSyn.clear();
-        _rxOverflowSyn.clear();
+        if (_rxDataReceivedSyn) {
+            _rxDataReceivedSyn->clearSignals();
+            _rxDataReceivedSyn = nullptr;
+        }
+
+        if (_rxOverflowSyn) {
+            _rxOverflowSyn->clearSignals();
+            _rxOverflowSyn = nullptr;
+        }
     }
 }
 
@@ -320,10 +333,14 @@ ISR(USART_RX_vect)
 
     // received data
     if (_usartRx[0]->_rxBuffer->write(newByte)) {
-        _usartRx[0]->_rxDataReceivedSyn.signal();
+        if (_usartRx[0]->_rxDataReceivedSyn) {
+            _usartRx[0]->_rxDataReceivedSyn->signal();
+        }
     }
     else {
-        _usartRx[0]->_rxOverflowSyn.signal();
+        if (_usartRx[0]->_rxOverflowSyn) {
+            _usartRx[0]->_rxOverflowSyn->signal();
+        }
     }
 }
 
@@ -358,10 +375,14 @@ ISR(USART1_RX_vect)
 
     // received data
     if (_usartRx[1]->_rxBuffer->write(newByte)) {
-        _usartRx[1]->_rxDataReceivedSyn.signal();
+        if (_usartRx[1]->_rxDataReceivedSyn) {
+            _usartRx[1]->_rxDataReceivedSyn->signal();
+        }
     }
     else {
-        _usartRx[1]->_rxOverflowSyn.signal();
+        if (_usartRx[1]->_rxOverflowSyn) {
+            _usartRx[1]->_rxOverflowSyn->signal();
+        }
     }
 }
 
@@ -399,10 +420,14 @@ ISR(USART2_RX_vect)
 
     // received data
     if (_usartRx[2]->_rxBuffer->write(newByte)) {
-        _usartRx[2]->_rxDataReceivedSyn.signal();
+        if (_usartRx[2]->_rxDataReceivedSyn) {
+            _usartRx[2]->_rxDataReceivedSyn->signal();
+        }
     }
     else {
-        _usartRx[2]->_rxOverflowSyn.signal();
+        if (_usartRx[2]->_rxOverflowSyn) {
+            _usartRx[2]->_rxOverflowSyn->signal();
+        }
     }
 }
 
@@ -440,10 +465,14 @@ ISR(USART3_RX_vect)
 
     // received data
     if (_usartRx[3]->_rxBuffer->write(newByte)) {
-        _usartRx[3]->_rxDataReceivedSyn.signal();
+        if (_usartRx[3]->_rxDataReceivedSyn) {
+            _usartRx[3]->_rxDataReceivedSyn->signal();
+        }
     }
     else {
-        _usartRx[3]->_rxOverflowSyn.signal();
+        if (_usartRx[3]->_rxOverflowSyn) {
+            _usartRx[3]->_rxOverflowSyn->signal();
+        }
     }
 }
 

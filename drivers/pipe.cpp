@@ -28,16 +28,22 @@ Pipe::Pipe(const uint16_t size)
     _writeFilter = nullptr;
 
     // Synpases
-    _roomAvailSyn.clear();
-    _dataAvailSyn.clear();
+    _roomAvailSyn = nullptr;
+    _dataAvailSyn = nullptr;
 }
 
 
 Pipe::~Pipe()
 {
     memory::free(_buffer, _bufferSize);
-    _dataAvailSyn.clearSignals();
-    _roomAvailSyn.clearSignals();
+
+    if (_dataAvailSyn) {
+        _dataAvailSyn->clearSignals();
+    }
+
+    if (_roomAvailSyn) {
+        _roomAvailSyn->clearSignals();
+    }
 }
 
 
@@ -62,8 +68,8 @@ bool Pipe::read(uint8_t& data)
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         bool rc = false;
 
-        while (isEmpty()) {
-            _dataAvailSyn.wait();
+        while (isEmpty() && _dataAvailSyn) {
+            _dataAvailSyn->wait();
             cli();
         }
 
@@ -84,7 +90,10 @@ bool Pipe::read(uint8_t& data)
                 _startIndex = 0UL;
             }
 
-            _roomAvailSyn.signal();
+            if (_roomAvailSyn) {
+                _roomAvailSyn->signal();
+            }
+
             rc = true;
         }
 
@@ -98,8 +107,8 @@ bool Pipe::write(const uint8_t data)
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         bool rc = false;
 
-        while (isFull()) {
-            _roomAvailSyn.wait();
+        while (isFull() && _roomAvailSyn) {
+            _roomAvailSyn->wait();
             cli();
         }
         
@@ -121,7 +130,10 @@ bool Pipe::write(const uint8_t data)
             _buffer[index] = dataToWrite;
             _length++;
 
-            _dataAvailSyn.signal();
+            if (_dataAvailSyn) {
+                _dataAvailSyn->signal();
+            }
+
             rc = true;
         }
 
@@ -135,8 +147,13 @@ void Pipe::flush()
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         _startIndex = _length = 0UL;
 
-        _dataAvailSyn.clearSignals();
-        _roomAvailSyn.signal();
+        if (_dataAvailSyn) {
+            _dataAvailSyn->clearSignals();
+        }
+
+        if (_roomAvailSyn) {
+            _roomAvailSyn->signal();
+        }
     }
 }
 
@@ -157,31 +174,31 @@ void Pipe::setWriteFilter(PipeFilter f)
 }
 
 
-void Pipe::setRoomAvailSynapse(Synapse s)
+void Pipe::setRoomAvailSynapse(Synapse& s)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        _roomAvailSyn = s;
+        _roomAvailSyn = &s;
 
         if (!isFull()) {
-            _roomAvailSyn.signal();
+            _roomAvailSyn->signal();
         }
         else {
-            _roomAvailSyn.clearSignals();
+            _roomAvailSyn->clearSignals();
         }
     }
 }
 
 
-void Pipe::setDataAvailSynapse(Synapse s)
+void Pipe::setDataAvailSynapse(Synapse& s)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        _dataAvailSyn = s;
+        _dataAvailSyn = &s;
 
         if (!isEmpty()) {
-            _dataAvailSyn.signal();
+            _dataAvailSyn->signal();
         }
         else {
-            _dataAvailSyn.clearSignals();
+            _dataAvailSyn->clearSignals();
         }
     }
 }

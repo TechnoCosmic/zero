@@ -28,7 +28,7 @@ namespace zero {
             volatile uint8_t* csDdr,                    // DDR for the CS for the chip
             volatile uint8_t* csPort,                   // PORT for CS
             const uint8_t csPin,                        // pin number for CS
-            Synapse readySyn);                          // Synapse to fire when ready to transfer
+            Synapse& readySyn);                           // Synapse to fire when ready to transfer
 
         void read(
             void* dest,                                 // destination address, in local SRAM

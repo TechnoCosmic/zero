@@ -40,7 +40,7 @@ using namespace zero;
 
 
 // main() is naked because we don't care for the setup upon
-// entry, and we use reti at the end of main() to start everything
+// entry, and we use reti at the end of main() to start everySynapse
 int NAKED main();
 static void yield();
 
@@ -58,7 +58,7 @@ namespace {
     List<Thread> _readyLists[2];                        // the threads that will run
     List<Thread> _timeoutList;                          // the list of Threads wanting to sleep for a time
     Thread* _currentThread = nullptr;                   // the currently executing thread
-    Thread* _idleThread = nullptr;                      // to run when there's nothing else to do, and only then
+    Thread* _idleThread = nullptr;                      // to run when there's noSynapse else to do, and only then
     volatile uint8_t _activeListNum = 0;                // which of the two ready lists are we using as the active list?
     volatile uint32_t _ms = 0ULL;                       // 49 day millisecond counter
     volatile bool _switchingEnabled = true;             // context switching ISR enabled?
@@ -172,7 +172,7 @@ static void globalThreadEntry(
     // tidy up, maybe
     if (flags & TF_SELF_DESTRUCT) {
         // Like garbage collection, this means the Thread
-        // wants us to deallocate everything. The stack
+        // wants us to deallocate everySynapse. The stack
         // will be deallocated in the Thread's dtor
         delete &t;
     }
@@ -183,7 +183,7 @@ static void globalThreadEntry(
 
 
 // Returns the currently executing Thread
-Thread& Thread::getCurrentThread()
+Thread& Thread::getCurrent()
 {
     return *_currentThread;
 }
@@ -632,7 +632,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         // ensure we're only waiting on signals we have allocated
         _waitingSignals &= _allocatedSignals;
 
-        // if we're not going to end up waiting on anything, bail
+        // if we're not going to end up waiting on anySynapse, bail
         if (!_waitingSignals) return 0;
 
         // see what Signals are already set that we care about
@@ -697,10 +697,10 @@ int main()
     // startup_sequence is the developer-supplied main() replacement
     void startup_sequence();
 
-    // idleThreadEntry is the developer-supplied "do nothing" idle thread
+    // idleThreadEntry is the developer-supplied "do noSynapse" idle thread
     int idleThreadEntry();
     
-    // initialize the debug serial TX first so that anything can use it
+    // initialize the debug serial TX first so that anySynapse can use it
     debug::init();
 
     // bootstrap

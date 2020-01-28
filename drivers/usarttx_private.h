@@ -13,4 +13,4 @@ public:
     uint8_t _deviceNum = 0;
     uint8_t* _txBuffer = nullptr;
     uint16_t _txBytesRemaining = 0UL;
-    Synapse _txReadySyn;
+    Synapse* _txReadySyn;

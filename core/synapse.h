@@ -6,8 +6,8 @@
 //
 
 
-#ifndef TCRI_ZERO_SYNAPSE_H
-#define TCRI_ZERO_SYNAPSE_H
+#ifndef TCRI_ZERO_Synapse_H
+#define TCRI_ZERO_Synapse_H
 
 
 #include <stdint.h>
@@ -16,20 +16,24 @@
 
 namespace zero {
 
-    // the target of a signal. Is a Thread/SignalField pair.
+
     class Synapse {
     public:
-        Thread* thread;
-        SignalField signals;
-
         Synapse();
-        Synapse(const SignalField sigs);
-        void clear();
-        bool isValid() const;
+        ~Synapse();
+
+        explicit operator bool() const;
+        operator zero::SignalField() const;
+
         void signal() const;
         void clearSignals() const;
-        void wait() const;
-    }; 
+        SignalField wait() const;
+
+    private:
+        Thread* const _thread;
+        const SignalField _signals;
+    };
+
 
 }
 

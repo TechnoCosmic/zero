@@ -94,9 +94,9 @@ void SuartTx::setCommsParams(
 
 
 // Enables the software transmitter
-bool SuartTx::enable(Synapse txReadySyn)
+bool SuartTx::enable(Synapse& txReadySyn)
 {
-    if (!txReadySyn.isValid()) return false;
+    if (!txReadySyn) return false;
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
         *_ddr |= _pinMask;                              // output
@@ -104,8 +104,8 @@ bool SuartTx::enable(Synapse txReadySyn)
 
         power_timer2_enable();                          // power the Timer
 
-        _txReadySyn = txReadySyn;
-        _txReadySyn.signal();
+        _txReadySyn = &txReadySyn;
+        _txReadySyn->signal();
         
         return true;
     }
@@ -124,8 +124,10 @@ void SuartTx::disable()
             *_port &= ~_pinMask;
         }
 
-        _txReadySyn.clearSignals();
-        _txReadySyn.clear();        
+        if (_txReadySyn) {
+            _txReadySyn->clearSignals();
+            _txReadySyn = nullptr;
+        }
     }
 }
 
@@ -136,8 +138,8 @@ bool SuartTx::transmit(
     const uint16_t sz,
     const bool allowBlock)
 {
-    if (allowBlock) {
-        _txReadySyn.wait();
+    if (allowBlock && _txReadySyn) {
+        _txReadySyn->wait();
     }
  
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
@@ -145,7 +147,9 @@ bool SuartTx::transmit(
         if (!buffer) return false;
         if (!sz) return false;
 
-        _txReadySyn.clearSignals();
+        if (_txReadySyn) {
+            _txReadySyn->clearSignals();
+        }
 
         // remember the buffer data
         _txBuffer = (uint8_t*) buffer;
@@ -194,7 +198,10 @@ void SuartTx::onTick()
         if (!getNextTxByte(nextByte)) {
             // no more data to send? tidy up, and signal readiness to go again
             _txBuffer = nullptr;
-            _txReadySyn.signal();
+
+            if (_txReadySyn) {
+                _txReadySyn->signal();
+            }
         }
         else {
             // load next byte
