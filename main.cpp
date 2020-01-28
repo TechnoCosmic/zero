@@ -6,7 +6,7 @@
 //
 
 
-#include "core/thread.h"
+#include "thread.h"
 
 
 using namespace zero;
