@@ -41,6 +41,8 @@ namespace zero {
             const uint16_t sz,
             const bool allowBlock = false);
 
+        explicit operator bool() const;
+
         #include "usarttx_private.h"
     };
 
@@ -60,6 +62,8 @@ namespace zero {
         uint8_t* getCurrentBuffer(uint16_t& numBytes);
         void flush();
     
+        explicit operator bool() const;
+        
         #include "usartrx_private.h"
     };
 

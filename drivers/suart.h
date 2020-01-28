@@ -39,6 +39,8 @@ namespace zero {
             const uint16_t sz,
             const bool allowBlock = false);
 
+        explicit operator bool() const;
+
         #include "suart_private.h"
     };
 

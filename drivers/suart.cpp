@@ -46,6 +46,12 @@ SuartTx::~SuartTx()
 }
 
 
+SuartTx::operator bool() const
+{
+    return (_suartTx != nullptr);
+}
+
+
 // starts the periodic bit-timer for transmission
 void SuartTx::startTxTimer()
 {

@@ -100,6 +100,12 @@ UsartTx::~UsartTx()
 }
 
 
+UsartTx::operator bool() const
+{
+    return (_usartTx[_deviceNum] != nullptr);
+}
+
+
 // Sets the communications parameters
 void UsartTx::setCommsParams(const uint32_t baud)
 {
@@ -209,6 +215,12 @@ UsartRx::~UsartRx()
 {
     disable();
     _usartRx[_deviceNum] = nullptr;
+}
+
+
+UsartRx::operator bool() const
+{
+    return (_usartRx[_deviceNum] != nullptr);
 }
 
 
