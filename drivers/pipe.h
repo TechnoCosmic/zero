@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include "thread.h"
+#include "synapse.h"
 
 
 namespace zero {

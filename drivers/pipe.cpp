@@ -11,6 +11,7 @@
 #include "pipe.h"
 #include "memory.h"
 #include "thread.h"
+#include "synapse.h"
 
 
 using namespace zero;

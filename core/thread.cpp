@@ -16,6 +16,7 @@
 #include <util/atomic.h>
 
 #include "thread.h"
+#include "synapse.h"
 #include "memory.h"
 #include "debug.h"
 #include "list.h"

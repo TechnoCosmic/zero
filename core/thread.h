@@ -62,56 +62,6 @@ namespace zero {
         #include "thread_private.h"
     };
 
-    // the target of a signal. Is a Thread/SignalField pair.
-    class Synapse {
-    public:
-        Thread* thread;
-        SignalField signals;
-
-        Synapse()
-        {
-            clear();
-        }
-
-        Synapse(const SignalField sigs)
-        {
-            thread = &Thread::getCurrentThread();
-            signals = sigs;
-        }
-
-        void clear()
-        {
-            thread = nullptr;
-            signals = 0UL;
-        }
-
-        bool isValid() const
-        {
-            return (thread != nullptr && signals != 0UL);
-        }
-
-        void signal() const
-        {
-            if (isValid()) {
-                thread->signal(signals);
-            }
-        }
-
-        void clearSignals() const {
-            if (isValid()) {
-                thread->clearSignals(signals);
-            }
-        }
-        
-        void wait() const {
-            if (isValid()) {
-                if (thread == &Thread::getCurrentThread()) {
-                    thread->wait(signals);
-                }
-            }
-        }
-
-    }; 
 }
 
 

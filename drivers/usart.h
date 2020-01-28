@@ -21,6 +21,7 @@
 
 
 #include "thread.h"
+#include "synapse.h"
 #include "doublebuffer.h"
 
 
@@ -54,7 +55,7 @@ namespace zero {
             const uint16_t bufferSize,
             Synapse dataRecdSyn,
             Synapse overflowSyn);
-            
+
         void disable();
         uint8_t* getCurrentBuffer(uint16_t& numBytes);
         void flush();

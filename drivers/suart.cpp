@@ -17,6 +17,7 @@
 #include <util/atomic.h>
 
 #include "thread.h"
+#include "synapse.h"
 #include "memory.h"
 #include "doublebuffer.h"
 #include "suart.h"
