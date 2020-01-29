@@ -7,6 +7,7 @@
 
 
 #include "thread.h"
+#include "cli/cli.h"
 
 
 using namespace zero;
@@ -16,6 +17,9 @@ using namespace zero;
 // Initialize any GPIO or other things that make sense to do so.
 int startup_sequence()
 {
+    // CLI
+    new Thread(256, cliEntry);
+
     return 0;
 }
 
