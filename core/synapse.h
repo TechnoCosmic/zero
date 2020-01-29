@@ -16,7 +16,6 @@
 
 namespace zero {
 
-
     class Synapse {
     public:
         Synapse();
@@ -30,10 +29,12 @@ namespace zero {
         SignalField wait() const;
 
     private:
+        Synapse(const Synapse& s) = delete;
+        void operator=(const Synapse& s) = delete;
+
         Thread* const _thread;
         const SignalField _signals;
     };
-
 
 }
 

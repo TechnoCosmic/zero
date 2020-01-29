@@ -13,6 +13,7 @@
 using namespace zero;
 
 
+// ctor
 Synapse::Synapse() :
     _thread(&me),
     _signals(me.allocateSignal())
@@ -20,24 +21,30 @@ Synapse::Synapse() :
 }
 
 
+// dtor
 Synapse::~Synapse()
 {
-    _thread->freeSignals(_signals);
+    if (_thread) {
+        _thread->freeSignals(_signals);
+    }
 }
 
 
+// For isValid determination
 Synapse::operator bool() const
 {
     return (_signals != 0UL);
 }
 
 
+// For use as a simple SignalField
 Synapse::operator SignalField() const
 {
     return _signals;
 }
 
 
+// Signal the thread
 void Synapse::signal() const
 {
     if (*this) {
@@ -46,6 +53,7 @@ void Synapse::signal() const
 }
 
 
+// Clears the signals
 void Synapse::clearSignals() const
 {
     if (*this) {
@@ -54,6 +62,7 @@ void Synapse::clearSignals() const
 }
 
 
+// Waits for the signal(s)
 SignalField Synapse::wait() const
 {
     if (*this && &me == _thread) {
