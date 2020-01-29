@@ -145,7 +145,8 @@ static void globalThreadEntry(
     Thread& t,
     const uint32_t entry,
     const ThreadFlags flags,
-    Synapse notifySyn,
+    Thread* parent,
+    SignalField notifySigs,
     uint16_t* exitCode)
 {
     // run the thread and get its exit code
@@ -161,7 +162,9 @@ static void globalThreadEntry(
 
     // if the parent wanted to be signalled upon
     // this Thread's termination, signal them
-    notifySyn.signal();
+    if (parent && notifySigs) {
+        parent->signal(notifySigs);
+    }
 
     // remove from the list of Threads
     ACTIVE_LIST.remove(t);
@@ -272,11 +275,13 @@ Thread::Thread(
     SRAM[newStackTop + getOffsetForParameter(3) - 0] = (((uint16_t) flags) >> 0) & 0xFF;
     SRAM[newStackTop + getOffsetForParameter(3) - 1] = (((uint16_t) flags) >> 8) & 0xFF;
 
-    // set the Synapse for notifying the parent of the Thread's termination
-    SRAM[newStackTop + getOffsetForParameter(5) - 0] = (((uint16_t) _currentThread) >> 0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(5) - 1] = (((uint16_t) _currentThread) >> 8) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(4) - 0] = (((SignalField) termSigs) >> 0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(4) - 1] = (((SignalField) termSigs) >> 8) & 0xFF;
+    // set the parent for notifying the parent of the Thread's termination
+    SRAM[newStackTop + getOffsetForParameter(4) - 0] = (((uint16_t) _currentThread) >> 0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(4) - 1] = (((uint16_t) _currentThread) >> 8) & 0xFF;
+
+    // set the signals for notifying the parent of the Thread's termination
+    SRAM[newStackTop + getOffsetForParameter(5) - 0] = (((SignalField) termSigs) >> 0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(5) - 1] = (((SignalField) termSigs) >> 8) & 0xFF;
 
     // set the place for the exit code
     SRAM[newStackTop + getOffsetForParameter(6) - 0] = (((uint16_t) exitCode) >> 0) & 0xFF;
