@@ -22,14 +22,6 @@ Pipe::Pipe(const uint16_t size)
     // storage and tracking
     _buffer = (uint8_t*) memory::allocate(size, &_bufferSize);
     _startIndex = _length = 0UL;
-
-    // filtering
-    _readFilter = nullptr;
-    _writeFilter = nullptr;
-
-    // Synpases
-    _roomAvailSyn = nullptr;
-    _dataAvailSyn = nullptr;
 }
 
 
@@ -44,6 +36,12 @@ Pipe::~Pipe()
     if (_roomAvailSyn) {
         _roomAvailSyn->clearSignals();
     }
+}
+
+
+Pipe::operator bool() const
+{
+    return (_buffer != nullptr);
 }
 
 

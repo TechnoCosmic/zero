@@ -24,6 +24,8 @@ namespace zero {
         Pipe(const uint16_t size);
         ~Pipe();
 
+        explicit operator bool() const;
+
         bool isEmpty() const;
         bool isFull() const;
 

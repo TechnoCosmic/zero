@@ -7,13 +7,16 @@
 
 
 private:
-    uint8_t* _buffer;
-    uint16_t _bufferSize;
-    uint16_t _startIndex;
-    uint16_t _length;
+    Pipe(const Pipe& p) = delete;
+    void operator=(const Pipe& p) = delete;
 
-    Synapse* _roomAvailSyn;
-    Synapse* _dataAvailSyn;
+    uint8_t* _buffer = nullptr;
+    uint16_t _bufferSize = 0UL;
+    uint16_t _startIndex = 0UL;
+    uint16_t _length = 0UL;
 
-    PipeFilter _readFilter;
-    PipeFilter _writeFilter;
+    Synapse* _roomAvailSyn = nullptr;
+    Synapse* _dataAvailSyn = nullptr;
+
+    PipeFilter _readFilter = nullptr;
+    PipeFilter _writeFilter = nullptr;
