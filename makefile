@@ -126,7 +126,7 @@ endif
 
 
 # build targets
-CC = avr-gcc
+CC = avr-g++
 SRC := $(wildcard *.cpp)
 SRC += $(wildcard core/*.cpp)
 SRC += $(wildcard drivers/*.cpp)
