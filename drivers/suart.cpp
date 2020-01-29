@@ -16,6 +16,7 @@
 #include <avr/power.h>
 #include <util/atomic.h>
 
+#include "resource.h"
 #include "thread.h"
 #include "synapse.h"
 #include "memory.h"
@@ -34,21 +35,26 @@ namespace {
 // ctor
 SuartTx::SuartTx()
 {
-    _suartTx = this;
+    if (resource::obtain(resource::ResourceId::Timer2)) {
+        _suartTx = this;
+    }
 }
 
 
 // dtor
 SuartTx::~SuartTx()
 {
-    disable();
-    _suartTx = nullptr;
+    if (_suartTx == this) {
+        disable();
+        _suartTx = nullptr;
+        resource::release(resource::ResourceId::Timer2);
+    }
 }
 
 
 SuartTx::operator bool() const
 {
-    return (_suartTx != nullptr);
+    return (_suartTx == this);
 }
 
 

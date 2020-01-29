@@ -7,7 +7,12 @@
 
 
 public:
-    uint8_t _deviceNum = 0;
+    Synapse* _rxDataReceivedSyn = nullptr;
+    Synapse* _rxOverflowSyn = nullptr;
     DoubleBuffer* _rxBuffer = nullptr;
-    Synapse* _rxDataReceivedSyn;
-    Synapse* _rxOverflowSyn;
+
+private:
+    uint8_t _deviceNum = 0;
+
+    UsartRx(const UsartRx& u) = delete;
+    void operator=(const UsartRx& u) = delete;

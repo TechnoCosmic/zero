@@ -40,6 +40,8 @@ namespace zero {
             const uint32_t destAddress,                 // destination address, in external SPI memory
             const uint32_t numBytes);                   // number of the bytes to write
 
+        explicit operator bool() const;
+        
         #include "sram_private.h"
     };
 

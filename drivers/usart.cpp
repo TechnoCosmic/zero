@@ -20,6 +20,7 @@
 
 #include <util/atomic.h>
 
+#include "resource.h"
 #include "thread.h"
 #include "memory.h"
 #include "doublebuffer.h"
@@ -86,8 +87,13 @@ namespace {
 UsartTx::UsartTx(const uint8_t deviceNum)
 {
     if (deviceNum < NUM_DEVICES) {
-        _deviceNum = deviceNum;
-        _usartTx[deviceNum] = this;
+        // obtain the resource
+        auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartTx0 + deviceNum);
+
+        if (resource::obtain(resId)) {
+            _deviceNum = deviceNum;
+            _usartTx[deviceNum] = this;
+        }
     }
 }
 
@@ -95,14 +101,20 @@ UsartTx::UsartTx(const uint8_t deviceNum)
 // dtor
 UsartTx::~UsartTx()
 {
-    disable();
-    _usartTx[_deviceNum] = nullptr;
+    if (_usartTx[_deviceNum] == this) {
+        disable();
+        _usartTx[_deviceNum] = nullptr;
+
+        // free the resource
+        auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartTx0 + _deviceNum);
+        resource::release(resId);
+    }
 }
 
 
 UsartTx::operator bool() const
 {
-    return (_usartTx[_deviceNum] != nullptr);
+    return (_usartTx[_deviceNum] == this);
 }
 
 
@@ -211,22 +223,33 @@ void UsartTx::byteTxComplete() {
 UsartRx::UsartRx(const uint8_t deviceNum)
 {
     if (deviceNum < NUM_DEVICES) {
-        _deviceNum = deviceNum;
-        _usartRx[deviceNum] = this;
+        // obtain the resource
+        auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartRx0 + deviceNum);
+
+        if (resource::obtain(resId)) {
+            _deviceNum = deviceNum;
+            _usartRx[deviceNum] = this;
+        }
     }
 }
 
 
 UsartRx::~UsartRx()
 {
-    disable();
-    _usartRx[_deviceNum] = nullptr;
+    if (_usartRx[_deviceNum] == this) {
+        disable();
+        _usartRx[_deviceNum] = nullptr;
+
+        // free the resource
+        auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartRx0 + _deviceNum);
+        resource::release(resId);
+    }
 }
 
 
 UsartRx::operator bool() const
 {
-    return (_usartRx[_deviceNum] != nullptr);
+    return (_usartRx[_deviceNum] == this);
 }
 
 

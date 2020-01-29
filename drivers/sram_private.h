@@ -14,11 +14,14 @@ public:
     void deselect() const;
 
 private:
+    SpiMemory(const SpiMemory& m) = delete;
+    void operator=(const SpiMemory& m) = delete;
+
     void sendAddress(const uint32_t addr) const;
     void sendReadCommand(const uint32_t addr) const;
     void sendWriteCommand(const uint32_t addr) const;
 
-    uint32_t _capacityBytes;
-    volatile uint8_t* _csDdr;
-    volatile uint8_t* _csPort;
-    uint8_t _csPinMask;
+    uint32_t _capacityBytes = 0ULL;
+    volatile uint8_t* _csDdr = nullptr;
+    volatile uint8_t* _csPort = nullptr;
+    uint8_t _csPinMask = 0;

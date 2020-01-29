@@ -17,6 +17,7 @@
 
 #include "thread.h"
 #include "synapse.h"
+#include "resource.h"
 #include "memory.h"
 #include "debug.h"
 #include "list.h"
@@ -60,7 +61,7 @@ namespace {
     Thread* _currentThread = nullptr;                   // the currently executing thread
     Thread* _idleThread = nullptr;                      // to run when there's noSynapse else to do, and only then
     volatile uint8_t _activeListNum = 0;                // which of the two ready lists are we using as the active list?
-    volatile uint32_t _ms = 0ULL;                       // 49 day millisecond counter
+    volatile uint32_t _milliseconds = 0ULL;             // 49 day millisecond counter
     volatile bool _switchingEnabled = true;             // context switching ISR enabled?
 
     // constants
@@ -194,7 +195,7 @@ Thread& Thread::getCurrent()
 uint32_t Thread::now()
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        return _ms;
+        return _milliseconds;
     }
 }
 
@@ -447,7 +448,7 @@ static void yield()
 // Millisecond timer and timeout controller
 ISR(TIMER0_COMPA_vect)
 {
-    _ms++;
+    _milliseconds++;
 
     // check sleepers
     if (Thread* curSleeper = _timeoutList.getHead()) {
@@ -702,6 +703,9 @@ int main()
     
     // initialize the debug serial TX first so that anySynapse can use it
     debug::init();
+
+    // claim the main timer before anyone else does
+    resource::obtain(resource::ResourceId::Timer0);
 
     // bootstrap
     startup_sequence();

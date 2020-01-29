@@ -17,6 +17,7 @@
 #include "spi.h"
 #include "sram.h"
 #include "thread.h"
+#include "resource.h"
 
 
 using namespace zero;
@@ -29,6 +30,7 @@ namespace {
         Rx,
     };
 
+
     const uint8_t CMD_READ = 3;
     const uint8_t CMD_WRITE = 2;
 
@@ -37,7 +39,7 @@ namespace {
     volatile uint8_t* _rxCursor = nullptr;
     volatile uint32_t _xferBytes = 0ULL;
 
-    Synapse* _spiReadySyn;
+    Synapse* _spiReadySyn = nullptr;
     SpiMemory* _curController = nullptr;
 
 
@@ -72,6 +74,8 @@ SpiMemory::SpiMemory(
     const uint8_t csPin,                                // pin number for CS
     Synapse& readySyn)                                    // Synapse to fire when ready to transfer
 {
+    if (!resource::obtain(resource::ResourceId::Spi)) return;
+
     _capacityBytes = capacityBytes;
     _csDdr = csDdr;
     _csPort = csPort;
@@ -100,22 +104,33 @@ SpiMemory::SpiMemory(
 // dtor
 SpiMemory::~SpiMemory()
 {
-    // stop interrupting me!
-    setSpiIsrEnable(false);
+    if (*this) {
+        // stop interrupting me!
+        setSpiIsrEnable(false);
 
-    // switch off the SPI hardware
-    SPCR = 0;
-    SPSR = 0;
+        // switch off the SPI hardware
+        SPCR = 0;
+        SPSR = 0;
 
-    // return the CS line to floating
-    *_csPort &= ~_csPinMask;
-    *_csDdr &= ~_csPinMask;
+        // return the CS line to floating
+        *_csPort &= ~_csPinMask;
+        *_csDdr &= ~_csPinMask;
 
-    // clear signals and forget
-    if (_spiReadySyn) {
-        _spiReadySyn->clearSignals();
-        _spiReadySyn = nullptr;
+        // clear signals and forget
+        if (_spiReadySyn) {
+            _spiReadySyn->clearSignals();
+            _spiReadySyn = nullptr;
+        }
+
+        // free the resource
+        resource::release(resource::ResourceId::Spi);
     }
+}
+
+
+SpiMemory::operator bool() const
+{
+    return (_spiReadySyn != nullptr);
 }
 
 
