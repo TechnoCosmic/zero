@@ -18,9 +18,9 @@ using namespace zero;
 // before zero has initialized itself fully. Consequently, you cannot
 // call many zero functions from here. If you have enabled the DEBUG_
 // options in the makefile, you can call debug::print() here.
-void startup_sequence()
+int startup_sequence()
 {
-    ;
+    return 0;
 }
 
 
