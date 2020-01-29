@@ -14,10 +14,6 @@ using namespace zero;
 
 // startup_sequence() is your new main().
 // Initialize any GPIO or other things that make sense to do so.
-// NOTE: You are not inside a Thread here. This function is called
-// before zero has initialized itself fully. Consequently, you cannot
-// call many zero functions from here. If you have enabled the DEBUG_
-// options in the makefile, you can call debug::print() here.
 int startup_sequence()
 {
     return 0;
