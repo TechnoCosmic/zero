@@ -1,26 +1,16 @@
 # Synapse
 ```zero/core/thread.h```
 
-```Synapse``` is a simple class that pairs a ```Thread*``` with a ```SignalField```, in order to make it easy to pass around an object representing the endpoint, or target, of a signal.
+```Synapse``` is a guard class for allocating and freeing signals. It pairs a ```Thread*``` with a ```SignalField```, and provides RAII/SBRM allocation of signals.
 
-## Constructors
+## Constructor
 ```
     Synapse()
-
-    Synapse(
-        const SignalField sigs
-        )
 ```
-A ```Synapse``` has no private members. It is a very transparent helper class. You can directly access ```Synapse::thread``` and ```Synapse::signals```.
-
-The constructor with the ```SignalField``` parameter is what lets us pass a ```SignalField``` where a ```Synapse``` is expected. The compiler will construct a ```Synapse``` automatically, and will use the currently executing ```Thread``` as the thread component of the ```Synapse```. See ```Receiver::enable()``` as one example of this.
-
-Generally I'd frown on this sort of implicit conversion, but it enhances readability and maintainablity of the code significantly.
-
-The intention is that instead of code directly calling ```Thread::signal()```, it should call ```Synapse::signal()```. By adopting this convention, it becomes very easy to create and pass these endpoints around without your program having to manage it.
+Constructing a ```Synapse``` will allocate a signal. When the ```Synapse``` goes out-of-scope, the signal will be freed.
 
 ### Notes
-Synapses should always be handed around by copy, rather than by reference or by pointer. On the target MCUs, a ```Synapse``` is a 32-bit number, effectively, and since they're not (or shouldn't be) passed around (and hence copied) often in time-critical code, the benefit of simplied use is worth it.
+Synapses should always be handed around by reference or by pointer, as the copy constructor has been deleted.
 
 ## signal()
 Signals the ```Thread``` specified in the ```Synapse``` with the signals in the ```Synapse's``` ```signals``` field.
@@ -41,14 +31,30 @@ Calls ```Thread::clearSignals()``` with the signals associated with the ```Synap
     void Synapse::clearSignals()
 ```
 
-## clear()
-Clears both the ```thread``` and ```signals``` fields.
+## Example
 ```
-    void clear()
-```
+int myThread
+{
+    Synapse txReadySyn;
+    UsartTx tx(0);
 
-## isValid()
-Returns ```true``` if the ```Synapse``` has valid ```thread``` *and* ```signals``` fields.
-```
-    bool Synapse::isValid()
+    tx.setCommsParams(9600);
+    tx.enable(txReadySyn);
+
+    while (true) {
+        auto wokeSigs = me.wait(txReadySyn);
+
+        if (wokeSigs & txReadySyn) {
+            // transmit something...
+            tx.transmit("Hello!\r\n", 8, false);
+
+            // ... and escape
+            break;
+        }
+    }
+
+    // don't need to do anything with the UsartTx or
+    // Synapse objects, since they'll both fall out-of-
+    // scope here and automatically free their resources
+}
 ```
