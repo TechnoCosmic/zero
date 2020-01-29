@@ -4,10 +4,10 @@
 ## enable()
 Enables the USART receiver.
 ```
-    virtual bool enable(
+    bool enable(
         const uint16_t bufferSize,
-        Synapse rxSyn,
-        Synapse ovfSyn
+        Synapse& rxSyn,
+        Synapse* ovfSyn
         )
 ```
 ### Parameters
@@ -23,13 +23,13 @@ The serial device drivers in zero use the ```DoubleBuffer``` class to implement 
 ## disable()
 Disables the USART, releases any resources used, and prevents further data reception.
 ```
-    virtual void disable()
+    void disable()
 ```
 
 ## getCurrentBuffer()
 Returns a buffer that contains the currently unprocessed received data.
 ```
-    virtual uint8_t* getCurrentBuffer(
+    uint8_t* getCurrentBuffer(
         uint16_t& numBytes
         )
 ```
@@ -43,36 +43,37 @@ Discards the current input buffer.
 ## Example
 ```
 #include "thread.h"
+#include "synapse.h"
 #include "usart.h"
 
 int rxDemo()
 {
-    // Signals for communicating with the receiver
-    SignalField rxSig = me.allocateSignal();
-    SignalField rxOvfSig = me.allocateSignal();
-
+    // Synapses for communicating with the receiver
+    Synapse rxSyn;
+    Synapse rxOvfSyn;
+    
     // create a receiver for hardware USART1
-    UsartRx* rx = new UsartRx(1);
+    UsartRx rx(1);
 
     // set the comms parameters and enable the RX
-    rx->setCommsParams(9600);
-    rx->enable(128, rxSig, rxOvfSig);
+    rx.setCommsParams(9600);
+    rx.enable(128, rxSig, &rxOvfSig);
 
     // main loop
     while (true) {
-        SignalField wokeSigs = me.wait(rxSig | rxOvfSig);
+        auto wokeSigs = me.wait(rxSyn | rxOvfSyn);
 
-        if (wokeSigs & rxSig) {
+        if (wokeSigs & rxSyn) {
             // data received, get the RX buffer
             uint16_t numBytesRecd;
             
-            while (uint8_t* rxBuffer = rx->getCurrentBuffer(numBytesRecd)) {
+            while (uint8_t* rxBuffer = rx.getCurrentBuffer(numBytesRecd)) {
                 // do something with the received data
                 processRxData(rxBuffer, numBytesRecd);
             }
         }
 
-        if (wokeSigs & rxOvfSig) {
+        if (wokeSigs & rxOvfSyn) {
             // buffer overflow - need a bigger buffer
         }
     }
