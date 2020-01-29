@@ -656,7 +656,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         // clear the recd Signals so that we can see repeats of them
         clearSignals(rc);
 
-        // make the the timeout is disabled
+        // make sure the the timeout is disabled
         _currentThread->_timeoutOffset = 0ULL;
 
         // return the Signals that woke us
