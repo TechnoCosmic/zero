@@ -44,7 +44,7 @@ SuartTx::SuartTx()
 // dtor
 SuartTx::~SuartTx()
 {
-    if (_suartTx == this) {
+    if (*this) {
         disable();
         _suartTx = nullptr;
         resource::release(resource::ResourceId::Timer2);
