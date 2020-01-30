@@ -74,7 +74,9 @@ SpiMemory::SpiMemory(
     const uint8_t csPin,                                // pin number for CS
     Synapse& readySyn)                                    // Synapse to fire when ready to transfer
 {
-    if (!resource::obtain(resource::ResourceId::Spi)) return;
+    if (!resource::obtain(resource::ResourceId::Spi)) {
+        return;
+    }
 
     _capacityBytes = capacityBytes;
     _csDdr = csDdr;
@@ -130,7 +132,7 @@ SpiMemory::~SpiMemory()
 
 SpiMemory::operator bool() const
 {
-    return (_spiReadySyn != nullptr);
+    return (_capacityBytes != 0UL);
 }
 
 
