@@ -88,7 +88,7 @@ int myFirstThread()
     return 0;
 }
 
-void startup_sequence()
+int startup_sequence()
 {
     // start one simple Thread when the kernel fires up
     new Thread(256, myFirstThread);
