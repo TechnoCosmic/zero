@@ -8,7 +8,7 @@
 
 public:
     ~Thread();
-    
+
     uint16_t _sp;
     Thread* _prev;
     Thread* _next;
@@ -16,9 +16,12 @@ public:
     uint32_t _timeoutOffset;
 
 private:
+    Thread(const Thread& t) = delete;
+    void operator=(const Thread& t) = delete;
+
     SignalField getActiveSignals() const;
     bool tryAllocateSignal(const uint16_t signalNumber);
-    
+
     uint8_t* _stackBottom;
     uint16_t _stackSize;
 
