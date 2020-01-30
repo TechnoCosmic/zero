@@ -179,6 +179,8 @@ This function returns a ```SignalField``` that represents the allocated signal. 
 - Free the signal when no longer needed by calling ```freeSignals()```.
 - ```SIG_TIMEOUT``` is a reserved signal. The remaining 15 are available for program use.
 
+***NOTE:*** Do not call ```allocateSignal()``` or ```freeSignals()``` directly. Instead, create a ```Synapse``` on the stack and use it wherever a ```SignalField``` would be expected. See the example code throughout the documentation for usage.
+
 ## freeSignals()
 Frees a previously allocated signal(s) for re-use.
 ```
@@ -293,7 +295,7 @@ There is also a zero equivalent of ```ATOMIC_FORCEON```, called ```ZERO_ATOMIC_F
 
 # startup_sequence()
 ```
-    void startup_sequence()
+    int startup_sequence()
 ```
 
 Because zero has hijacked ```main()``` for it's own initialization purposes, your program will use ```startup_sequence()``` to initialize itself and spawn your initial threads.
