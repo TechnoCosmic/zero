@@ -6,8 +6,8 @@
 //
 
 
-#ifndef TCRI_ZERO_Synapse_H
-#define TCRI_ZERO_Synapse_H
+#ifndef TCRI_ZERO_SYNAPSE_H
+#define TCRI_ZERO_SYNAPSE_H
 
 
 #include <stdint.h>
