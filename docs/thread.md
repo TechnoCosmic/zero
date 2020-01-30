@@ -34,7 +34,7 @@ Constructs a new Thread object, and begins executing it.
 |```TF_NONE```|No flags specified.|
 |```TF_READY```|Makes the Thread immediately available to execute|
 
-- If you want to know when a child Thread terminates, allocate a signal via ```allocateSignal()``` and pass that as ```termSignals```. When the child Thread terminates, that signal will be set, and can be checked by calling ```getCurrentSignals()``` or by ```wait()```ing on it.
+- If you want to know when a child Thread terminates, allocate a signal via a ```Synapse``` and pass that as ```termSignals```. When the child Thread terminates, that signal will be set, and can be checked by calling ```getCurrentSignals()``` or by ```wait()```ing on it.
 
 - ```exitCode``` is only valid once (and if) a Thread terminates.
 
