@@ -123,6 +123,9 @@ namespace {
         #define TIMSK0 TIMSK
         #endif
 
+        // claim the main timer before anyone else does
+        resource::obtain(resource::ResourceId::Timer0);
+
         // 8-bit Timer/Counter0
         power_timer0_enable();                          // switch it on
         TCCR0B = 0;                                     // stop the clock
@@ -708,9 +711,6 @@ int main()
     
     // initialize the debug serial TX first so that anything can use it
     debug::init();
-
-    // claim the main timer before anyone else does
-    resource::obtain(resource::ResourceId::Timer0);
 
     // bootstrap
     new Thread(256, startup_sequence);
