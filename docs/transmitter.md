@@ -1,6 +1,8 @@
 # UsartTx/SuartTx
-```zero/drivers/usart.h```
-```zero/drivers/suart.h```
+```
+zero/drivers/usart.h
+zero/drivers/suart.h
+```
 
 ## enable()
 Enables the transmitter.
@@ -70,12 +72,7 @@ int txDemo()
 
     // main loop
     while (true) {
-        auto wokeSigs = me.wait(txReadySyn);
-    
-        if (wokeSigs & txReadySyn) {
-            // last xmit complete, can send again
-            tx.transmit((char*) "Beaker is the best puppy ever!\r\n", 32);
-        }
+        tx.transmit((char*) "Beaker is the best puppy ever!\r\n", 32, true);
     }
 }
 ```
