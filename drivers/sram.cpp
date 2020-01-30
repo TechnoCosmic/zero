@@ -72,7 +72,7 @@ SpiMemory::SpiMemory(
     volatile uint8_t* csDdr,                            // DDR for the CS for the chip
     volatile uint8_t* csPort,                           // PORT for CS
     const uint8_t csPin,                                // pin number for CS
-    Synapse& readySyn)                                    // Synapse to fire when ready to transfer
+    Synapse& readySyn)                                  // Synapse to fire when ready to transfer
 {
     if (!resource::obtain(resource::ResourceId::Spi)) {
         return;
