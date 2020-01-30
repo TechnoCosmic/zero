@@ -26,7 +26,7 @@ namespace zero {
 
         void signal() const;
         void clearSignals() const;
-        SignalField wait() const;
+        SignalField wait(const uint32_t timeoutMs = 0ULL) const;
 
     private:
         Synapse(const Synapse& s) = delete;

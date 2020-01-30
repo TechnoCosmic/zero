@@ -32,7 +32,20 @@ Calls ```Thread::clearSignals()``` with the signals associated with the ```Synap
 ```
 
 ## wait()
-Waits for the signal(s) represented by the ```Synapse```, blocking if required. This is shorthand for ```me.wait(Synapse::signals)```, and only works if the caller is the ```Thread``` represented by the ```Synapse```. If you need to wait on multiple signals/```Synapses``` simultaneously, call ```Thread::wait()``` specifying all the required signals.
+Waits for the signal(s) represented by the ```Synapse```, blocking if required. 
+```
+    SignalField Synapse::wait(
+        const uint32_t timeoutMs = 0ULL
+        )
+```
+
+### Parameters
+|Param|Description|
+|-----|-----------|
+|```timeoutMs```|An optional timeout for the call, in milliseconds.|
+
+### Notes
+This is shorthand for ```me.wait(Synapse::signals, timeoutMs)```, and only works if the caller is the ```Thread``` represented by the ```Synapse```. If you need to wait on multiple signals/```Synapses``` simultaneously, call ```Thread::wait()``` specifying all the required signals.
 
 ## Example
 ```

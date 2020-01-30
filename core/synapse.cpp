@@ -62,11 +62,10 @@ void Synapse::clearSignals() const
 }
 
 
-// Waits for the signal(s)
-SignalField Synapse::wait() const
+SignalField Synapse::wait(const uint32_t timeoutMs) const
 {
     if (*this && &me == _thread) {
-        return me.wait(_signals);
+        return me.wait(_signals, timeoutMs);
     }
     else {
         return 0UL;
