@@ -176,13 +176,8 @@ static void globalThreadEntry(
     // superfluously in the yield() below
     _currentThread = nullptr;
 
-    // tidy up, maybe
-    if (flags & TF_SELF_DESTRUCT) {
-        // Like garbage collection, this means the Thread
-        // wants us to deallocate everything. The stack
-        // will be deallocated in the Thread's dtor
-        delete &t;
-    }
+    // The stack will be deallocated in the Thread's dtor
+    delete &t;
 
     // NEXT!
     yield();
@@ -315,6 +310,7 @@ Thread::~Thread()
 {
     // deallocate the stack
     memory::free(_stackBottom, _stackSize);
+    _stackBottom = nullptr;
 }
 
 

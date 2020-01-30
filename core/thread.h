@@ -22,9 +22,7 @@ namespace zero {
 
     const ThreadFlags TF_NONE = 0;
     const ThreadFlags TF_READY = (1L << 0);
-    const ThreadFlags TF_SELF_DESTRUCT = (1L << 1);
-    const ThreadFlags TF_FIRE_FORGET = TF_READY | TF_SELF_DESTRUCT;
-    
+
     // reserved signals
     const auto RESERVED_SIGS = 1;
     const SignalField SIG_TIMEOUT = (1L << 0);
@@ -44,7 +42,7 @@ namespace zero {
         Thread(
             const uint16_t stackSize,                   // size of the stack, in bytes
             const ThreadEntry entry,                    // the Thread's entry function
-            const ThreadFlags flags = TF_FIRE_FORGET,   // Optional flags
+            const ThreadFlags flags = TF_READY,         // Optional flags
             const SignalField termSigs = 0UL,           // Signal to set when Thread dies
             uint16_t* exitCode = nullptr);              // Place to put Thread's return code
         
