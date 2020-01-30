@@ -41,6 +41,7 @@ Constructs a new Thread object, and begins executing it.
 ### Example
 ```
 #include "thread.h"
+#include "synapse.h"
 
 int myAsyncThread()
 {
@@ -50,7 +51,7 @@ int myAsyncThread()
     return 42;
 }
 
-int myFirstThread()
+int startup_sequence()
 {
     // do work here...
 
@@ -87,12 +88,6 @@ int myFirstThread()
     // ... and exit
     return 0;
 }
-
-int startup_sequence()
-{
-    // start one simple Thread when the kernel fires up
-    new Thread(256, myFirstThread);
-}
 ```
 
 ## getCurrent()
@@ -114,6 +109,7 @@ Prevents context switching.
 This is a static method of the ```Thread``` class. Use this sparingly, for critical sections where context switching needs to be prevented temporarily.
 
 **NOTE:** This only suspends context switching (multi-tasking) - it does NOT disable interrupts.
+**NOTE:** ```forbid()``` and ```permit()``` do NOT nest - calling ```forbid()``` once will prevent context switching no matter how many times ```permit()``` was called prior. For a nested mechanism, see the ```ZERO_ATOMIC_BLOCK``` macro.
 
 ## permit()
 Resumes context switching.
@@ -123,6 +119,8 @@ Resumes context switching.
 
 ### Notes
 This is a static method of the ```Thread``` class. Use this to resume context switching after having previously called ```forbid()```.
+
+**NOTE:** ```forbid()``` and ```permit()``` do NOT nest - calling ```permit()``` once will resume context switching no matter how many times ```forbid()``` was called prior. For a nested mechanism, see the ```ZERO_ATOMIC_BLOCK``` macro.
 
 ## isSwitchingEnabled()
 Determines if context switching is currently enabled.
@@ -161,7 +159,7 @@ This function returns a ```SignalField``` that represents the allocated signal. 
 - Free the signal when no longer needed by calling ```freeSignals()```.
 - ```SIG_TIMEOUT``` is a reserved signal. The remaining 15 are available for program use.
 
-***NOTE:*** Do not call ```allocateSignal()``` or ```freeSignals()``` directly. Instead, create a ```Synapse``` on the stack and use it wherever a ```SignalField``` would be expected. See the example code throughout the documentation for usage.
+***NOTE:*** Do not call ```allocateSignal()``` or ```freeSignals()``` directly. Instead, create a ```Synapse``` on the stack and use it wherever a ```Synapse``` or ```SignalField``` would be expected. See the example code throughout the documentation for usage.
 
 ## freeSignals()
 Frees a previously allocated signal(s) for re-use.
@@ -175,6 +173,8 @@ Frees a previously allocated signal(s) for re-use.
 |Param|Description|
 |-----|-----------|
 |```signals```|The ```SignalField``` of the signal(s) you want to deallocate. Can free multiple signals at once.|
+
+***NOTE:*** Do not call ```allocateSignal()``` or ```freeSignals()``` directly. Instead, create a ```Synapse``` on the stack and use it wherever a ```Synapse``` or ```SignalField``` would be expected. See the example code throughout the documentation for usage.
 
 ## getCurrentSignals()
 Returns the signals currently set for the Thread.
