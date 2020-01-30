@@ -30,10 +30,10 @@ Synapse::~Synapse()
 }
 
 
-// For isValid determination
+// For validity determination
 Synapse::operator bool() const
 {
-    return (_signals != 0UL);
+    return (_thread != nullptr && _signals != 0UL);
 }
 
 

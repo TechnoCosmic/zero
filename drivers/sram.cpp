@@ -184,7 +184,7 @@ void SpiMemory::read(
         // tell the SPI chip that we want to talk to it
         select();
 
-        // tell it that we want to read data starting at SPI-SRAM address of srcAddress
+        // tell it that we want to read data from srcAddress
         sendReadCommand(srcAddr);
 
         // enable the ISR
@@ -223,7 +223,7 @@ void SpiMemory::write(
         // tell the SPI chip that we want to talk to it
         select();
 
-        // tell it that we want to write data to SPI-SRAM address of srcAddress
+        // tell it that we want to write data to destAddress
         sendWriteCommand(destAddress);
 
         // enable the ISR
