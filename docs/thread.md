@@ -20,7 +20,7 @@ Constructs a new Thread object, and begins executing it.
 |-----|-----------|
 |```stackBytes```|Size of the Thread's stack, in bytes. A minimum of 80 bytes will be allocated for the stack.|
 |```entryPoint```|The function that contains the main body of the Thread's code.|
-|```flags```|A bitfield controlling aspects of the Thread's behavior. **DEFAULT:** ```TF_FIRE_FORGET```|
+|```flags```|A bitfield controlling aspects of the Thread's behavior. **DEFAULT:** ```TF_READY```|
 |```termSignals```|Signals to set in the parent Thread when this new Thread terminates. Optional.|
 |```exitCode```|A pointer to a ```uint16_t``` to store the return code from the Thread's ```entry``` function. Optional.|
 
@@ -31,9 +31,8 @@ Constructs a new Thread object, and begins executing it.
 
 |Flag|Description|
 |----|-----------|
+|```TF_NONE```|No flags specified.|
 |```TF_READY```|Makes the Thread immediately available to execute|
-|```TF_SELF_DESTRUCT```|Will clean up the Thread object after termination, and is for use in cases where you cannot call ```delete``` on the Thread object when its finished, such as those Threads launched from ```startup_sequence()``` (the ```main()``` replacement function for zero programs)
-|```TF_FIRE_FORGET```|Shortcut for both ```TF_READY``` and ```TF_SELF_DESTRUCT``` combined|
 
 - If you want to know when a child Thread terminates, allocate a signal via ```allocateSignal()``` and pass that as ```termSignals```. When the child Thread terminates, that signal will be set, and can be checked by calling ```getCurrentSignals()``` or by ```wait()```ing on it.
 
@@ -61,15 +60,15 @@ int myFirstThread()
     // this is where the child Thread will store it's return code
     int asyncReturnCode = 0;
 
-    // this signal will be used to learn when the child Thread terminates
-    SignalField asyncTermSig = me.allocateSignal();
+    // this Synapse will be used to learn when the child Thread terminates
+    Synapse asyncTermSyn;
 
     // define and launch the Thread
     Thread* async = new Thread(
         192,
         myAsyncThread,
         TF_READY,
-        asyncTermSig,
+        asyncTermSyn,
         &asyncReturnCode);
 
     // do other work while that's going
@@ -87,22 +86,9 @@ int myFirstThread()
 
         // use the results...
         // ...
-
-        // and because we didn't use
-        // TF_SELF_DESTRUCT, we must delete
-        // the Thread ourselves...
-        
-        delete async;
-        async = nullptr;
-
-        // and we don't need the termination signal
-        // anymore, so we can free that up also
-
-        me.freeSignals(asyncTermSig);
-        asyncTermSig = 0UL;
     }
 
-    // ...and exit
+    // ... and exit
     return 0;
 }
 
