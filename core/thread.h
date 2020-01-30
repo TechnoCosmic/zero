@@ -33,7 +33,7 @@ namespace zero {
     class Thread {
     public:
         // Meta
-        static Thread& getCurrent();              // Returns the current Thread
+        static Thread& getCurrent();                    // Returns the current Thread
         static uint32_t now();                          // Elapsed milliseconds since boot
 
         static void forbid();                           // Disable context switching
@@ -48,6 +48,8 @@ namespace zero {
             const SignalField termSigs = 0UL,           // Signal to set when Thread dies
             uint16_t* exitCode = nullptr);              // Place to put Thread's return code
         
+        explicit operator bool() const;
+
         // Signals Management
         SignalField allocateSignal(const uint16_t reqdSignalNumber = -1);
         void freeSignals(const SignalField signals);

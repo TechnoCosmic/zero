@@ -14,8 +14,8 @@ private:
     void operator=(const SuartTx& s) = delete;
 
     bool getNextTxByte(uint8_t& data);
-    void startTxTimer();
-    void stopTxTimer();
+    void startTxTimer() const;
+    void stopTxTimer() const;
 
     // buffer-level stuff
     uint8_t* _txBuffer = nullptr;

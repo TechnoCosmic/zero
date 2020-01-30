@@ -59,7 +59,7 @@ SuartTx::operator bool() const
 
 
 // starts the periodic bit-timer for transmission
-void SuartTx::startTxTimer()
+void SuartTx::startTxTimer() const
 {
     const uint16_t scaledMs = (F_CPU / (16UL * _baud)) - 1;
 
@@ -73,7 +73,7 @@ void SuartTx::startTxTimer()
 
 
 // stops the bit-timer
-void SuartTx::stopTxTimer()
+void SuartTx::stopTxTimer() const
 {
     TIMSK2 &= ~(1 << OCIE2A);                           // disable Timer ISR
     TCCR2B = 0;                                         // make sure timer is stopped

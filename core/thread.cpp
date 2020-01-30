@@ -318,6 +318,12 @@ Thread::~Thread()
 }
 
 
+Thread::operator bool() const
+{
+    return (_stackBottom != nullptr);
+}
+
+
 // Saves the register set
 static void inline saveInitialRegisters()
 {

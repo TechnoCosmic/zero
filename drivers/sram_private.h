@@ -21,7 +21,7 @@ private:
     void sendReadCommand(const uint32_t addr) const;
     void sendWriteCommand(const uint32_t addr) const;
 
-    uint32_t _capacityBytes = 0ULL;
+    const uint32_t _capacityBytes = 0ULL;
     volatile uint8_t* _csDdr = nullptr;
     volatile uint8_t* _csPort = nullptr;
-    uint8_t _csPinMask = 0;
+    const uint8_t _csPinMask = 0;

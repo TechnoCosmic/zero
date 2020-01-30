@@ -73,15 +73,16 @@ SpiMemory::SpiMemory(
     volatile uint8_t* csPort,                           // PORT for CS
     const uint8_t csPin,                                // pin number for CS
     Synapse& readySyn)                                  // Synapse to fire when ready to transfer
+:
+    _capacityBytes(capacityBytes),
+    _csPinMask(1 << csPin)
 {
     if (!resource::obtain(resource::ResourceId::Spi)) {
         return;
     }
 
-    _capacityBytes = capacityBytes;
     _csDdr = csDdr;
     _csPort = csPort;
-    _csPinMask = 1 << csPin;
 
     // setup the SPI GPIO
     SPI_DDR |= (SCLK | MOSI);
@@ -89,6 +90,9 @@ SpiMemory::SpiMemory(
 
     // chip select for this chip
     *_csDdr |= _csPinMask;
+
+    // make sure it's not selected
+    deselect();
 
     // make sure ISRs for SPI are off
     setSpiIsrEnable(false);
@@ -118,6 +122,9 @@ SpiMemory::~SpiMemory()
         *_csPort &= ~_csPinMask;
         *_csDdr &= ~_csPinMask;
 
+        _csDdr = nullptr;
+        _csPort = nullptr;
+
         // clear signals and forget
         if (_spiReadySyn) {
             _spiReadySyn->clearSignals();
@@ -132,7 +139,7 @@ SpiMemory::~SpiMemory()
 
 SpiMemory::operator bool() const
 {
-    return (_capacityBytes != 0UL);
+    return (_csPort != nullptr);
 }
 
 
