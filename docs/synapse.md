@@ -31,6 +31,9 @@ Calls ```Thread::clearSignals()``` with the signals associated with the ```Synap
     void Synapse::clearSignals()
 ```
 
+## wait()
+Waits for the signal(s) represented by the ```Synapse```, blocking if required. This is shorthand for ```me.wait(Synapse::signals)```, and only works if the caller is the ```Thread``` represented by the ```Synapse```. If you need to wait on multiple signals/```Synapses``` simultaneously, call ```Thread::wait()``` specifying all the required signals.
+
 ## Example
 ```
 int myThread
@@ -42,15 +45,10 @@ int myThread
     tx.enable(txReadySyn);
 
     while (true) {
-        auto wokeSigs = me.wait(txReadySyn);
+        txReadySyn.wait();
 
-        if (wokeSigs & txReadySyn) {
-            // transmit something...
-            tx.transmit("Hello!\r\n", 8, false);
-
-            // ... and escape
-            break;
-        }
+        // transmit something...
+        tx.transmit("Hello!\r\n", 8, false);
     }
 
     // don't need to do anything with the UsartTx or

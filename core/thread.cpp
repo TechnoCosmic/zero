@@ -143,14 +143,13 @@ namespace {
 }
 
 
-// All threads start life here
+// All threads start and end life here
 static void globalThreadEntry(
     Thread& t,
     const uint32_t entry,
     const ThreadFlags flags,
-    Thread* parent,
-    SignalField notifySigs,
-    uint16_t* exitCode)
+    Synapse* notifySyn,
+    int* exitCode)
 {
     // run the thread and get its exit code
     uint16_t ec = ((ThreadEntry) entry)();
@@ -158,15 +157,15 @@ static void globalThreadEntry(
     // we don't want to be disturbed while cleaning up
     cli();
 
-    // return the exit code if the parent wants it
+    // return the exit code if someone wants it
     if (exitCode) {
         *exitCode = ec;
     }
 
-    // if the parent wanted to be signalled upon
+    // if someone wanted to be signalled upon
     // this Thread's termination, signal them
-    if (parent && notifySigs) {
-        parent->signal(notifySigs);
+    if (notifySyn) {
+        notifySyn->signal();
     }
 
     // remove from the list of Threads
@@ -227,8 +226,8 @@ Thread::Thread(
     const uint16_t stackSize,                           // size of the stack, in bytes
     const ThreadEntry entry,                            // the Thread's entry function
     const ThreadFlags flags,                            // Optional flags
-    const SignalField termSigs,                         // Signal to set when Thread dies
-    uint16_t* exitCode)                                 // Place to put Thread's return code
+    const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
+    int* exitCode)                                      // Place to put Thread's return code
 {    
     // allocate a stack from the heap
     _stackBottom = (uint8_t*) memory::allocate(
@@ -273,17 +272,13 @@ Thread::Thread(
     SRAM[newStackTop + getOffsetForParameter(3) - 0] = (((uint16_t) flags) >> 0) & 0xFF;
     SRAM[newStackTop + getOffsetForParameter(3) - 1] = (((uint16_t) flags) >> 8) & 0xFF;
 
-    // set the parent Thread
-    SRAM[newStackTop + getOffsetForParameter(4) - 0] = (((uint16_t) _currentThread) >> 0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(4) - 1] = (((uint16_t) _currentThread) >> 8) & 0xFF;
-
-    // set the signals for notifying the parent of the Thread's termination
-    SRAM[newStackTop + getOffsetForParameter(5) - 0] = (((SignalField) termSigs) >> 0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(5) - 1] = (((SignalField) termSigs) >> 8) & 0xFF;
+    // Termination Synapse
+    SRAM[newStackTop + getOffsetForParameter(4) - 0] = (((uint16_t) termSyn) >> 0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(4) - 1] = (((uint16_t) termSyn) >> 8) & 0xFF;
 
     // set the place for the exit code
-    SRAM[newStackTop + getOffsetForParameter(6) - 0] = (((uint16_t) exitCode) >> 0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(6) - 1] = (((uint16_t) exitCode) >> 8) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(5) - 0] = (((uint16_t) exitCode) >> 0) & 0xFF;
+    SRAM[newStackTop + getOffsetForParameter(5) - 1] = (((uint16_t) exitCode) >> 8) & 0xFF;
 
     // The prepared stack has all the registers + SREG + RAMPZ 'pushed'
     // onto it (zeroed out). This new stack top represents that.

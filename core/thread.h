@@ -15,6 +15,9 @@
 
 namespace zero {
 
+    // class decl because chicken/egg
+    class Synapse;
+
     typedef int (*ThreadEntry)();
 
     typedef uint16_t SignalField;
@@ -43,8 +46,8 @@ namespace zero {
             const uint16_t stackSize,                   // size of the stack, in bytes
             const ThreadEntry entry,                    // the Thread's entry function
             const ThreadFlags flags = TF_READY,         // Optional flags
-            const SignalField termSigs = 0UL,           // Signal to set when Thread dies
-            uint16_t* exitCode = nullptr);              // Place to put Thread's return code
+            const Synapse* const termSyn = nullptr,     // Synapse to signal when Thread terminates
+            int* exitCode = nullptr);                   // Place to put Thread's return code
         
         explicit operator bool() const;
 
