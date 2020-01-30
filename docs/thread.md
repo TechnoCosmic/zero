@@ -18,7 +18,7 @@ Constructs a new Thread object, and begins executing it.
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```stackBytes```|Size of the Thread's stack, in bytes. A minimum of 96 bytes will be allocated for the stack.|
+|```stackBytes```|Size of the Thread's stack, in bytes. A minimum of 80 bytes will be allocated for the stack.|
 |```entryPoint```|The function that contains the main body of the Thread's code.|
 |```flags```|A bitfield controlling aspects of the Thread's behavior. **DEFAULT:** ```TF_FIRE_FORGET```|
 |```termSignals```|Signals to set in the parent Thread when this new Thread terminates. Optional.|

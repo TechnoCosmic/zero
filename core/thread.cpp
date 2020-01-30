@@ -74,7 +74,7 @@ namespace {
         const uint16_t EXTRAS_COUNT = 1;
     #endif
 
-    const uint16_t MIN_STACK_BYTES = 96;
+    const uint16_t MIN_STACK_BYTES = 80;
     
     // the offsets from the stack top (as seen AFTER all the registers have been pushed
     // onto the stack already) of each of the nine (9) parameters that are register-passed
@@ -708,15 +708,15 @@ int main()
 
     // idleThreadEntry is the developer-supplied "do nothing" idle thread
     int idleThreadEntry();
-    
+
     // initialize the debug serial TX first so that anything can use it
     debug::init();
 
-    // bootstrap
-    new Thread(256, startup_sequence);
-
     // create the idle Thread
     _idleThread = new Thread(0, idleThreadEntry, TF_NONE);
+
+    // bootstrap
+    new Thread(256, startup_sequence);
 
     // start Timer0 (does not enable global ints)
     initTimer0();
