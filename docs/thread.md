@@ -91,7 +91,7 @@ int myFirstThread()
 void startup_sequence()
 {
     // start one simple Thread when the kernel fires up
-    new Thread(128, myFirstThread, TF_FIRE_FORGET);
+    new Thread(256, myFirstThread);
 }
 ```
 
