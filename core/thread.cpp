@@ -278,7 +278,7 @@ Thread::Thread(
     SRAM[newStackTop + getOffsetForParameter(3) - 0] = (((uint16_t) flags) >> 0) & 0xFF;
     SRAM[newStackTop + getOffsetForParameter(3) - 1] = (((uint16_t) flags) >> 8) & 0xFF;
 
-    // set the parent for notifying the parent of the Thread's termination
+    // set the parent Thread
     SRAM[newStackTop + getOffsetForParameter(4) - 0] = (((uint16_t) _currentThread) >> 0) & 0xFF;
     SRAM[newStackTop + getOffsetForParameter(4) - 1] = (((uint16_t) _currentThread) >> 8) & 0xFF;
 
