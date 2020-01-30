@@ -26,7 +26,7 @@ Outputs a character or string to the ```DEBUG_PORT``` on ```DEBUG_PIN``` at ```D
 ## debug::print() - integers
 Outputs a 16-bit integer number in a specified base.
 ```
-    static void print(
+    static void debug::print(
         const uint16_t n,
         const int base = 10
     )
