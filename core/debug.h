@@ -22,6 +22,8 @@ namespace zero {
 
         // private
         static void init();
+
+        #include "debug_private.h"
     };
 
 }
