@@ -287,7 +287,7 @@ Thread::Thread(
     _sp = newStackTop;
     _lowSp = _sp;
 
-    // Signal defaults
+    // signal defaults
     _allocatedSignals = SIG_TIMEOUT;
     _waitingSignals = 0UL;
     _currentSignals = 0UL;
@@ -542,7 +542,7 @@ exit:
 }
 
 
-// Attempts to allocate a specific Signal number
+// Attempts to allocate a specific signal number
 bool Thread::tryAllocateSignal(const uint16_t signalNumber)
 {
     if (signalNumber >= SIGNAL_BITS) return false;
@@ -561,7 +561,7 @@ bool Thread::tryAllocateSignal(const uint16_t signalNumber)
 // Tries to find an unused signal number, and then allocates it for use.
 // If you supply a specific signal number, only that signal will be
 // allocated, and only if it is currently free. Supplying -1 here
-// will let the kernel find a free Signal number for you.
+// will let the kernel find a free signal number for you.
 SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -584,7 +584,7 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
 }
 
 
-// Frees a Signal number and allows its re-use by the Thread
+// Frees a signal number and allows its re-use by the Thread
 void Thread::freeSignals(const SignalField signals)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -598,7 +598,7 @@ void Thread::freeSignals(const SignalField signals)
 }
 
 
-// Returns a SignalField showing which Signals are currently active
+// Returns a SignalField showing which signals are currently active
 // Active = Thread will wake up because of them
 SignalField Thread::getActiveSignals() const
 {
@@ -608,7 +608,7 @@ SignalField Thread::getActiveSignals() const
 }
 
 
-// Returns a SignalField showing which Signals are currently set
+// Returns a SignalField showing which signals are currently set
 SignalField Thread::getCurrentSignals() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -617,7 +617,7 @@ SignalField Thread::getCurrentSignals() const
 }
 
 
-// Clears a set of Signals and returns the remaining ones
+// Clears a set of signals and returns the remaining ones
 SignalField Thread::clearSignals(const SignalField sigs)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -626,14 +626,14 @@ SignalField Thread::clearSignals(const SignalField sigs)
 }
 
 
-// Waits for any of a set of Signals, returning a SignalField
-// representing the Signals that woke the Thread up again
+// Waits for any of a set of signals, returning a SignalField
+// representing the signals that woke the Thread up again
 SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
 {
     SignalField rc = 0;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {    
-        // A Thread can wait only on it's own Signals.
+        // A Thread can wait only on it's own signals.
         if (_currentThread != this) return 0;
 
         // build the final field from scratch
@@ -657,12 +657,12 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         // if we're not going to end up waiting on anything, bail
         if (!_waitingSignals) return 0;
 
-        // see what Signals are already set that we care about
+        // see what signals are already set that we care about
         rc = getActiveSignals();
 
         // if there aren't any, block to wait for them
         if (!rc) {
-            // this will block until at least one Signal is
+            // this will block until at least one signal is
             // received that we are waiting for. Execution
             // will resume immediately following the yield()
             yield();
@@ -670,23 +670,23 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
             // disable ISRs again so we're back to being atomic
             cli();
 
-            // Figure out which Signal(s) woke us
+            // Figure out which signal(s) woke us
             rc = getActiveSignals();
         }
 
-        // clear the recd Signals so that we can see repeats of them
+        // clear the recd signals so that we can see repeats of them
         clearSignals(rc);
 
         // make sure that the timeout is disabled
         _currentThread->_timeoutOffset = 0ULL;
 
-        // return the Signals that woke us
+        // return the signals that woke us
         return rc;
     }
 }
 
 
-// Send Signals to a Thread, potentially waking it up
+// Send signals to a Thread, potentially waking it up
 void Thread::signal(const SignalField sigs)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
