@@ -52,7 +52,7 @@ namespace {
 // returned in allocatedBytes, which will always be a multiple of the page size.
 void* memory::allocate(
     const uint16_t numBytesRequested,
-    uint16_t* allocatedBytes,
+    uint16_t* const allocatedBytes,
     const SearchStrategy strategy)
 {
     void* rc = nullptr;
