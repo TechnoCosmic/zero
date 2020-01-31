@@ -152,7 +152,7 @@ static void globalThreadEntry(
     int* exitCode)
 {
     // run the thread and get its exit code
-    uint16_t ec = ((ThreadEntry) entry)();
+    int ec = ((ThreadEntry) entry)();
 
     // we don't want to be disturbed while cleaning up
     cli();
@@ -714,11 +714,11 @@ int main()
     // create the idle Thread
     _idleThread = new Thread(0, idleThreadEntry, TF_NONE);
 
-    // bootstrap
-    new Thread(256, startup_sequence);
-
     // start Timer0 (does not enable global ints)
     initTimer0();
+
+    // bootstrap
+    startup_sequence();
 
     // Go!
     yield();
