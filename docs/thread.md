@@ -254,6 +254,15 @@ Signals a Thread, potentially waking it up.
 ### Notes
 Threads are woken from ```wait()``` with use of the ```signal()``` function. ```signal()``` is usually called by another Thread, or device driver.
 
+## getPeakStackUsage()
+Returns the peak recorded stack usage for the ```Thread```.
+```
+    uint16_t getPeakStackUsage() const;
+```
+
+### Notes
+The stack usage is only checked when a ```Thread``` is pre-empted or voluntarily yields, for the sake of efficiency. This means that actual peak stack usage may be higher than reported here.
+
 # Macros
 ## ZERO_ATOMIC_BLOCK
 Similar to AVR-libc's ```ATOMIC_BLOCK``` macros, this macro lets you easily wrap up a critical section that calls ```Thread::forbid()``` and ```Thread::permit()``` for you...
