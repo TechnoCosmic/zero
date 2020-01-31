@@ -23,7 +23,7 @@ namespace zero {
 
 		// allocate a contiguous chunk of memory
 		void* allocate(
-			const uint16_t bytesRqed,
+			const uint16_t bytesReqd,
 			uint16_t* const allocatedBytes = nullptr,
 			const SearchStrategy strategy = memory::SearchStrategy::BottomUp);
 

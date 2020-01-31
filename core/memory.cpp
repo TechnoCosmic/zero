@@ -19,6 +19,7 @@ using namespace zero::memory;
 
 
 namespace {
+    
     // The SRAM that the dynamic allocator can hand out to callers
     uint8_t ALIGNED(64) _memoryArea[DYNAMIC_BYTES];
 
@@ -51,7 +52,7 @@ namespace {
 // Allocates some memory. The amount of memory actually allocated is optionally
 // returned in allocatedBytes, which will always be a multiple of the page size.
 void* memory::allocate(
-    const uint16_t numBytesRequested,
+    const uint16_t bytesReqd,
     uint16_t* const allocatedBytes,
     const SearchStrategy strategy)
 {
@@ -63,7 +64,7 @@ void* memory::allocate(
 
     // critical section - one Thread allocating at a time, thank you
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-        const uint16_t numPages = getNumPagesForBytes(numBytesRequested);
+        const uint16_t numPages = getNumPagesForBytes(bytesReqd);
         const int16_t startPage = _sram.findFreePages(numPages, strategy);
 
         // if there was a chunk the size we wanted
