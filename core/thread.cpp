@@ -599,6 +599,7 @@ void Thread::freeSignals(const SignalField signals)
 
 
 // Returns a SignalField showing which Signals are currently active
+// Active = Thread will wake up because of them
 SignalField Thread::getActiveSignals() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -607,7 +608,7 @@ SignalField Thread::getActiveSignals() const
 }
 
 
-// Returns a SignalField showing which Signals are currently active
+// Returns a SignalField showing which Signals are currently set
 SignalField Thread::getCurrentSignals() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
