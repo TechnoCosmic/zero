@@ -696,9 +696,9 @@ void Thread::signal(const SignalField sigs)
         _currentSignals |= (sigs & _allocatedSignals);
 
         // do we need to wake the Thread?
-        if (_currentThread != this &&                   // - if we're not signalling ourselves and,
-            !alreadySignalled &&                        // - this thread isn't already in the active list, and,
-            getActiveSignals())                         // - it now has signals that would wake it up, ...
+        if (_currentThread != this &&                   // if we're not signalling ourselves and,
+            !alreadySignalled &&                        // this thread isn't already in the active list, and,
+            getActiveSignals())                         // it now has signals that would wake it up, ...
         {
             // ... then move it to the active list ready to run
 
