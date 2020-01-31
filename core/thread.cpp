@@ -603,7 +603,7 @@ void Thread::freeSignals(const SignalField signals)
 SignalField Thread::getActiveSignals() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        return (_currentSignals & _waitingSignals & _allocatedSignals);
+        return (_currentSignals & _waitingSignals);
     }
 }
 
