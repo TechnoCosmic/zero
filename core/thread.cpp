@@ -558,8 +558,8 @@ bool Thread::tryAllocateSignal(const uint16_t signalNumber)
 }
 
 
-// Tries to find an unused Signal number and then allocates it for use.
-// If you supply a specific Signal number, only that Signal will be
+// Tries to find an unused signal number, and then allocates it for use.
+// If you supply a specific signal number, only that signal will be
 // allocated, and only if it is currently free. Supplying -1 here
 // will let the kernel find a free Signal number for you.
 SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
