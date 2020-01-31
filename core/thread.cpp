@@ -692,13 +692,16 @@ void Thread::signal(const SignalField sigs)
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         const bool alreadySignalled = getActiveSignals();
 
+        // set the signals
         _currentSignals |= (sigs & _allocatedSignals);
 
-        // - if we're not signalling ourselves and,
-        // - this thread isn't already in the active list, and,
-        // - it now has signals that would wake it up,
-        // then move it to the active list ready to run
-        if (_currentThread != this && !alreadySignalled && getActiveSignals()) {
+        // do we need to wake the Thread?
+        if (_currentThread != this &&                   // - if we're not signalling ourselves and,
+            !alreadySignalled &&                        // - this thread isn't already in the active list, and,
+            getActiveSignals())                         // - it now has signals that would wake it up, ...
+        {
+            // ... then move it to the active list ready to run
+
             // if it's on the timeout list, take it off
             if (_timeoutOffset) {
                 this->_timeoutOffset = 0ULL;
