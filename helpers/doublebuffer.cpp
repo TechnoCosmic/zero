@@ -56,8 +56,8 @@ bool DoubleBuffer::write(const uint8_t d)
 }
 
 
-// Returns the currently active half of the buffer (if there's any data in it), and swaps
-// buffers. This is the only time atomicity is required, due to the design.
+// Returns the currently active half of the buffer (if
+// there's any data in it), and swaps buffers.
 uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes)
 {
     const uint8_t oldSreg = SREG;
