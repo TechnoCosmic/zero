@@ -17,6 +17,7 @@
 using namespace zero;
 
 
+// ctor
 Pipe::Pipe(const uint16_t size)
 {
     // storage and tracking
@@ -25,6 +26,7 @@ Pipe::Pipe(const uint16_t size)
 }
 
 
+// dtor
 Pipe::~Pipe()
 {
     memory::free(_buffer, _bufferSize);
@@ -39,12 +41,14 @@ Pipe::~Pipe()
 }
 
 
+// validity checking
 Pipe::operator bool() const
 {
     return (_buffer != nullptr);
 }
 
 
+// Returns true if the Pipe is empty, false otherwise
 bool Pipe::isEmpty() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -53,6 +57,7 @@ bool Pipe::isEmpty() const
 }
 
 
+// Returns true if the Pipe is full, false otherwise
 bool Pipe::isFull() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -61,6 +66,8 @@ bool Pipe::isFull() const
 }
 
 
+// Reads a byte from the Pipe. Returns true if data was
+// successfully read, false otherwise.
 bool Pipe::read(uint8_t& data)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -100,6 +107,8 @@ bool Pipe::read(uint8_t& data)
 }
 
 
+// Writes a byte to the Pipe. Returns true if data was
+// successfully written, false otherwise.
 bool Pipe::write(const uint8_t data)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -140,6 +149,7 @@ bool Pipe::write(const uint8_t data)
 }
 
 
+// Empties the Pipe
 void Pipe::flush()
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -156,6 +166,7 @@ void Pipe::flush()
 }
 
 
+// Assigns read filter to the Pipe
 void Pipe::setReadFilter(PipeFilter f)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -164,6 +175,7 @@ void Pipe::setReadFilter(PipeFilter f)
 }
 
 
+// Assigns write filter to the Pipe
 void Pipe::setWriteFilter(PipeFilter f)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -172,6 +184,8 @@ void Pipe::setWriteFilter(PipeFilter f)
 }
 
 
+// Assigns a Synapse to signal when the Pipe has
+// room to accept more data.
 void Pipe::setRoomAvailSynapse(Synapse& s)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -187,6 +201,8 @@ void Pipe::setRoomAvailSynapse(Synapse& s)
 }
 
 
+// Assigns a Synapse to signal when the Pipe has
+// data waiting to be read.
 void Pipe::setDataAvailSynapse(Synapse& s)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
