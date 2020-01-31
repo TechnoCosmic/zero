@@ -28,12 +28,7 @@ namespace zero {
         void clearSignals() const;
         SignalField wait(const uint32_t timeoutMs = 0ULL) const;
 
-    private:
-        Synapse(const Synapse& s) = delete;
-        void operator=(const Synapse& s) = delete;
-
-        Thread* const _thread;
-        const SignalField _signals;
+        #include "synapse_private.h"
     };
 
 }
