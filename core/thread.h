@@ -48,7 +48,7 @@ namespace zero {
             const ThreadFlags flags = TF_READY,         // Optional flags
             const Synapse* const termSyn = nullptr,     // Synapse to signal when Thread terminates
             int* exitCode = nullptr);                   // Place to put Thread's return code
-        
+
         explicit operator bool() const;
 
         // Stack information

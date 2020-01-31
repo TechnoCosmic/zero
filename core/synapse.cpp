@@ -62,6 +62,7 @@ void Synapse::clearSignals() const
 }
 
 
+// Waits for the signals to be set, blocking if necessary
 SignalField Synapse::wait(const uint32_t timeoutMs) const
 {
     if (*this && &me == _thread) {
