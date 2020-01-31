@@ -88,7 +88,7 @@ int cliEntry()
 
     // set up the transmitter
     Synapse txReadySyn;
-    UsartTx tx(CLI_USART_NUM);
+    CliTx tx(CLI_USART_NUM);
     if (!txReadySyn || !tx) return 20;
 
     tx.setCommsParams(CLI_BAUD);
@@ -104,10 +104,7 @@ int cliEntry()
 
     // main loop
     while (true) {
-        auto wokeSigs = me.wait(rxDataSyn);
-
-        if (wokeSigs & rxDataSyn) {
-            handleKeyboard(rx, tx, cmdLine);
-        }
+        rxDataSyn.wait();
+        handleKeyboard(rx, tx, cmdLine);
     }
 }
