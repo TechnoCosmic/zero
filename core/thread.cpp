@@ -74,7 +74,7 @@ namespace {
         const uint16_t EXTRAS_COUNT = 1;
     #endif
 
-    const uint16_t MIN_STACK_BYTES = 80;
+    const uint16_t MIN_STACK_BYTES = 128;
     
     // the offsets from the stack top (as seen AFTER all the registers have been pushed
     // onto the stack already) of each of the nine (9) parameters that are register-passed
@@ -285,6 +285,7 @@ Thread::Thread(
     // The prepared stack has all the registers + SREG + RAMPZ 'pushed'
     // onto it (zeroed out). This new stack top represents that.
     _sp = newStackTop;
+    _lowSp = _sp;
 
     // Signal defaults
     _allocatedSignals = SIG_TIMEOUT;
@@ -314,6 +315,12 @@ Thread::~Thread()
 Thread::operator bool() const
 {
     return (_stackBottom != nullptr);
+}
+
+
+uint16_t Thread::getPeakStackUsage() const
+{
+    return (_stackSize - (_lowSp - (uint16_t) _stackBottom));
 }
 
 
@@ -432,6 +439,9 @@ static void yield()
         saveExtendedRegisters();
         _currentThread->_sp = SP;
 
+        // track stack usage at switch point
+        _currentThread->_lowSp = MIN(_currentThread->_lowSp, _currentThread->_sp);
+
         // take it out of the running
         ACTIVE_LIST.remove(*_currentThread);
 
@@ -502,6 +512,9 @@ ISR(TIMER0_COMPB_vect, ISR_NAKED)
         // we're switching, so we need to save the rest
         saveExtendedRegisters();
         _currentThread->_sp = SP;
+
+        // track stack usage at switch point
+        _currentThread->_lowSp = MIN(_currentThread->_lowSp, _currentThread->_sp);
 
         // send it to the expired list
         if (_currentThread != _idleThread) {

@@ -10,10 +10,13 @@ public:
     ~Thread();
 
     uint16_t _sp;
-    Thread* _prev;
-    Thread* _next;
+    uint16_t _lowSp;
+
     uint8_t _ticksRemaining;
     uint32_t _timeoutOffset;
+
+    Thread* _prev;
+    Thread* _next;
 
 private:
     Thread(const Thread& t) = delete;

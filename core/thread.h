@@ -51,6 +51,9 @@ namespace zero {
         
         explicit operator bool() const;
 
+        // Stack information
+        uint16_t getPeakStackUsage() const;
+
         // Signals Management
         SignalField allocateSignal(const uint16_t reqdSignalNumber = -1);
         void freeSignals(const SignalField signals);
