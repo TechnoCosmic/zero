@@ -7,7 +7,7 @@
 
 
 private:
-    debug() = delete;
-    ~debug() = delete;
-    debug(const debug& d) = delete;
-    void operator=(const debug &d) = delete;
+    debug() = delete;                                   // delete ctor
+    ~debug() = delete;                                  // delete dtor
+    debug(const debug& d) = delete;                     // delete copy ctor
+    void operator=(const debug &d) = delete;            // delete assign op
