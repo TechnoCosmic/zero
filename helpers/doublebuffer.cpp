@@ -86,6 +86,7 @@ uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes)
 }
 
 
+// Clears the buffer
 void DoubleBuffer::flush()
 {
     const uint8_t oldSreg = SREG;
