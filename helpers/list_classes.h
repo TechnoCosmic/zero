@@ -7,7 +7,6 @@
 
 
 #include "thread.h"
-#include "gpio.h"
 
 
 template class List<Thread>;
