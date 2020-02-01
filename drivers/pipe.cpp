@@ -44,9 +44,7 @@ Pipe::~Pipe()
 // validity checking
 Pipe::operator bool() const
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        return (_buffer != nullptr);
-    }
+    return (_buffer != nullptr);
 }
 
 
