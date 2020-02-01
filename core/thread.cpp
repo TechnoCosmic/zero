@@ -312,12 +312,14 @@ Thread::~Thread()
 }
 
 
+// validity checking
 Thread::operator bool() const
 {
     return (_stackBottom != nullptr);
 }
 
 
+// Returns the peak recorded stack usage, in bytes
 uint16_t Thread::getPeakStackUsage() const
 {
     return (_stackSize - (_lowSp - (uint16_t) _stackBottom));
