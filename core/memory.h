@@ -28,7 +28,7 @@ namespace zero {
 			const SearchStrategy strategy = memory::SearchStrategy::BottomUp);
 
 		// deallocate a contiguous chunk of memory
-		void free(const void* address, uint16_t numBytes);
+		void free(const void* const address, const uint16_t numBytes);
 
 	}
 

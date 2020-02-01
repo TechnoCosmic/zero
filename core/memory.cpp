@@ -95,7 +95,7 @@ void* memory::allocate(
 // performance, there is no checking that the Thread 'owns' the memory being
 // freed, nor is there a check to see if the memory was even allocated in the
 // first place.
-void memory::free(const void* address, const uint16_t numBytes)
+void memory::free(const void* const address, const uint16_t numBytes)
 {
     if (address == nullptr) return;
 
