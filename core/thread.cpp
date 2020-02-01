@@ -227,7 +227,7 @@ Thread::Thread(
     const ThreadEntry entry,                            // the Thread's entry function
     const ThreadFlags flags,                            // Optional flags
     const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
-    int* exitCode)                                      // Place to put Thread's return code
+    int* const exitCode)                                // Place to put Thread's return code
 {    
     // allocate a stack from the heap
     _stackBottom = (uint8_t*) memory::allocate(

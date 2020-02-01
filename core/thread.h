@@ -47,7 +47,7 @@ namespace zero {
             const ThreadEntry entry,                    // the Thread's entry function
             const ThreadFlags flags = TF_READY,         // Optional flags
             const Synapse* const termSyn = nullptr,     // Synapse to signal when Thread terminates
-            int* exitCode = nullptr);                   // Place to put Thread's return code
+            int* const exitCode = nullptr);             // Place to put Thread's return code
 
         explicit operator bool() const;
 
@@ -60,7 +60,7 @@ namespace zero {
 
         SignalField getCurrentSignals() const;
         SignalField clearSignals(const SignalField sigs);
-        
+
         SignalField wait(const SignalField sigs, const uint32_t timeoutMs = 0ULL);
         void signal(const SignalField sigs);
 
