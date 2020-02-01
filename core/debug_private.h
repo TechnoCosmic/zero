@@ -6,6 +6,9 @@
 //
 
 
+public:
+    static void init();                                 // sets up the GPIO
+
 private:
     debug() = delete;                                   // delete ctor
     ~debug() = delete;                                  // delete dtor
