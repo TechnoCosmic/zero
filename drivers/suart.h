@@ -28,8 +28,8 @@ namespace zero {
 
         void setCommsParams(
             const uint32_t baud,                        // the speed of the communications
-            volatile uint8_t* ddr,                      // address of the DDR for the software TX pin
-            volatile uint8_t* port,                     // address of the PORT for the software TX pin
+            volatile uint8_t* const ddr,                // address of the DDR for the software TX pin
+            volatile uint8_t* const port,               // address of the PORT for the software TX pin
             const uint8_t pin);                         // the pin number for the TX (0-7)
 
         bool enable(Synapse& txReadySyn);
