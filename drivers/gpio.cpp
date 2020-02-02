@@ -11,7 +11,6 @@
 
 #include <avr/io.h>
 #include <util/atomic.h>
-
 #include "gpio.h"
 
 
