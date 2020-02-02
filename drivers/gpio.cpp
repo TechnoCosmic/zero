@@ -47,7 +47,7 @@ Gpio::Gpio(const PinField pins) :
 Gpio::~Gpio()
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        _allocatedPins &= _pins;                        // free the pins
+        _allocatedPins &= ~_pins;                        // free the pins
     }
 }
 
