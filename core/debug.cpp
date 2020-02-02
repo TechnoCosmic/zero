@@ -6,6 +6,9 @@
 //
 
 
+#ifdef DEBUG_ENABLED
+
+
 #include <stdlib.h>
 
 #include <avr/io.h>
@@ -14,17 +17,17 @@
 #include <util/delay.h>
 
 #include "debug.h"
+#include "gpio.h"
 
 
 using namespace zero;
 
 
-#ifdef DEBUG_ENABLED
-
-
 namespace {
-    const int DEBUG_PIN_MASK = (1 << DEBUG_PIN);
+
     const int DEBUG_DELAY = (10000UL / (DEBUG_BAUD / 100));
+    Gpio* _debugPin = nullptr;
+
 }
 
 
@@ -34,8 +37,9 @@ namespace {
 void debug::init()
 {
 #ifdef DEBUG_ENABLED
-    DEBUG_DDR |= DEBUG_PIN_MASK;
-    DEBUG_PORT |= DEBUG_PIN_MASK;
+    _debugPin = new Gpio(DEBUG_PIN);
+    _debugPin->setAsOutput();
+    _debugPin->switchOn();
 #endif
 }
 
@@ -56,10 +60,10 @@ void debug::print(const char d)
 
     while (reg) {
         if (reg & 1) {
-            DEBUG_PORT |= DEBUG_PIN_MASK;
+            _debugPin->switchOn();
         }
         else {
-            DEBUG_PORT &= ~DEBUG_PIN_MASK;
+            _debugPin->switchOff();
         }
 
         // next bit please
