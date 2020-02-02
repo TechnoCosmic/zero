@@ -233,4 +233,29 @@ void Gpio::toggle(const PinField pins) const
 }
 
 
+// Returns the input state of all owned pins
+PinField Gpio::getInputState() const
+{
+    PinField rc = 0ULL;
+
+    #ifdef PINA
+        rc |= (((PinField) PINA) <<  0);
+    #endif
+
+    #ifdef PINB
+        rc |= (((PinField) PINB) <<  8);
+    #endif
+
+    #ifdef PINC
+        rc |= (((PinField) PINC) << 16);
+    #endif
+
+    #ifdef PIND
+        rc |= (((PinField) PIND) << 24);
+    #endif
+
+    return sanitize(rc);
+}
+
+
 #endif

@@ -89,6 +89,8 @@ namespace zero {
         void switchOff(const PinField pins) const;      // sets a subset of owned pins to low
         void toggle(const PinField pins) const;         // toggles a subset of owned pins
 
+        PinField getInputState() const;                 // Returns the input state of all owned pins
+
         #include "gpio_private.h"
     };
 
