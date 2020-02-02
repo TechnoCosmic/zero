@@ -122,8 +122,7 @@ void SuartTx::disable()
         power_timer2_disable();                         // depower the Timer
 
         if (_gpio) {
-            _gpio->switchOff();
-            _gpio->setAsInput();
+            _gpio->reset();
         }
 
         if (_txReadySyn) {

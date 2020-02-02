@@ -78,8 +78,8 @@ SpiMemory::SpiMemory(
         return;
     }
 
-    _gpio = &chipSelect;
-    _gpio->setAsOutput();
+    _chipSelectPin = &chipSelect;
+    _chipSelectPin->setAsOutput();
 
     // setup the SPI GPIO
     SPI_DDR |= (SCLK | MOSI);
@@ -113,12 +113,11 @@ SpiMemory::~SpiMemory()
         SPSR = 0;
 
         // return the CS line to floating
-        if (_gpio) {
-            _gpio->switchOff();
-            _gpio->setAsInput();
+        if (_chipSelectPin) {
+            _chipSelectPin->reset();
+            _chipSelectPin = nullptr;
         }
 
-        _gpio = nullptr;
 
         // clear signals and forget
         if (_spiReadySyn) {
@@ -134,21 +133,21 @@ SpiMemory::~SpiMemory()
 
 SpiMemory::operator bool() const
 {
-    return (_gpio != nullptr);
+    return (_chipSelectPin != nullptr);
 }
 
 
 // select the chip, by pulling CS low
 void SpiMemory::select() const
 {
-    _gpio->switchOff();
+    _chipSelectPin->switchOff();
 }
 
 
 // deselect the chip, by pulling CS high
 void SpiMemory::deselect() const
 {
-    _gpio->switchOn();
+    _chipSelectPin->switchOn();
 }
 
 

@@ -47,7 +47,7 @@ Gpio::Gpio(const PinField pins) :
 Gpio::~Gpio()
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        _allocatedPins &= ~_pins;                        // free the pins
+        _allocatedPins &= ~_pins;                       // free the pins
     }
 }
 
@@ -70,6 +70,14 @@ PinField Gpio::getAllocatedPins() const
 inline PinField Gpio::sanitize(const PinField pins) const
 {
     return pins & _pins;
+}
+
+
+// Tristates all owned pins
+void Gpio::reset() const
+{
+    switchOff();
+    setAsInput();
 }
 
 

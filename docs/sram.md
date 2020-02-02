@@ -69,7 +69,7 @@ Once the transfer has begun, control wil return to your code. Once the transfer 
 
 int spiMemoryDemo
 {
-    Gpio csPin(GPIO_PINB4);                             // CS for the SPI memory chip
+    Gpio csPin(PF_PINB4);                               // CS for the SPI memory chip
     Synapse sramReadySig;                               // to learn when the xfer is done
     SpiMemory extSram(
         131072ULL,                                      // I'm using a 23LCV1024 (1Mbit)

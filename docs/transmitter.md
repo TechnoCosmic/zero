@@ -60,7 +60,7 @@ Once a transmission is finished, the transmitter will signal the ```txReadySyn``
 int txDemo()
 {
     // claim a GPIO pin to use to transmit on
-    Gpio txPin(GPIO_PINA0);
+    Gpio txPin(PF_PINA0);
 
     // Synapse for learning when we can send again
     Synapse txReadySyn;
