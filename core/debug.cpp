@@ -6,9 +6,6 @@
 //
 
 
-#ifdef DEBUG_ENABLED
-
-
 #include <stdlib.h>
 
 #include <avr/io.h>
@@ -25,14 +22,14 @@ using namespace zero;
 
 namespace {
 
+#ifdef DEBUG_ENABLED
+
     const int DEBUG_DELAY = (10000UL / (DEBUG_BAUD / 100));
     Gpio* _debugPin = nullptr;
 
-}
-
-
 #endif
 
+}
 
 void debug::init()
 {
