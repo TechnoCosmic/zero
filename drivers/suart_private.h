@@ -27,6 +27,4 @@ private:
 
     // GPIO and comms
     uint32_t _baud = 0ULL;
-    volatile uint8_t* _ddr = nullptr;
-    volatile uint8_t* _port = nullptr;
-    uint8_t _pinMask = 0;
+    const Gpio* _gpio = nullptr;

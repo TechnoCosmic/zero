@@ -108,113 +108,123 @@ void Gpio::toggle() const
 // Sets a given set of owned pins to input
 void Gpio::setAsInput(const PinField pins) const
 {
-    const auto cleanPins = ~sanitize(pins);
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        const auto cleanPins = ~sanitize(pins);
 
-#ifdef DDRA
-    DDRA &= ((cleanPins >>  0) & 0xFF);
-#endif
+        #ifdef DDRA
+            DDRA &= ((cleanPins >>  0) & 0xFF);
+        #endif
 
-#ifdef DDRB
-    DDRB &= ((cleanPins >>  8) & 0xFF);
-#endif
+        #ifdef DDRB
+            DDRB &= ((cleanPins >>  8) & 0xFF);
+        #endif
 
-#ifdef DDRC
-    DDRC &= ((cleanPins >> 16) & 0xFF);
-#endif
+        #ifdef DDRC
+            DDRC &= ((cleanPins >> 16) & 0xFF);
+        #endif
 
-#ifdef DDRD
-    DDRD &= ((cleanPins >> 24) & 0xFF);
-#endif
+        #ifdef DDRD
+            DDRD &= ((cleanPins >> 24) & 0xFF);
+        #endif
+    }
 }
 
 
 // Sets a given set of owned pins to output
 void Gpio::setAsOutput(const PinField pins) const
 {
-    const auto cleanPins = sanitize(pins);
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        const auto cleanPins = sanitize(pins);
 
-#ifdef DDRA
-    DDRA |= ((cleanPins >>  0) & 0xFF);
-#endif
+        #ifdef DDRA
+            DDRA |= ((cleanPins >>  0) & 0xFF);
+        #endif
 
-#ifdef DDRB
-    DDRB |= ((cleanPins >>  8) & 0xFF);
-#endif
+        #ifdef DDRB
+            DDRB |= ((cleanPins >>  8) & 0xFF);
+        #endif
 
-#ifdef DDRC
-    DDRC |= ((cleanPins >> 16) & 0xFF);
-#endif
+        #ifdef DDRC
+            DDRC |= ((cleanPins >> 16) & 0xFF);
+        #endif
 
-#ifdef DDRD
-    DDRD |= ((cleanPins >> 24) & 0xFF);
-#endif
+        #ifdef DDRD
+            DDRD |= ((cleanPins >> 24) & 0xFF);
+        #endif
+    }
 }
 
 
 // Sets a given set of owned pins to high
 void Gpio::switchOn(const PinField pins) const
 {
-    const auto cleanPins = sanitize(pins);
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        const auto cleanPins = sanitize(pins);
 
-#ifdef PORTA
-    PORTA |= ((cleanPins >>  0) & 0xFF);
-#endif
+        #ifdef PORTA
+            PORTA |= ((cleanPins >>  0) & 0xFF);
+        #endif
 
-#ifdef PORTB
-    PORTB |= ((cleanPins >>  8) & 0xFF);
-#endif
+        #ifdef PORTB
+            PORTB |= ((cleanPins >>  8) & 0xFF);
+        #endif
 
-#ifdef PORTC
-    PORTC |= ((cleanPins >> 16) & 0xFF);
-#endif
+        #ifdef PORTC
+            PORTC |= ((cleanPins >> 16) & 0xFF);
+        #endif
 
-#ifdef PORTD
-    PORTD |= ((cleanPins >> 24) & 0xFF);
-#endif
+        #ifdef PORTD
+            PORTD |= ((cleanPins >> 24) & 0xFF);
+        #endif
+    }
 }
 
 
 // Sets a given set of owned pins to low
 void Gpio::switchOff(const PinField pins) const
 {
-    const auto cleanPins = ~sanitize(pins);
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        const auto cleanPins = ~sanitize(pins);
 
-#ifdef PORTA
-    PORTA &= ((cleanPins >>  0) & 0xFF);
-#endif
+        #ifdef PORTA
+            PORTA &= ((cleanPins >>  0) & 0xFF);
+        #endif
 
-#ifdef PORTB
-    PORTB &= ((cleanPins >>  8) & 0xFF);
-#endif
+        #ifdef PORTB
+            PORTB &= ((cleanPins >>  8) & 0xFF);
+        #endif
 
-#ifdef PORTC
-    PORTC &= ((cleanPins >> 16) & 0xFF);
-#endif
+        #ifdef PORTC
+            PORTC &= ((cleanPins >> 16) & 0xFF);
+        #endif
 
-#ifdef PORTD
-    PORTD &= ((cleanPins >> 24) & 0xFF);
-#endif
+        #ifdef PORTD
+            PORTD &= ((cleanPins >> 24) & 0xFF);
+        #endif
+    }
 }
 
 
 // Toggles a given set of owned pins
 void Gpio::toggle(const PinField pins) const
 {
-    const auto cleanPins = sanitize(pins);
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        const auto cleanPins = sanitize(pins);
 
-#ifdef PORTA
-    PORTA ^= ((cleanPins >>  0) & 0xFF);
-#endif
+        #ifdef PORTA
+            PORTA ^= ((cleanPins >>  0) & 0xFF);
+        #endif
 
-#ifdef PORTB
-    PORTB ^= ((cleanPins >>  8) & 0xFF);
-#endif
+        #ifdef PORTB
+            PORTB ^= ((cleanPins >>  8) & 0xFF);
+        #endif
 
-#ifdef PORTC
-    PORTC ^= ((cleanPins >> 16) & 0xFF);
-#endif
+        #ifdef PORTC
+            PORTC ^= ((cleanPins >> 16) & 0xFF);
+        #endif
 
-#ifdef PORTD
-    PORTD ^= ((cleanPins >> 24) & 0xFF);
-#endif
+        #ifdef PORTD
+            PORTD ^= ((cleanPins >> 24) & 0xFF);
+        #endif
+    }
 }

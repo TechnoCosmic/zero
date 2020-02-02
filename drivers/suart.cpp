@@ -84,17 +84,13 @@ void SuartTx::stopTxTimer() const
 // Sets the communications parameters for the software transmitter
 void SuartTx::setCommsParams(
     const uint32_t baud,                                // the speed of the communications
-    volatile uint8_t* const ddr,                        // address of the DDR for the software TX pin
-    volatile uint8_t* const port,                       // address of the PORT for the software TX pin
-    const uint8_t pin)                                  // the pin number for the TX (0-7)
+    Gpio& pin)                                          // the Gpio object to use for the TX line
 {
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
         disable();
 
         _baud = baud;
-        _ddr = ddr;
-        _port = port;
-        _pinMask = (1 << pin);
+        _gpio = &pin;
     }
 }
 
@@ -105,8 +101,8 @@ bool SuartTx::enable(Synapse& txReadySyn)
     if (!txReadySyn) return false;
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-        *_ddr |= _pinMask;                              // output
-        *_port |= _pinMask;                             // idle-high
+        _gpio->setAsOutput();
+        _gpio->switchOn();
 
         power_timer2_enable();                          // power the Timer
 
@@ -125,9 +121,9 @@ void SuartTx::disable()
         stopTxTimer();
         power_timer2_disable();                         // depower the Timer
 
-        if (_ddr && _port && _pinMask) {
-            *_ddr &= ~_pinMask;
-            *_port &= ~_pinMask;
+        if (_gpio) {
+            _gpio->switchOff();
+            _gpio->setAsInput();
         }
 
         if (_txReadySyn) {
@@ -222,10 +218,10 @@ void SuartTx::onTick()
     if (_txReg) {
         // we're mid-byte, keep pumping out the bits
         if (_txReg & 1) {
-            *_port |= _pinMask;
+            _gpio->switchOn();
         }
         else {
-            *_port &= ~_pinMask;
+            _gpio->switchOff();
         }
 
         _txReg >>= 1;

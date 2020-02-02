@@ -54,18 +54,22 @@ Once a transmission is finished, the transmitter will signal the ```txReadySyn``
 ```
 #include "thread.h"
 #include "synapse.h"
+#include "gpio.h"
 #include "suart.h"
 
 int txDemo()
 {
+    // claim a GPIO pin to use to transmit on
+    Gpio txPin(GPIO_PINA0);
+
     // Synapse for learning when we can send again
     Synapse txReadySyn;
 
     // create a transmitter for software serial TX
     SuartTx tx;
 
-    // set comms params - 9600bps on PORTA, PIN0
-    tx.setCommsParams(9600, &DDRA, &PORTA, 0);
+    // set comms params - 9600bps
+    tx.setCommsParams(9600, txPin);
 
     // enable the transmitter
     tx.enable(txReadySyn);
