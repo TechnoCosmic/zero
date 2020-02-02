@@ -22,6 +22,4 @@ private:
     void sendWriteCommand(const uint32_t addr) const;
 
     const uint32_t _capacityBytes = 0ULL;
-    volatile uint8_t* _csDdr = nullptr;
-    volatile uint8_t* _csPort = nullptr;
-    const uint8_t _csPinMask = 0;
+    const Gpio* _gpio = nullptr;

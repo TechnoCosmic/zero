@@ -10,6 +10,9 @@
 #define TCRI_ZERO_GPIO_H
 
 
+#ifdef ZERO_DRIVERS_GPIO
+
+
 #include <stdint.h>
 
 
@@ -90,6 +93,9 @@ namespace zero {
     };
 
 }
+
+
+#endif
 
 
 #endif

@@ -14,8 +14,10 @@
 
 
 #include <stdint.h>
+
 #include "thread.h"
 #include "synapse.h"
+#include "gpio.h"
 
 
 namespace zero {
@@ -25,10 +27,8 @@ namespace zero {
     public:
         SpiMemory(
             const uint32_t capacityBytes,               // how many bytes does the chip hold?
-            volatile uint8_t* csDdr,                    // DDR for the CS for the chip
-            volatile uint8_t* csPort,                   // PORT for CS
-            const uint8_t csPin,                        // pin number for CS
-            Synapse& readySyn);                           // Synapse to fire when ready to transfer
+            const Gpio& chipSelect,                     // Gpio object for the CS line
+            Synapse& readySyn);                         // Synapse to fire when ready to transfer
 
         void read(
             void* dest,                                 // destination address, in local SRAM

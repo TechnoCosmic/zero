@@ -9,18 +9,14 @@ Any SPI memory IC that is protocol-compatible with the Atmel/Microchip 23LCxxxx/
 ```
         SpiMemory(
             const uint32_t capacityBytes,
-            volatile uint8_t* csDdr,
-            volatile uint8_t* csPort,
-            const uint8_t csPin,
+            const Gpio& chipSelect,
             Synapse readySyn
             )
 ```
 |Param|Description|
 |-----|-----------|
 |```capacityBytes```|The total number of bytes the chip holds.|
-|```csDdr```|A ```volatile uint8_t*``` to the DDR for the port on which the CS pin sits.|
-|```csPort```|A ```volatile uint8_t*``` to the PORT on which the CS pin sits.|
-|```csPin```|A ```uint8_t``` holding the pin number of the CS pin.|
+|```chipSelect```|A reference to a ```Gpio``` object that represents your chosen CS pin.|
 |```readySyn```|A ```Synapse``` to signal when the driver is ready to accept another read/write request.|
 
 ### Notes
@@ -73,20 +69,19 @@ Once the transfer has begun, control wil return to your code. Once the transfer 
 
 int spiMemoryDemo
 {
-    auto sramReadySig = me.allocateSignal();
-    auto extSram = new SpiMemory(
-        131072ULL,                  // I'm using a 23LCV1024 (1Mbit)
-        &DDRB,
-        &PORTB,
-        PINB4,                      // on 1284, SS is PINB4
+    Gpio csPin(GPIO_PINB4);                             // CS for the SPI memory chip
+    Synapse sramReadySig;                               // to learn when the xfer is done
+    SpiMemory extSram(
+        131072ULL,                                      // I'm using a 23LCV1024 (1Mbit)
+        csPin,
         sramReadySig
     );
 
     // wait for the SRAM to be ready (immediately after init, thankfully!)
-    me.wait(sramReadySig);
+    sramReadySig.wait();
 
     // send it some data
-    extSram->write("Dogs are the best!\000", 19);
+    extSram.write("Dogs are the best!\000", 19);
 
     // do other things while that's happening
     // ...
@@ -95,13 +90,13 @@ int spiMemoryDemo
     auto buffer = (char*) memory::allocate(19);
 
     // wait for it to be done, then read it back
-    me.wait(sramReadySig);
+    sramReadySig.wait();
 
     // we *should* check that it allocated okay, but this is demo code
-    extSram->read(buffer, 19);
+    extSram.read(buffer, 19);
 
     // wait for that to come back in...
-    me.wait(sramReadySig);
+    sramReadySig.wait();
 
     // it's here, do something with it...
     debug::print(buffer);
@@ -109,10 +104,5 @@ int spiMemoryDemo
     // clean up
     memory:free(buffer, 19);
     buffer = nullptr;
-
-    delete extSram;
-    extSram = nullptr;
-
-    me.freeSignals(sramReadySig);
 }
 ```

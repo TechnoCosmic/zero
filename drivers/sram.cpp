@@ -69,27 +69,21 @@ namespace {
 // ctor
 SpiMemory::SpiMemory(
     const uint32_t capacityBytes,                       // how many bytes does the chip hold?
-    volatile uint8_t* csDdr,                            // DDR for the CS for the chip
-    volatile uint8_t* csPort,                           // PORT for CS
-    const uint8_t csPin,                                // pin number for CS
+    const Gpio& chipSelect,                             // Gpio object for the CS line
     Synapse& readySyn)                                  // Synapse to fire when ready to transfer
 :
-    _capacityBytes(capacityBytes),
-    _csPinMask(1 << csPin)
+    _capacityBytes(capacityBytes)
 {
     if (!resource::obtain(resource::ResourceId::Spi)) {
         return;
     }
 
-    _csDdr = csDdr;
-    _csPort = csPort;
+    _gpio = &chipSelect;
+    _gpio->setAsOutput();
 
     // setup the SPI GPIO
     SPI_DDR |= (SCLK | MOSI);
     SPI_DDR &= ~MISO;
-
-    // chip select for this chip
-    *_csDdr |= _csPinMask;
 
     // make sure it's not selected
     deselect();
@@ -119,11 +113,12 @@ SpiMemory::~SpiMemory()
         SPSR = 0;
 
         // return the CS line to floating
-        *_csPort &= ~_csPinMask;
-        *_csDdr &= ~_csPinMask;
+        if (_gpio) {
+            _gpio->switchOff();
+            _gpio->setAsInput();
+        }
 
-        _csDdr = nullptr;
-        _csPort = nullptr;
+        _gpio = nullptr;
 
         // clear signals and forget
         if (_spiReadySyn) {
@@ -139,21 +134,21 @@ SpiMemory::~SpiMemory()
 
 SpiMemory::operator bool() const
 {
-    return (_csPort != nullptr);
+    return (_gpio != nullptr);
 }
 
 
 // select the chip, by pulling CS low
 void SpiMemory::select() const
 {
-    *_csPort &= ~_csPinMask;
+    _gpio->switchOff();
 }
 
 
 // deselect the chip, by pulling CS high
 void SpiMemory::deselect() const
 {
-    *_csPort |= _csPinMask;
+    _gpio->switchOn();
 }
 
 

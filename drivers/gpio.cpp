@@ -6,6 +6,9 @@
 //
 
 
+#ifdef ZERO_DRIVERS_GPIO
+
+
 #include <avr/io.h>
 #include <util/atomic.h>
 
@@ -228,3 +231,6 @@ void Gpio::toggle(const PinField pins) const
         #endif
     }
 }
+
+
+#endif
