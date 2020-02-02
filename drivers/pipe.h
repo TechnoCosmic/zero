@@ -10,6 +10,9 @@
 #define TCRI_ZERO_PIPE_H
 
 
+#ifdef ZERO_DRIVERS_PIPE
+
+
 #include <stdint.h>
 #include "thread.h"
 #include "synapse.h"
@@ -50,5 +53,7 @@ zero::Pipe& operator<<(zero::Pipe& out, const char c);
 zero::Pipe& operator<<(zero::Pipe& out, const char* s);
 
 
+
+#endif
 
 #endif

@@ -6,6 +6,9 @@
 //
 
 
+#ifdef ZERO_DRIVERS_PIPE
+
+
 #include <util/atomic.h>
 
 #include "pipe.h"
@@ -216,3 +219,6 @@ void Pipe::setDataAvailSynapse(Synapse& s)
         }
     }
 }
+
+
+#endif

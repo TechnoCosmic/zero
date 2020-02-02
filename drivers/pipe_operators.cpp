@@ -6,6 +6,9 @@
 //
 
 
+#ifdef ZERO_DRIVERS_PIPE
+
+
 #include "pipe.h"
 
 
@@ -24,3 +27,6 @@ zero::Pipe& operator<<(zero::Pipe& out, const char* s)
 
     return out;
 }
+
+
+#endif
