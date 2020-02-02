@@ -34,8 +34,12 @@ See ```docs/thread.md``` for API reference.
 ## Dynamic Memory Allocation
 zero implements a simple page-based memory manager, with overrides for ```new``` and ```delete```. See ```docs/memory.md``` for API reference.
 
-## Hardware USART Drivers
+## Hardware and Software USART Drivers
 zero's serial I/O model implemented by transmitters (```UsartTx``` and ```SuartTx```) and receivers (```UsartRx```). See ```docs/transmitter.md``` and ```docs/receiver.md``` for API reference.
+
+## GPIO Subsystem
+
+zero implements a protected GPIO model, ensuring code only accesses GPIO pins to which it has access. See ```docs/gpio.md``` for API reference.
 
 ## External SPI Memory
 zero supports the use of external SPI memory ICs, namely those that are protocol-compatible with Atmel/Microchip's 23LCxxxx and 25LCxxxx memory chips. You can also use multiple of these devices on the same SPI bus, each with the same or different capacities.
