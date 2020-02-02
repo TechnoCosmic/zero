@@ -9,4 +9,4 @@
 private:
     inline PinField sanitize(const PinField pins) const;
 
-    const PinField _pins;                           // pins owned by this object
+    const PinField _pins;                               // pins owned by this object
