@@ -52,6 +52,7 @@ SuartTx::~SuartTx()
 }
 
 
+// validity checking
 SuartTx::operator bool() const
 {
     return (_suartTx == this);

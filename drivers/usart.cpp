@@ -112,6 +112,7 @@ UsartTx::~UsartTx()
 }
 
 
+// validity checking
 UsartTx::operator bool() const
 {
     return (_usartTx[_deviceNum] == this);
@@ -247,6 +248,7 @@ UsartRx::~UsartRx()
 }
 
 
+// validity checking
 UsartRx::operator bool() const
 {
     return (_usartRx[_deviceNum] == this);

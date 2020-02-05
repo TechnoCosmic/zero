@@ -77,6 +77,7 @@ void CommandLine::clear()
 }
 
 
+// validity checking
 CommandLine::operator bool() const
 {
     return (_buffer != nullptr);
