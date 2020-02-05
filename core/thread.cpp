@@ -515,7 +515,7 @@ ISR(TIMER0_COMPB_vect, ISR_NAKED)
         saveExtendedRegisters();
         _currentThread->_sp = SP;
 
-        // track stack usage at switch point
+        // track peak stack usage at switch point
         _currentThread->_lowSp = MIN(_currentThread->_lowSp, _currentThread->_sp);
 
         // send it to the expired list
@@ -600,8 +600,8 @@ void Thread::freeSignals(const SignalField signals)
 }
 
 
-// Returns a SignalField showing which signals are currently active
-// Active = Thread will wake up because of them
+// Returns a SignalField showing which signals are currently active,
+// where "active" means that the Thread will wake up because of them
 SignalField Thread::getActiveSignals() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -629,7 +629,7 @@ SignalField Thread::clearSignals(const SignalField sigs)
 
 
 // Waits for any of a set of signals, returning a SignalField
-// representing the signals that woke the Thread up again
+// representing which of those signals woke the Thread up
 SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
 {
     SignalField rc = 0;

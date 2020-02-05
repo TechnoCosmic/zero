@@ -44,7 +44,10 @@ void displayPrompt(CliTx& tx)
 }
 
 
-void handleKeyboard(CliRx& rx, CliTx& tx, CommandLine& cmdLine)
+void handleKeyboard(
+    CliRx& rx,
+    CliTx& tx,
+    CommandLine& cmdLine)
 {
     char echoChar = 0;
     uint16_t numBytes;
