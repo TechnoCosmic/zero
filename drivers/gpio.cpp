@@ -267,4 +267,31 @@ PinField Gpio::getInputState() const
 }
 
 
+// Returns the output state of all owned pins
+PinField Gpio::getOutputState() const
+{
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        PinField rc = 0ULL;
+
+        #ifdef PORTA
+            rc |= (((PinField) PORTA) <<  0);
+        #endif
+
+        #ifdef PORTB
+            rc |= (((PinField) PORTB) <<  8);
+        #endif
+
+        #ifdef PORTC
+            rc |= (((PinField) PORTC) << 16);
+        #endif
+
+        #ifdef PORTD
+            rc |= (((PinField) PORTD) << 24);
+        #endif
+
+        return sanitize(rc);
+    }
+}
+
+
 #endif

@@ -101,6 +101,7 @@ namespace zero {
         void toggle(const PinField pins) const;         // toggles a subset of owned pins
 
         PinField getInputState() const;                 // Returns the input state of all owned pins
+        PinField getOutputState() const;                // Returns the output state of all owned pins
 
         #include "gpio_private.h"
     };
