@@ -30,26 +30,19 @@ namespace zero {
     }
 
 
-    #ifdef PORTA
-        const PinField ZERO_PINA0 = (1L << pinPort(0, 0));
-        const PinField ZERO_PINA1 = (1L << pinPort(0, 1));
-        const PinField ZERO_PINA2 = (1L << pinPort(0, 2));
-        const PinField ZERO_PINA3 = (1L << pinPort(0, 3));
-        const PinField ZERO_PINA4 = (1L << pinPort(0, 4));
-        const PinField ZERO_PINA5 = (1L << pinPort(0, 5));
-        const PinField ZERO_PINA6 = (1L << pinPort(0, 6));
-        const PinField ZERO_PINA7 = (1L << pinPort(0, 7));
-    #endif
+    #ifdef PORTD
+        const PinField ZERO_PIND0 = (1L << pinPort(3, 0));
+        const PinField ZERO_PIND1 = (1L << pinPort(3, 1));
+        const PinField ZERO_PIND2 = (1L << pinPort(3, 2));
+        const PinField ZERO_PIND3 = (1L << pinPort(3, 3));
+        const PinField ZERO_PIND4 = (1L << pinPort(3, 4));
+        const PinField ZERO_PIND5 = (1L << pinPort(3, 5));
+        const PinField ZERO_PIND6 = (1L << pinPort(3, 6));
+        const PinField ZERO_PIND7 = (1L << pinPort(3, 7));
 
-    #ifdef PORTB
-        const PinField ZERO_PINB0 = (1L << pinPort(1, 0));
-        const PinField ZERO_PINB1 = (1L << pinPort(1, 1));
-        const PinField ZERO_PINB2 = (1L << pinPort(1, 2));
-        const PinField ZERO_PINB3 = (1L << pinPort(1, 3));
-        const PinField ZERO_PINB4 = (1L << pinPort(1, 4));
-        const PinField ZERO_PINB5 = (1L << pinPort(1, 5));
-        const PinField ZERO_PINB6 = (1L << pinPort(1, 6));
-        const PinField ZERO_PINB7 = (1L << pinPort(1, 7));
+        #ifndef ZERO_HIGH_PORT
+            #define ZERO_HIGH_PORT 3
+        #endif
     #endif
 
     #ifdef PORTC
@@ -61,18 +54,43 @@ namespace zero {
         const PinField ZERO_PINC5 = (1L << pinPort(2, 5));
         const PinField ZERO_PINC6 = (1L << pinPort(2, 6));
         const PinField ZERO_PINC7 = (1L << pinPort(2, 7));
+
+        #ifndef ZERO_HIGH_PORT
+            #define ZERO_HIGH_PORT 2
+        #endif
     #endif
 
-    #ifdef PORTD
-        const PinField ZERO_PIND0 = (1L << pinPort(3, 0));
-        const PinField ZERO_PIND1 = (1L << pinPort(3, 1));
-        const PinField ZERO_PIND2 = (1L << pinPort(3, 2));
-        const PinField ZERO_PIND3 = (1L << pinPort(3, 3));
-        const PinField ZERO_PIND4 = (1L << pinPort(3, 4));
-        const PinField ZERO_PIND5 = (1L << pinPort(3, 5));
-        const PinField ZERO_PIND6 = (1L << pinPort(3, 6));
-        const PinField ZERO_PIND7 = (1L << pinPort(3, 7));
+    #ifdef PORTB
+        const PinField ZERO_PINB0 = (1L << pinPort(1, 0));
+        const PinField ZERO_PINB1 = (1L << pinPort(1, 1));
+        const PinField ZERO_PINB2 = (1L << pinPort(1, 2));
+        const PinField ZERO_PINB3 = (1L << pinPort(1, 3));
+        const PinField ZERO_PINB4 = (1L << pinPort(1, 4));
+        const PinField ZERO_PINB5 = (1L << pinPort(1, 5));
+        const PinField ZERO_PINB6 = (1L << pinPort(1, 6));
+        const PinField ZERO_PINB7 = (1L << pinPort(1, 7));
+
+        #ifndef ZERO_HIGH_PORT
+            #define ZERO_HIGH_PORT 1
+        #endif
     #endif
+
+    #ifdef PORTA
+        const PinField ZERO_PINA0 = (1L << pinPort(0, 0));
+        const PinField ZERO_PINA1 = (1L << pinPort(0, 1));
+        const PinField ZERO_PINA2 = (1L << pinPort(0, 2));
+        const PinField ZERO_PINA3 = (1L << pinPort(0, 3));
+        const PinField ZERO_PINA4 = (1L << pinPort(0, 4));
+        const PinField ZERO_PINA5 = (1L << pinPort(0, 5));
+        const PinField ZERO_PINA6 = (1L << pinPort(0, 6));
+        const PinField ZERO_PINA7 = (1L << pinPort(0, 7));
+
+        #ifndef ZERO_HIGH_PORT
+            #define ZERO_HIGH_PORT 0
+        #endif
+    #endif
+
+    const int ZERO_NUM_PORTS = ZERO_HIGH_PORT + 1;
 
 
     class Gpio {
@@ -102,7 +120,7 @@ namespace zero {
 
         PinField getInputState() const;                 // Returns the input state of all owned pins
         PinField getOutputState() const;                // Returns the output state of all owned pins
-        void setOutputState(const PinField v) const;    // Sets all owned pins' outputs according the supplied value
+        void setOutputState(const PinField v) const;    // Sets the output state of all owned pins
 
         #include "gpio_private.h"
     };
