@@ -295,6 +295,7 @@ PinField Gpio::getOutputState() const
 }
 
 
+// Sets all owned pins' outputs according the supplied value
 void Gpio::setOutputState(const PinField v) const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
