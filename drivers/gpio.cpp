@@ -245,22 +245,42 @@ void Gpio::toggle(const PinField pins) const
 PinField Gpio::getInputState() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        PinField rc = 0ULL;
-
+        // fetch all input values ASAP so that we
+        // can get as close to an 'atomic' a snapshot
+        // of the inputs as possible
         #ifdef PINA
-            rc |= (((PinField) PINA) <<  0);
+            const uint8_t pina = PINA;
         #endif
 
         #ifdef PINB
-            rc |= (((PinField) PINB) <<  8);
+            const uint8_t pinb = PINB;
         #endif
 
         #ifdef PINC
-            rc |= (((PinField) PINC) << 16);
+            const uint8_t pinc = PINC;
         #endif
 
         #ifdef PIND
-            rc |= (((PinField) PIND) << 24);
+            const uint8_t pind = PIND;
+        #endif
+
+        // now merge them into the [almost] final PinField
+        PinField rc = 0ULL;
+
+        #ifdef PINA
+            rc |= (((PinField) pina) <<  0);
+        #endif
+
+        #ifdef PINB
+            rc |= (((PinField) pinb) <<  8);
+        #endif
+
+        #ifdef PINC
+            rc |= (((PinField) pinc) << 16);
+        #endif
+
+        #ifdef PIND
+            rc |= (((PinField) pind) << 24);
         #endif
 
         return sanitize(rc);
