@@ -31,80 +31,77 @@ namespace {
 
 }
 
+
 void debug::init()
 {
-#ifdef DEBUG_ENABLED
-    _debugPin = new Gpio(DEBUG_PIN);
-    _debugPin->setAsOutput();
-    _debugPin->switchOn();
-#endif
+    #ifdef DEBUG_ENABLED
+        _debugPin = new Gpio(DEBUG_PIN);
+        _debugPin->setAsOutput();
+        _debugPin->switchOn();
+    #endif
 }
 
 
 // Transmit a single byte via software bit-banging and no ISRs
 void debug::print(const char d)
 {
-#ifdef DEBUG_ENABLED
+    #ifdef DEBUG_ENABLED
+        // setup the output 'register'
+        uint16_t reg = d << 1;
+        reg &= ~(1L << 0);                                   // force start bit low
+        reg |= (1L << 9);                                    // stop bit high (so it ends high)
 
-    // setup the output 'register'
-    uint16_t reg = d << 1;
-    reg &= ~(1L << 0);                                   // force start bit low
-    reg |= (1L << 9);                                    // stop bit high (so it ends high)
+        // stop interrupts because timing is critical
+        const uint8_t oldSreg = SREG;
+        cli();
 
-    // stop interrupts because timing is critical
-    const uint8_t oldSreg = SREG;
-    cli();
+        while (reg) {
+            if (reg & 1) {
+                _debugPin->switchOn();
+            }
+            else {
+                _debugPin->switchOff();
+            }
 
-    while (reg) {
-        if (reg & 1) {
-            _debugPin->switchOn();
+            // next bit please
+            reg >>= 1;
+
+            // 52us = 19200bps, 104us = 9600bps
+            _delay_us(DEBUG_DELAY);
         }
-        else {
-            _debugPin->switchOff();
-        }
 
-        // next bit please
-        reg >>= 1;
-
-        // 52us = 19200bps, 104us = 9600bps
-        _delay_us(DEBUG_DELAY);
-    }
-
-    // maybe restore interrupts
-    SREG = oldSreg;
-
-#endif
+        // maybe restore interrupts
+        SREG = oldSreg;
+    #endif
 }
 
 
 // Transmits a NULL-terminated string via software TX
 void debug::print(const char* s, const bool fromFlash)
 {
-#ifdef DEBUG_ENABLED
+    #ifdef DEBUG_ENABLED
+        while (true) {
+            char c = *s;
 
-    while (true) {
-        char c = *s;
+            if (fromFlash) {
+                c = pgm_read_byte(s);
+            }
 
-        if (fromFlash) {
-            c = pgm_read_byte(s);
+            if (!c) {
+                break;
+            }
+
+            debug::print((char) c);
+            s++;
         }
-
-        if (!c) {
-            break;
-        }
-
-        debug::print((char) c);
-        s++;
-    }
-
-#endif
+    #endif
 }
 
 
 void debug::print(const uint16_t n, const int base)
 {
-#ifdef DEBUG_ENABLED
-    char buffer[18];
-    debug::print(itoa(n, buffer, base));
-#endif
+    #ifdef DEBUG_ENABLED
+        char buffer[18];
+        debug::print(itoa(n, buffer, base));
+    #endif
 }
