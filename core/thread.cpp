@@ -57,7 +57,7 @@ static void INLINE restoreInitialRegisters();
 namespace {
     // globals
     List<Thread> _readyLists[2];                        // the threads that will run
-    List<Thread> _timeoutList;                          // the list of Threads wanting to sleep for a time
+    OffsetList<Thread> _timeoutList;                    // the list of Threads wanting to sleep for a time
     Thread* _currentThread = nullptr;                   // the currently executing thread
     Thread* _idleThread = nullptr;                      // to run when there's nothing else to do, and only then
     volatile uint8_t _activeListNum = 0;                // which of the two ready lists are we using as the active list?

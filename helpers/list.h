@@ -12,6 +12,7 @@
 
 namespace zero {
 
+
     template <class T>
     class List {
     public:
@@ -24,12 +25,19 @@ namespace zero {
         void append(T& item);
         void remove(T& item);
         void insertBefore(T& item, T& before);
-        void insertByOffset(T& item, const uint32_t offsetFromNow);
 
     private:
         T* _head;
         T* _tail;
     };
+
+
+    template <class T>
+    class OffsetList : public List<T> {
+    public:
+        void insertByOffset(T& item, const uint32_t offsetFromNow);
+    };
+
 
 }
 

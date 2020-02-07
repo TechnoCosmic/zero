@@ -122,18 +122,18 @@ void List<T>::insertBefore(T& item, T& before)
 
 
 template <class T>
-void List<T>::insertByOffset(T& item, const uint32_t intendedOffsetFromNow)
+void OffsetList<T>::insertByOffset(T& item, const uint32_t intendedOffsetFromNow)
 {
     bool added = false;
     uint32_t curOffsetFromNow = 0ULL;
-    T* cur = _head;
+    T* cur = List<T>::getHead();
 
     while (cur) {
         curOffsetFromNow += cur->_timeoutOffset;
 
         if (curOffsetFromNow > intendedOffsetFromNow) {
             // insert before cur
-            insertBefore(item, *cur);
+            List<T>::insertBefore(item, *cur);
 
             // adjust the delta of the incoming item
             item._timeoutOffset = intendedOffsetFromNow - (curOffsetFromNow - cur->_timeoutOffset);
@@ -154,7 +154,7 @@ void List<T>::insertByOffset(T& item, const uint32_t intendedOffsetFromNow)
     // if the item hasn't found a home yet,
     // simply throw it on the end of the list
     if (!added) {
-        append(item);
+        List<T>::append(item);
 
         // adjust the delta of the incoming item
         item._timeoutOffset = intendedOffsetFromNow - curOffsetFromNow;

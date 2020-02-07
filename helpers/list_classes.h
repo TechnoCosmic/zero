@@ -10,3 +10,4 @@
 
 
 template class List<Thread>;
+template class OffsetList<Thread>;
