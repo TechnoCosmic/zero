@@ -40,9 +40,15 @@ void List<T>::prepend(T& item)
     item._prev = nullptr;
     item._next = _head;
 
-    if (_head) _head->_prev = &item;
+    if (_head) {
+        _head->_prev = &item;
+    }
+
     _head = &item;
-    if (!_tail) _tail = &item;
+
+    if (!_tail) {
+        _tail = &item;
+    }
 }
 
 
@@ -52,9 +58,15 @@ void List<T>::append(T& item)
     item._next = nullptr;
     item._prev = _tail;
 
-    if (_tail) _tail->_next = &item;
+    if (_tail) {
+        _tail->_next = &item;
+    }
+
     _tail = &item;
-    if (!_head) _head = &item;
+
+    if (!_head) {
+        _head = &item;
+    }
 }
 
 
@@ -67,15 +79,22 @@ void List<T>::remove(T& item)
     T* p = item._prev;
     T* n = item._next;
 
-    if (p) p->_next = n;
+    if (p) {
+        p->_next = n;
+    }
 
     if (n) {
         n->_prev = p;
         n->_timeoutOffset += item._timeoutOffset;
     }
 
-    if (wasHead) _head = n;
-    if (wasTail) _tail = p;
+    if (wasHead) {
+        _head = n;
+    }
+
+    if (wasTail) {
+        _tail = p;
+    }
 
     item._prev = nullptr;
     item._next = nullptr;
@@ -119,7 +138,7 @@ void List<T>::insertByOffset(T& item, const uint32_t intendedOffsetFromNow)
             // adjust the delta of the incoming item
             item._timeoutOffset = intendedOffsetFromNow - (curOffsetFromNow - cur->_timeoutOffset);
 
-            // next delta after us
+            // delta of item after us is reduced by our delta
             cur->_timeoutOffset -= item._timeoutOffset;
 
             // mark it as done so no append occurs later
