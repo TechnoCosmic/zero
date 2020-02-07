@@ -9,6 +9,7 @@
 #ifdef ZERO_DRIVERS_GPIO
 
 
+#include <stdint.h>
 #include <avr/io.h>
 #include <util/atomic.h>
 #include "gpio.h"
@@ -290,6 +291,46 @@ PinField Gpio::getOutputState() const
         #endif
 
         return sanitize(rc);
+    }
+}
+
+
+void Gpio::setOutputState(const PinField v) const
+{
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        const PinField cleanPins = sanitize(v);
+
+        #ifdef PORTA
+        {
+            const uint8_t alloc = (_pins >>  0) & 0xFF;
+            const uint8_t incoming = (v >>  0) & 0xFF;
+            PORTA = (PORTA & ~alloc) | ((cleanPins >>  0) & 0xFF);
+        }
+        #endif
+
+        #ifdef PORTB
+        {
+            const uint8_t alloc = (_pins >>  8) & 0xFF;
+            const uint8_t incoming = (v >>  8) & 0xFF;
+            PORTB = (PORTB & ~alloc) | ((cleanPins >>  8) & 0xFF);
+        }
+        #endif
+
+        #ifdef PORTC
+        {
+            const uint8_t alloc = (_pins >> 16) & 0xFF;
+            const uint8_t incoming = (v >> 16) & 0xFF;
+            PORTC = (PORTC & ~alloc) | ((cleanPins >> 16) & 0xFF);
+        }
+        #endif
+
+        #ifdef PORTD
+        {
+            const uint8_t alloc = (_pins >> 24) & 0xFF;
+            const uint8_t incoming = (v >> 24) & 0xFF;
+            PORTD = (PORTD & ~alloc) | ((cleanPins >> 24) & 0xFF);
+        }
+        #endif
     }
 }
 

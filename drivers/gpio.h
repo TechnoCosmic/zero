@@ -102,6 +102,7 @@ namespace zero {
 
         PinField getInputState() const;                 // Returns the input state of all owned pins
         PinField getOutputState() const;                // Returns the output state of all owned pins
+        void setOutputState(const PinField v) const;    // Sets all owned pins' outputs according the supplied value
 
         #include "gpio_private.h"
     };
