@@ -302,17 +302,17 @@ void Gpio::setOutputState(const PinField v) const
 
         #ifdef PORTA
         {
-            const uint8_t alloc = (_pins >>  0) & 0xFF;
-            const uint8_t incoming = (v >>  0) & 0xFF;
-            PORTA = (PORTA & ~alloc) | ((cleanPins >>  0) & 0xFF);
+            const uint8_t alloc = (_pins >> 0) & 0xFF;
+            const uint8_t incoming = (v >> 0) & 0xFF;
+            PORTA = (PORTA & ~alloc) | ((cleanPins >> 0) & 0xFF);
         }
         #endif
 
         #ifdef PORTB
         {
-            const uint8_t alloc = (_pins >>  8) & 0xFF;
-            const uint8_t incoming = (v >>  8) & 0xFF;
-            PORTB = (PORTB & ~alloc) | ((cleanPins >>  8) & 0xFF);
+            const uint8_t alloc = (_pins >> 8) & 0xFF;
+            const uint8_t incoming = (v >> 8) & 0xFF;
+            PORTB = (PORTB & ~alloc) | ((cleanPins >> 8) & 0xFF);
         }
         #endif
 
