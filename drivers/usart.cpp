@@ -331,176 +331,174 @@ void UsartRx::flush()
 }
 
 
-ISR(USART_TX_vect)
-{
-    // last byte complete
-    _usartTx[0]->byteTxComplete();
-}
+#ifdef UCSR0B
 
-
-ISR(USART_UDRE_vect)
-{
-    // need more data
-    uint8_t nextByte;
-
-    if (!_usartTx[0]->getNextTxByte(nextByte)) {
-        UCSR0B &= ~(1 << UDRIE0);
+    ISR(USART_TX_vect)
+    {
+        // last byte complete
+        _usartTx[0]->byteTxComplete();
     }
-    else {
-        UDR0 = nextByte;
-    }
-}
 
 
-ISR(USART_RX_vect)
-{
-    register volatile uint8_t newByte = UDR0;
+    ISR(USART_UDRE_vect)
+    {
+        // need more data
+        uint8_t nextByte;
 
-    // received data
-    if (_usartRx[0]->_rxBuffer->write(newByte)) {
-        if (_usartRx[0]->_rxDataReceivedSyn) {
-            _usartRx[0]->_rxDataReceivedSyn->signal();
+        if (!_usartTx[0]->getNextTxByte(nextByte)) {
+            UCSR0B &= ~(1 << UDRIE0);
+        }
+        else {
+            UDR0 = nextByte;
         }
     }
-    else {
-        if (_usartRx[0]->_rxOverflowSyn) {
-            _usartRx[0]->_rxOverflowSyn->signal();
+
+
+    ISR(USART_RX_vect)
+    {
+        register volatile uint8_t newByte = UDR0;
+
+        // received data
+        if (_usartRx[0]->_rxBuffer->write(newByte)) {
+            if (_usartRx[0]->_rxDataReceivedSyn) {
+                _usartRx[0]->_rxDataReceivedSyn->signal();
+            }
+        }
+        else {
+            if (_usartRx[0]->_rxOverflowSyn) {
+                _usartRx[0]->_rxOverflowSyn->signal();
+            }
         }
     }
-}
+
+#endif
 
 
 #ifdef UCSR1B
 
-
-ISR(USART1_TX_vect)
-{
-    // last byte complete
-    _usartTx[1]->byteTxComplete();
-}
-
-
-ISR(USART1_UDRE_vect)
-{
-    // need more data
-    uint8_t nextByte;
-
-    if (!_usartTx[1]->getNextTxByte(nextByte)) {
-        UCSR1B &= ~(1 << UDRIE1);
+    ISR(USART1_TX_vect)
+    {
+        // last byte complete
+        _usartTx[1]->byteTxComplete();
     }
-    else {
-        UDR1 = nextByte;
-    }
-}
 
 
-ISR(USART1_RX_vect)
-{
-    register volatile uint8_t newByte = UDR1;
+    ISR(USART1_UDRE_vect)
+    {
+        // need more data
+        uint8_t nextByte;
 
-    // received data
-    if (_usartRx[1]->_rxBuffer->write(newByte)) {
-        if (_usartRx[1]->_rxDataReceivedSyn) {
-            _usartRx[1]->_rxDataReceivedSyn->signal();
+        if (!_usartTx[1]->getNextTxByte(nextByte)) {
+            UCSR1B &= ~(1 << UDRIE1);
+        }
+        else {
+            UDR1 = nextByte;
         }
     }
-    else {
-        if (_usartRx[1]->_rxOverflowSyn) {
-            _usartRx[1]->_rxOverflowSyn->signal();
+
+
+    ISR(USART1_RX_vect)
+    {
+        register volatile uint8_t newByte = UDR1;
+
+        // received data
+        if (_usartRx[1]->_rxBuffer->write(newByte)) {
+            if (_usartRx[1]->_rxDataReceivedSyn) {
+                _usartRx[1]->_rxDataReceivedSyn->signal();
+            }
+        }
+        else {
+            if (_usartRx[1]->_rxOverflowSyn) {
+                _usartRx[1]->_rxOverflowSyn->signal();
+            }
         }
     }
-}
-
 
 #endif
 
 
 #ifdef UCSR2B
 
-
-ISR(USART2_TX_vect)
-{
-    // last byte complete
-    _usartTx[2]->byteTxComplete();
-}
-
-
-ISR(USART2_UDRE_vect)
-{
-    // need more data
-    uint8_t nextByte;
-
-    if (!_usartTx[2]->getNextTxByte(nextByte)) {
-        UCSR2B &= ~(1 << UDRIE2);
+    ISR(USART2_TX_vect)
+    {
+        // last byte complete
+        _usartTx[2]->byteTxComplete();
     }
-    else {
-        UDR2 = nextByte;
-    }
-}
 
 
-ISR(USART2_RX_vect)
-{
-    register volatile uint8_t newByte = UDR2;
+    ISR(USART2_UDRE_vect)
+    {
+        // need more data
+        uint8_t nextByte;
 
-    // received data
-    if (_usartRx[2]->_rxBuffer->write(newByte)) {
-        if (_usartRx[2]->_rxDataReceivedSyn) {
-            _usartRx[2]->_rxDataReceivedSyn->signal();
+        if (!_usartTx[2]->getNextTxByte(nextByte)) {
+            UCSR2B &= ~(1 << UDRIE2);
+        }
+        else {
+            UDR2 = nextByte;
         }
     }
-    else {
-        if (_usartRx[2]->_rxOverflowSyn) {
-            _usartRx[2]->_rxOverflowSyn->signal();
+
+
+    ISR(USART2_RX_vect)
+    {
+        register volatile uint8_t newByte = UDR2;
+
+        // received data
+        if (_usartRx[2]->_rxBuffer->write(newByte)) {
+            if (_usartRx[2]->_rxDataReceivedSyn) {
+                _usartRx[2]->_rxDataReceivedSyn->signal();
+            }
+        }
+        else {
+            if (_usartRx[2]->_rxOverflowSyn) {
+                _usartRx[2]->_rxOverflowSyn->signal();
+            }
         }
     }
-}
-
 
 #endif
 
 
 #ifdef UCSR3B
 
-
-ISR(USART3_TX_vect)
-{
-    // last byte complete
-    _usartTx[3]->byteTxComplete();
-}
-
-
-ISR(USART3_UDRE_vect)
-{
-    // need more data
-    uint8_t nextByte;
-
-    if (!_usartTx[3]->getNextTxByte(nextByte)) {
-        UCSR3B &= ~(1 << UDRIE3);
+    ISR(USART3_TX_vect)
+    {
+        // last byte complete
+        _usartTx[3]->byteTxComplete();
     }
-    else {
-        UDR3 = nextByte;
-    }
-}
 
 
-ISR(USART3_RX_vect)
-{
-    register volatile uint8_t newByte = UDR3;
+    ISR(USART3_UDRE_vect)
+    {
+        // need more data
+        uint8_t nextByte;
 
-    // received data
-    if (_usartRx[3]->_rxBuffer->write(newByte)) {
-        if (_usartRx[3]->_rxDataReceivedSyn) {
-            _usartRx[3]->_rxDataReceivedSyn->signal();
+        if (!_usartTx[3]->getNextTxByte(nextByte)) {
+            UCSR3B &= ~(1 << UDRIE3);
+        }
+        else {
+            UDR3 = nextByte;
         }
     }
-    else {
-        if (_usartRx[3]->_rxOverflowSyn) {
-            _usartRx[3]->_rxOverflowSyn->signal();
+
+
+    ISR(USART3_RX_vect)
+    {
+        register volatile uint8_t newByte = UDR3;
+
+        // received data
+        if (_usartRx[3]->_rxBuffer->write(newByte)) {
+            if (_usartRx[3]->_rxDataReceivedSyn) {
+                _usartRx[3]->_rxDataReceivedSyn->signal();
+            }
+        }
+        else {
+            if (_usartRx[3]->_rxOverflowSyn) {
+                _usartRx[3]->_rxOverflowSyn->signal();
+            }
         }
     }
-}
-
 
 #endif
 
