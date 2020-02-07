@@ -636,7 +636,9 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {    
         // A Thread can wait only on it's own signals.
-        if (_currentThread != this) return 0;
+        if (_currentThread != this) {
+            return 0;
+        }
 
         // build the final field from scratch
         _waitingSignals = sigs;
@@ -657,7 +659,9 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         _waitingSignals &= _allocatedSignals;
 
         // if we're not going to end up waiting on anything, bail
-        if (!_waitingSignals) return 0;
+        if (!_waitingSignals) {
+            return 0;
+        }
 
         // see what signals are already set that we care about
         rc = getActiveSignals();

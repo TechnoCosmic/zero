@@ -84,7 +84,10 @@ int cliEntry()
     // set up the receiver
     Synapse rxDataSyn;
     CliRx rx(CLI_USART_NUM);
-    if (!rxDataSyn || !rx) return 20;
+
+    if (!rxDataSyn || !rx) {
+        return 20;
+    }
 
     rx.setCommsParams(CLI_BAUD);
     rx.enable(CLI_RX_BYTES, rxDataSyn, 0UL);
@@ -92,15 +95,21 @@ int cliEntry()
     // set up the transmitter
     Synapse txReadySyn;
     CliTx tx(CLI_USART_NUM);
-    if (!txReadySyn || !tx) return 20;
+    
+    if (!txReadySyn || !tx) {
+        return 20;
+    }
 
     tx.setCommsParams(CLI_BAUD);
     tx.enable(txReadySyn);
 
     // command line storage
     CommandLine cmdLine(CLI_CMD_BYTES);
-    if (!cmdLine) return 20;
-
+    
+    if (!cmdLine) {
+        return 20;
+    }
+    
     // hello!
     displayWelcome(tx);
     displayPrompt(tx);
