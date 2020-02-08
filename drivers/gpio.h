@@ -15,6 +15,7 @@
 
 #include <stdint.h>
 #include <avr/io.h>
+#include "synapse.h"
 
 
 namespace zero {
@@ -93,11 +94,24 @@ namespace zero {
     const int ZERO_NUM_PORTS = ZERO_HIGH_PORT + 1;
 
 
+    typedef void (*InputCallback)();
+
+
     class Gpio {
     public:
         // Life-cycle
-        Gpio(const PinField pins);                      // claims ownership of a set of pins
+        Gpio(const PinField pins);                      // pins to which you want exclusive access
+
+        Gpio(
+            const PinField pins,                        // pins to which you want exclusive access
+            const InputCallback c);                     // callback for when input pins change state
+
+        Gpio(
+            const PinField pins,                        // pins to which you want exclusive access
+            const Synapse* s);                          // Synapse to signal when input pins change state
+
         ~Gpio();                                        // frees the pins for re-use
+
         explicit operator bool() const;                 // validity checking
 
         // Management
