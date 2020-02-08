@@ -39,7 +39,7 @@ namespace {
     volatile uint8_t* _rxCursor = nullptr;
     volatile uint32_t _xferBytes = 0ULL;
 
-    Synapse* _spiReadySyn = nullptr;
+    const Synapse* _spiReadySyn = nullptr;
     SpiMemory* _curController = nullptr;
 
 
@@ -70,7 +70,7 @@ namespace {
 SpiMemory::SpiMemory(
     const uint32_t capacityBytes,                       // how many bytes does the chip hold?
     const Gpio& chipSelect,                             // Gpio object for the CS line
-    Synapse& readySyn)                                  // Synapse to fire when ready to transfer
+    const Synapse& readySyn)                            // Synapse to fire when ready to transfer
 :
     _capacityBytes(capacityBytes)
 {

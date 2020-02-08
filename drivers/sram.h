@@ -28,7 +28,7 @@ namespace zero {
         SpiMemory(
             const uint32_t capacityBytes,               // how many bytes does the chip hold?
             const Gpio& chipSelect,                     // Gpio object for the CS line
-            Synapse& readySyn);                         // Synapse to fire when ready to transfer
+            const Synapse& readySyn);                   // Synapse to fire when ready to transfer
 
         void read(
             void* dest,                                 // destination address, in local SRAM
