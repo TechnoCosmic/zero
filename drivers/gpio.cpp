@@ -23,6 +23,50 @@ using namespace zero;
 
 namespace {
 
+
+    #ifdef PORTA
+        #define PC_PORTA_vect PCINT0_vect
+        #define PC_PORTB_vect PCINT1_vect
+        #define PC_PORTC_vect PCINT2_vect
+        #define PC_PORTD_vect PCINT3_vect
+
+        #define PCMSKA PCMSK0
+        #define PCMSKB PCMSK1
+        #define PCMSKC PCMSK2
+        #define PCMSKD PCMSK3
+        
+        #define PCPA 0
+        #define PCPB 1
+        #define PCPC 2
+        #define PCPD 3
+        
+    #else
+        #ifdef PORTB
+            #define PC_PORTB_vect PCINT0_vect
+            #define PC_PORTC_vect PCINT1_vect
+            #define PC_PORTD_vect PCINT2_vect
+
+            #define PCMSKB PCMSK0
+            #define PCMSKC PCMSK1
+            #define PCMSKD PCMSK2
+        
+            #define PCPB 0
+            #define PCPC 1
+            #define PCPD 2
+        
+        #else
+            #define PC_PORTC_vect PCINT0_vect
+            #define PC_PORTD_vect PCINT1_vect
+
+            #define PCMSKC PCMSK0
+            #define PCMSKD PCMSK1
+            
+            #define PCPC 0
+            #define PCPD 1
+        #endif
+    #endif
+
+
     PinField _allocatedPins = 0ULL;                     // for quick determination of available pins
     List<Gpio> _gpioList;                               // for PCINTs
     uint8_t _lastKnownInputs[] = {                      // pin change state tracking
@@ -39,6 +83,7 @@ namespace {
             0,
         #endif
     };
+
 
 }
 
@@ -419,48 +464,47 @@ void Gpio::setPinChange(const PinField pins)
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         // for each port, set the PC masks, and then either
         // enable or disable the ISR for that port accordingly
+        #ifdef PCMSKA
+            PCMSKA = (pins >>  0) & 0xFF;
 
-        #ifdef PCMSK0
-            PCMSK0 = (pins >>  0) & 0xFF;
-
-            if (PCMSK0) {
-                PCICR |= (1 << PCIE0);
+            if (PCMSKA) {
+                PCICR |= (1 << PCPA);
             }
             else {
-                PCICR &= ~(1 << PCIE0);
+                PCICR &= ~(1 << PCPA);
             }
         #endif
 
-        #ifdef PCMSK1
-            PCMSK1 = (pins >>  8) & 0xFF;
+        #ifdef PCMSKB
+            PCMSKB = (pins >>  8) & 0xFF;
 
-            if (PCMSK1) {
-                PCICR |= (1 << PCIE1);
+            if (PCMSKB) {
+                PCICR |= (1 << PCPB);
             }
             else {
-                PCICR &= ~(1 << PCIE1);
+                PCICR &= ~(1 << PCPB);
             }
         #endif
 
-        #ifdef PCMSK2
-            PCMSK2 = (pins >> 16) & 0xFF;
+        #ifdef PCMSKC
+            PCMSKC = (pins >> 16) & 0xFF;
 
-            if (PCMSK2) {
-                PCICR |= (1 << PCIE2);
+            if (PCMSKC) {
+                PCICR |= (1 << PCPC);
             }
             else {
-                PCICR &= ~(1 << PCIE2);
+                PCICR &= ~(1 << PCPC);
             }
         #endif
 
-        #ifdef PCMSK3
-            PCMSK3 = (pins >> 24) & 0xFF;
+        #ifdef PCMSKD
+            PCMSKD = (pins >> 24) & 0xFF;
 
-            if (PCMSK3) {
-                PCICR |= (1 << PCIE3);
+            if (PCMSKD) {
+                PCICR |= (1 << PCPD);
             }
             else {
-                PCICR &= ~(1 << PCIE3);
+                PCICR &= ~(1 << PCPD);
             }
         #endif
     }
@@ -534,32 +578,32 @@ void Gpio::handlePinChange(const int portNumber, const uint8_t newValue)
 }
 
 
-#ifdef PCINT0_vect
-    ISR(PCINT0_vect)
+#ifdef PC_PORTA_vect
+    ISR(PC_PORTA_vect)
     {
         Gpio::handlePinChange(0, PINA);
     }
 #endif
 
 
-#ifdef PCINT1_vect
-    ISR(PCINT1_vect)
+#ifdef PC_PORTB_vect
+    ISR(PC_PORTB_vect)
     {
         Gpio::handlePinChange(1, PINB);
     }
 #endif
 
 
-#ifdef PCINT2_vect
-    ISR(PCINT2_vect)
+#ifdef PC_PORTC_vect
+    ISR(PC_PORTC_vect)
     {
         Gpio::handlePinChange(2, PINC);
     }
 #endif
 
 
-#ifdef PCINT3_vect
-    ISR(PCINT3_vect)
+#ifdef PC_PORTD_vect
+    ISR(PC_PORTD_vect)
     {
         Gpio::handlePinChange(3, PIND);
     }
