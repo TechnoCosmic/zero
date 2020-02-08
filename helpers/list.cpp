@@ -85,7 +85,6 @@ void List<T>::remove(T& item)
 
     if (n) {
         n->_prev = p;
-        n->_timeoutOffset += item._timeoutOffset;
     }
 
     if (wasHead) {
@@ -118,6 +117,19 @@ void List<T>::insertBefore(T& item, T& before)
     if (newHead) {
         _head = &item;
     }
+}
+
+
+template <class T>
+void OffsetList<T>::remove(T& item)
+{
+    // we have to adjust the next item's offset before
+    // being allowed to the remove the item from the list
+    if (T* n = item._next) {
+        n->_timeoutOffset += item._timeoutOffset;
+    }
+
+    List<T>::remove(item);
 }
 
 

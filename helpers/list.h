@@ -26,7 +26,7 @@ namespace zero {
         void remove(T& item);
         void insertBefore(T& item, T& before);
 
-    private:
+    protected:
         T* _head;
         T* _tail;
     };
@@ -35,6 +35,7 @@ namespace zero {
     template <class T>
     class OffsetList : public List<T> {
     public:
+        void remove(T& item);
         void insertByOffset(T& item, const uint32_t offsetFromNow);
     };
 

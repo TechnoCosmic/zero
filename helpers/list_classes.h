@@ -6,8 +6,10 @@
 //
 
 
+#include "gpio.h"
 #include "thread.h"
 
 
+template class List<Gpio>;
 template class List<Thread>;
 template class OffsetList<Thread>;
