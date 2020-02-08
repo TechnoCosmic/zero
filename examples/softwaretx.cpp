@@ -36,9 +36,9 @@ SoftwareTx::SoftwareTx(
 // the main body of the Thread
 int SoftwareTx::main()
 {
+    SuartTx tx;
     Gpio txPins(_txPins);
     Synapse txReadySyn;                                 // to learn when we can transmit again
-    SuartTx tx;                                         // the device
 
     // make sure they all claimed their resources
     if (txPins && txReadySyn && tx) {
@@ -51,5 +51,8 @@ int SoftwareTx::main()
             txReadySyn.wait();                          // wait for transmitter to be ready
             tx.transmit("Hello, World!\r\n", 15);       // send some text
         }
+    }
+    else {
+        return 20;
     }
 }
