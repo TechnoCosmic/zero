@@ -139,6 +139,7 @@ SRC += $(wildcard core/*.cpp)
 SRC += $(wildcard drivers/*.cpp)
 SRC += $(wildcard helpers/*.cpp)
 SRC += $(wildcard cli/*.cpp)
+SRC += $(wildcard examples/*.cpp)
 
 
 .PHONY: push fuses upload clean gettools
