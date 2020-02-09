@@ -52,16 +52,16 @@ This is shorthand for ```me.wait(Synapse::signals, timeoutMs)```, and only works
 int myThread
 {
     Synapse txReadySyn;
-    UsartTx tx(0);
+    UsartTx tx( 0 );
 
-    tx.setCommsParams(9600);
-    tx.enable(txReadySyn);
+    tx.setCommsParams( 9600 );
+    tx.enable( txReadySyn );
 
     while (true) {
         txReadySyn.wait();
 
         // transmit something...
-        tx.transmit("Hello!\r\n", 8, false);
+        tx.transmit( "Hello!\r\n", 8, false );
     }
 
     // don't need to do anything with the UsartTx or

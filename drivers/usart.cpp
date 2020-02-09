@@ -122,7 +122,7 @@ UsartTx::operator bool() const
 // Sets the communications parameters
 void UsartTx::setCommsParams(const uint32_t baud)
 {
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
 
         // 8-none-1
@@ -139,7 +139,7 @@ bool UsartTx::enable(Synapse& txReadySyn)
 {
     if (!txReadySyn) return false;
 
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         UCSRB(_deviceNum) |= TX_BITS;
 
         _txReadySyn = &txReadySyn;
@@ -152,7 +152,7 @@ bool UsartTx::enable(Synapse& txReadySyn)
 
 void UsartTx::disable()
 {
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         if (_txReadySyn) {
             _txReadySyn->clearSignals();
             _txReadySyn = nullptr;
@@ -172,7 +172,7 @@ bool UsartTx::transmit(
         _txReadySyn->wait();
     }
     
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         if (_txBuffer) return false;
         if (!buffer) return false;
         if (!sz) return false;
@@ -257,7 +257,7 @@ UsartRx::operator bool() const
 
 void UsartRx::setCommsParams(const uint32_t baud)
 {
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
 
         // 8-none-1
@@ -275,7 +275,7 @@ bool UsartRx::enable(
     Synapse& rxSyn,
     Synapse* ovfSyn)
 {
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         bool rc = false;
 
         _rxDataReceivedSyn = nullptr;
@@ -300,7 +300,7 @@ bool UsartRx::enable(
 
 void UsartRx::disable()
 {
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         UCSRB(_deviceNum) &= ~RX_BITS;
 
         delete _rxBuffer;

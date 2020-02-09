@@ -2,7 +2,7 @@
 	"Atomic Block": {
 		"prefix": [ "atomic", "atomic-block" ],
 		"body": [
-			"ATOMIC_BLOCK(${1|ATOMIC_RESTORESTATE,ATOMIC_FORCEON|}) {",
+			"ATOMIC_BLOCK(${1| ATOMIC_RESTORESTATE , ATOMIC_FORCEON |}) {",
 			"\t$0",
 			"}",
 		],
@@ -11,7 +11,7 @@
 	"zero Atomic Block": {
 		"prefix": [ "zero-atomic", "zero-atomic-block" ],
 		"body": [
-			"ZERO_ATOMIC_BLOCK(${1|ZERO_ATOMIC_RESTORESTATE,ZERO_ATOMIC_FORCEON|}) {",
+			"ZERO_ATOMIC_BLOCK(${1| ZERO_ATOMIC_RESTORESTATE , ZERO_ATOMIC_FORCEON |}) {",
 			"\t$0",
 			"}",
 		],

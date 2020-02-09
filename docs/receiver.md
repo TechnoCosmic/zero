@@ -53,23 +53,23 @@ int rxDemo()
     Synapse rxOvfSyn;
     
     // create a receiver for hardware USART1
-    UsartRx rx(1);
+    UsartRx rx( 1 );
 
     // set the comms parameters and enable the RX
-    rx.setCommsParams(9600);
-    rx.enable(128, rxSig, &rxOvfSig);
+    rx.setCommsParams( 9600 );
+    rx.enable( 128, rxSig, &rxOvfSig );
 
     // main loop
     while (true) {
-        auto wokeSigs = me.wait(rxSyn | rxOvfSyn);
+        auto wokeSigs = me.wait( rxSyn | rxOvfSyn );
 
         if (wokeSigs & rxSyn) {
             // data received, get the RX buffer
             uint16_t numBytesRecd;
             
-            while (uint8_t* rxBuffer = rx.getCurrentBuffer(numBytesRecd)) {
+            while (uint8_t* rxBuffer = rx.getCurrentBuffer( numBytesRecd )) {
                 // do something with the received data
-                processRxData(rxBuffer, numBytesRecd);
+                processRxData( rxBuffer, numBytesRecd );
             }
         }
 

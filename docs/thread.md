@@ -65,7 +65,7 @@ int startup_sequence()
     Synapse asyncTermSyn;
 
     // define and launch the Thread
-    Thread* async = new Thread(
+    new Thread(
         192,
         myAsyncThread,
         TF_READY,
@@ -228,7 +228,7 @@ Also be aware that a call to ```wait()``` does not necessarily block - if any of
 #### ```timeoutMs```
 This can be used to optionally provide a timeout for the call. If you only want a thread-friendly blocking delay (without waiting on any other signals), just use...
 ```
-    SignalField wokeSigs = me.wait(SIG_TIMEOUT, 500);
+    SignalField wokeSigs = me.wait( SIG_TIMEOUT, 500 );
 
     if (wokeSigs & SIG_TIMEOUT) {
         // ...
@@ -272,7 +272,7 @@ Similar to AVR-libc's ```ATOMIC_BLOCK``` macros, this macro lets you easily wrap
 // ...
 // ...
 
-ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
 
     // do stuff here that requires context-switching
     // to be disabled in order to work correctly

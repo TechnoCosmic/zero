@@ -160,7 +160,7 @@ void SpiMemory::read(
     // wait until there's no controller using the SPI
     while (_curController);
 
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // tell the ISR who we are
         _curController = this;
 
@@ -199,7 +199,7 @@ void SpiMemory::write(
     // wait until there's no controller using the SPI
     while (_curController);
 
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // tell the ISR who we are
         _curController = this;
 

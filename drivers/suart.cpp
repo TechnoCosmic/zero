@@ -87,7 +87,7 @@ void SuartTx::setCommsParams(
     const uint32_t baud,                                // the speed of the communications
     Gpio& pin)                                          // the Gpio object to use for the TX line
 {
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         disable();
 
         _baud = baud;
@@ -101,7 +101,7 @@ bool SuartTx::enable(Synapse& txReadySyn)
 {
     if (!txReadySyn) return false;
 
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         _gpio->setAsOutput();
         _gpio->switchOn();
 
@@ -118,7 +118,7 @@ bool SuartTx::enable(Synapse& txReadySyn)
 // disables the software transmitter
 void SuartTx::disable()
 {
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         stopTxTimer();
         power_timer2_disable();                         // depower the Timer
 
@@ -144,7 +144,7 @@ bool SuartTx::transmit(
         _txReadySyn->wait();
     }
  
-    ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         if (_txBuffer) return false;
         if (!buffer) return false;
         if (!sz) return false;

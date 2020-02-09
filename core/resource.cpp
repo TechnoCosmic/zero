@@ -22,7 +22,7 @@ bool resource::obtain(const ResourceId id)
 {
     const uint16_t m = 1L << (uint16_t) id;
 
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         if (!(_resourceMap & m)) {
             _resourceMap |= m;
             return true;
@@ -35,7 +35,7 @@ bool resource::obtain(const ResourceId id)
 
 void resource::release(const ResourceId id)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         _resourceMap &= ~(1L << (uint16_t) id);
     }
 }

@@ -60,7 +60,7 @@ Once a transmission is finished, the transmitter will signal the ```txReadySyn``
 int txDemo()
 {
     // claim a GPIO pin to use to transmit on
-    Gpio txPin(ZERO_PINA0);
+    Gpio txPin( ZERO_PINA0 );
 
     // Synapse for learning when we can send again
     Synapse txReadySyn;
@@ -69,14 +69,14 @@ int txDemo()
     SuartTx tx;
 
     // set comms params - 9600bps
-    tx.setCommsParams(9600, txPin);
+    tx.setCommsParams( 9600, txPin );
 
     // enable the transmitter
-    tx.enable(txReadySyn);
+    tx.enable( txReadySyn );
 
     // main loop
     while (true) {
-        tx.transmit((char*) "Beaker is the best puppy ever!\r\n", 32, true);
+        tx.transmit( (char*) "Beaker is the best puppy ever!\r\n", 32, true );
     }
 }
 ```

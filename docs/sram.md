@@ -69,7 +69,7 @@ Once the transfer has begun, control wil return to your code. Once the transfer 
 
 int spiMemoryDemo
 {
-    Gpio csPin(ZERO_PINB4);                             // CS for the SPI memory chip
+    Gpio csPin( ZERO_PINB4 );                           // CS for the SPI memory chip
     Synapse sramReadySig;                               // to learn when the xfer is done
     SpiMemory extSram(
         131072ULL,                                      // I'm using a 23LCV1024 (1Mbit)
@@ -81,7 +81,7 @@ int spiMemoryDemo
     sramReadySig.wait();
 
     // send it some data
-    extSram.write("Dogs are the best!\000", 19);
+    extSram.write( "Dogs are the best!\000", 19 );
 
     // do other things while that's happening
     // ...
@@ -93,16 +93,16 @@ int spiMemoryDemo
     sramReadySig.wait();
 
     // we *should* check that it allocated okay, but this is demo code
-    extSram.read(buffer, 19);
+    extSram.read( buffer, 19 );
 
     // wait for that to come back in...
     sramReadySig.wait();
 
     // it's here, do something with it...
-    debug::print(buffer);
+    debug::print( buffer );
 
     // clean up
-    memory:free(buffer, 19);
+    memory:free( buffer, 19 );
     buffer = nullptr;
 }
 ```

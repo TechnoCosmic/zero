@@ -194,7 +194,7 @@ Thread& Thread::getCurrent()
 // NOTE: Wraps around after approximately 49 continuous days
 uint32_t Thread::now()
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         return _milliseconds;
     }
 }
@@ -565,7 +565,7 @@ bool Thread::tryAllocateSignal(const uint16_t signalNumber)
 // will let the kernel find a free signal number for you.
 SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         if (reqdSignalNumber < SIGNAL_BITS) {
             if (tryAllocateSignal( reqdSignalNumber )) {
                 return 1L << reqdSignalNumber;
@@ -588,7 +588,7 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
 // Frees a signal number and allows its re-use by the Thread
 void Thread::freeSignals(const SignalField signals)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // can't free the reserved signals
         const SignalField sigsTofree = signals & ~SIG_TIMEOUT;
 
@@ -603,7 +603,7 @@ void Thread::freeSignals(const SignalField signals)
 // where "active" means that the Thread will wake up because of them
 SignalField Thread::getActiveSignals() const
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         return _currentSignals & _waitingSignals;
     }
 }
@@ -612,7 +612,7 @@ SignalField Thread::getActiveSignals() const
 // Returns a SignalField showing which signals are currently set
 SignalField Thread::getCurrentSignals() const
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         return _currentSignals;
     }
 }
@@ -621,7 +621,7 @@ SignalField Thread::getCurrentSignals() const
 // Clears a set of signals and returns the remaining ones
 SignalField Thread::clearSignals(const SignalField sigs)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         return (_currentSignals &= ~sigs);
     }
 }
@@ -633,7 +633,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
 {
     SignalField rc = 0;
 
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {    
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {    
         // A Thread can wait only on it's own signals.
         if (_currentThread != this) {
             return 0;
@@ -694,7 +694,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
 // Send signals to a Thread, potentially waking it up
 void Thread::signal(const SignalField sigs)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         const bool alreadySignalled = getActiveSignals();
 
         // set the signals

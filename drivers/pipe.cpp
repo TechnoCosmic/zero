@@ -54,7 +54,7 @@ Pipe::operator bool() const
 // Returns true if the Pipe is empty, false otherwise
 bool Pipe::isEmpty() const
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         return _length == 0;
     }
 }
@@ -63,7 +63,7 @@ bool Pipe::isEmpty() const
 // Returns true if the Pipe is full, false otherwise
 bool Pipe::isFull() const
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         return _length == _bufferSize;
     }
 }
@@ -73,7 +73,7 @@ bool Pipe::isFull() const
 // successfully read, false otherwise.
 bool Pipe::read(uint8_t& data)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         bool rc = false;
 
         while (isEmpty() && _dataAvailSyn) {
@@ -114,7 +114,7 @@ bool Pipe::read(uint8_t& data)
 // successfully written, false otherwise.
 bool Pipe::write(const uint8_t data)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         bool rc = false;
 
         while (isFull() && _roomAvailSyn) {
@@ -155,7 +155,7 @@ bool Pipe::write(const uint8_t data)
 // Empties the Pipe
 void Pipe::flush()
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         _startIndex = _length = 0UL;
 
         if (_dataAvailSyn) {
@@ -172,7 +172,7 @@ void Pipe::flush()
 // Assigns read filter to the Pipe
 void Pipe::setReadFilter(PipeFilter f)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         _readFilter = f;
     }
 }
@@ -181,7 +181,7 @@ void Pipe::setReadFilter(PipeFilter f)
 // Assigns write filter to the Pipe
 void Pipe::setWriteFilter(PipeFilter f)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         _writeFilter = f;
     }
 }
@@ -191,7 +191,7 @@ void Pipe::setWriteFilter(PipeFilter f)
 // room to accept more data.
 void Pipe::setRoomAvailSynapse(Synapse& s)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         _roomAvailSyn = &s;
 
         if (!isFull()) {
@@ -208,7 +208,7 @@ void Pipe::setRoomAvailSynapse(Synapse& s)
 // data waiting to be read.
 void Pipe::setDataAvailSynapse(Synapse& s)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         _dataAvailSyn = &s;
 
         if (!isEmpty()) {
