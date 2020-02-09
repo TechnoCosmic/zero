@@ -45,7 +45,7 @@ int LedFlasher::main()
     }
 
     led.setAsOutput();
-    
+
     while (true) {
         led.switchOn();
         me.wait(0UL, _delayMs);
