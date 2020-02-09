@@ -88,7 +88,7 @@ namespace {
 }
 
 
-// tri-state all pins and get the intial input state
+// tri-state all pins and get the initial input state
 void Gpio::init()
 {
     #ifdef DDRA
