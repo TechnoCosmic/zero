@@ -8,6 +8,7 @@
 
 #include "thread.h"
 #include "cli/cli.h"
+#include "examples/ledflasher.h"
 
 
 using namespace zero;
@@ -17,8 +18,11 @@ using namespace zero;
 // Initialize any GPIO or other things that make sense to do so.
 int startup_sequence()
 {
-    // CLI
+    // empty CLI
     new Shell(0, DEBUG_BAUD);
+
+    // simple LED flasher
+    new LedFlasher(ZERO_PINB5, 250, 750);
 
     return 0;
 }
