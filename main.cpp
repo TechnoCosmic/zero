@@ -15,7 +15,7 @@ using namespace zero;
 
 
 // startup_sequence() is your new main().
-// Initialize any GPIO or other things that make sense to do so.
+// Start your Threads here, and other things that make sense to do so.
 int startup_sequence()
 {
     // empty CLI
