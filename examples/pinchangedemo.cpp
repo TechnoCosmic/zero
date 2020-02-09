@@ -40,11 +40,18 @@ int PinChangeDemo::main()
         return 20;
     }
 
+    // set up input, with pull-ups enabled
     listenPins.setAsInput();
     listenPins.switchOn();
 
     while (true) {
         listenSyn.wait();
-        dbg_pgm( "Input changed!\r\n" );
+
+        if (listenPins.getInputState()) {
+            dbg_pgm( "Button up!\r\n" );
+        }
+        else {
+            dbg_pgm( "Button down!\r\n" );
+        }
     }
 }
