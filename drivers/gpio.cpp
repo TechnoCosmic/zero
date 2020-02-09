@@ -261,7 +261,7 @@ void Gpio::setAsInput(const PinField pins) const
         #endif
 
         // re-assess which pins are subject to PCINTs
-        Gpio::setPinChange( Gpio::gatherAllInputs() );
+        Gpio::setInterrupts( Gpio::gatherAllInputPins() );
     }
 }
 
@@ -289,7 +289,7 @@ void Gpio::setAsOutput(const PinField pins) const
         #endif
 
         // re-assess which pins are subject to PCINTs
-        Gpio::setPinChange( Gpio::gatherAllInputs() );
+        Gpio::setInterrupts( Gpio::gatherAllInputPins() );
     }
 }
 
@@ -370,7 +370,7 @@ void Gpio::toggle(const PinField pins) const
 
 
 // Returns the input state of all owned pins
-PinField Gpio::getInputState() const
+uint32_t Gpio::getInputState() const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // fetch all input values ASAP so that we
@@ -417,7 +417,7 @@ PinField Gpio::getInputState() const
 
 
 // Returns the output state of all owned pins
-PinField Gpio::getOutputState() const
+uint32_t Gpio::getOutputState() const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         PinField rc = 0ULL;
@@ -444,7 +444,7 @@ PinField Gpio::getOutputState() const
 
 
 // Sets the output state of all owned pins
-void Gpio::setOutputState(const PinField v) const
+void Gpio::setOutputState(const uint32_t v) const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         const PinField cleanPins = sanitize( v );
@@ -477,7 +477,7 @@ void Gpio::setOutputState(const PinField v) const
 
 
 // sets the on/off state of all PCINTs
-void Gpio::setPinChange(const PinField pins)
+void Gpio::setInterrupts(const PinField pins)
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // for each port, set the PC masks, and then either
@@ -530,7 +530,7 @@ void Gpio::setPinChange(const PinField pins)
 
 
 // Determines which pins are inputs across all Gpio objects
-PinField Gpio::gatherAllInputs()
+PinField Gpio::gatherAllInputPins()
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         PinField rc = 0ULL;
