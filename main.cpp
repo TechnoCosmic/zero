@@ -19,10 +19,10 @@ using namespace zero;
 int startup_sequence()
 {
     // empty CLI
-    new Shell(0, DEBUG_BAUD);
+    new Shell( 0, DEBUG_BAUD );
 
     // simple LED flasher
-    new LedFlasher(ZERO_PINB5, 250, 750);
+    new LedFlasher( ZERO_PINB5, 250, 750 );
 
     return 0;
 }
