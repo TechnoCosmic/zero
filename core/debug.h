@@ -10,6 +10,9 @@
 #define TCRI_ZERO_DEBUG_H
 
 
+#include <avr/pgmspace.h>
+
+
 namespace zero {
 
     class debug {
