@@ -26,14 +26,16 @@ namespace zero {
         // ctor
         LedFlasher(
             const PinField ledPins,
-            const uint32_t delayMs,
+            const uint32_t timeOnMs,
+            const uint32_t timeOffMs,
             int count = 0);
 
     private:
         int main();
 
         const PinField _ledPins;
-        const uint32_t _delayMs;
+        const uint32_t _timeOnMs;
+        const uint32_t _timeOffMs;
         int _flashesRemaining;
 
     };

@@ -16,7 +16,8 @@ using namespace zero;
 
 LedFlasher::LedFlasher(
     const PinField ledPins,
-    const uint32_t delayMs,
+    const uint32_t timeOnMs,
+    const uint32_t timeOffMs,
     const int count)
 :
     // call parent ctor, with entryPoint as a lambda.
@@ -28,7 +29,8 @@ LedFlasher::LedFlasher(
 
     // other params
     _ledPins{ ledPins },
-    _delayMs{ delayMs },
+    _timeOnMs{ timeOnMs },
+    _timeOffMs{ timeOffMs },
     _flashesRemaining{ count }
 {
     // ctor body
@@ -48,10 +50,10 @@ int LedFlasher::main()
 
     while (true) {
         led.switchOn();
-        me.wait( 0UL, _delayMs );
+        me.wait( 0UL, _timeOnMs );
 
         led.switchOff();
-        me.wait( 0UL, _delayMs );
+        me.wait( 0UL, _timeOffMs );
 
         if (_flashesRemaining > 0) {
             _flashesRemaining--;
