@@ -25,7 +25,7 @@ PinChangeDemo::PinChangeDemo(
     }),
 
     // other params
-    _pins{pins}
+    _pins{ pins }
 {
     // ctor body
 }

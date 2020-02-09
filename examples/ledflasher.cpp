@@ -27,9 +27,9 @@ LedFlasher::LedFlasher(
     }),
 
     // other params
-    _ledPins{ledPins},
-    _delayMs{delayMs},
-    _flashesRemaining{count}
+    _ledPins{ ledPins },
+    _delayMs{ delayMs },
+    _flashesRemaining{ count }
 {
     // ctor body
 }

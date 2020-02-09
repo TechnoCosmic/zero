@@ -27,7 +27,7 @@ SoftwareTx::SoftwareTx(
     }),
 
     // other params
-    _txPins{txPins}
+    _txPins{ txPins }
 {
     // ctor body
 }
