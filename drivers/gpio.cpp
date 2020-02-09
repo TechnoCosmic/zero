@@ -110,9 +110,9 @@ Gpio::Gpio(
 // ctor
 Gpio::Gpio(
     const PinField pins,
-    const Synapse* syn)
+    const Synapse& syn)
 :
-    Gpio( pins, nullptr, syn )
+    Gpio( pins, nullptr, &syn )
 {
 }
 

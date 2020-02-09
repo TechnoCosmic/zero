@@ -34,7 +34,7 @@ PinChangeDemo::PinChangeDemo(
 int PinChangeDemo::main()
 {
     Synapse listenSyn;
-    Gpio listenPins( _pins, &listenSyn );
+    Gpio listenPins( _pins, listenSyn );
 
     if (!listenPins) {
         return 20;

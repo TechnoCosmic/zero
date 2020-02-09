@@ -108,7 +108,7 @@ namespace zero {
 
         Gpio(
             const PinField pins,                        // pins to which you want exclusive access
-            const Synapse* s);                          // Synapse to signal when input pins change state
+            const Synapse& s);                          // Synapse to signal when input pins change state
 
         ~Gpio();                                        // frees the pins for re-use
 
