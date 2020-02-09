@@ -6,8 +6,11 @@
 //
 
 
+#ifndef TCRI_ZERO_CMDLINE_H
+#define TCRI_ZERO_CMDLINE_H
+
+
 #include <stdint.h>
-#include "cli.h"
 
 
 namespace zero {
@@ -20,7 +23,7 @@ namespace zero {
 
         bool registerKeyPress(const char c);
         void clear();
-        void process(CliRx& rx, CliTx& tx);
+        void process();
 
         explicit operator bool() const;
 
@@ -33,3 +36,6 @@ namespace zero {
     };
 
 }
+
+
+#endif

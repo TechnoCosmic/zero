@@ -11,7 +11,6 @@
 #include "cli.h"
 #include "thread.h"
 #include "synapse.h"
-#include "memory.h"
 #include "usart.h"
 
 #include "cmdline.h"
@@ -22,44 +21,70 @@ using namespace zero;
 
 namespace {
     const auto WELCOME = "\fWelcome to zero\r\n";
+    const auto USART = "CLI on USART";
     const auto PROMPT = "zero: $ ";
     const auto CRLF = "\r\n";
 
-    const auto CLI_USART_NUM = 0;
-    const auto CLI_BAUD = 9600;
+    const auto CLI_STACK_BYTES = 512;
     const auto CLI_RX_BYTES = 32;
     const auto CLI_CMD_BYTES = 80;
 }
 
 
-void displayWelcome(CliTx& tx)
+// ctor
+Shell::Shell(
+    const int usartNumber,
+    const uint32_t baud)
+:
+    // call parent ctor, with entryPoint as a lambda.
+    // This is a stub that just calls ::main()
+    Thread(CLI_STACK_BYTES, []()
+    {
+        return ((Shell&) me).main();
+    }),
+
+    // other params
+    _usartNumber{usartNumber},
+    _baud{baud},
+    _tx{nullptr},
+    _rx{nullptr}
 {
-    tx.transmit(WELCOME, strlen(WELCOME), true);
+    // ctor body
 }
 
 
-void displayPrompt(CliTx& tx)
+void Shell::displayWelcome()
 {
-    tx.transmit(PROMPT, strlen(PROMPT), true);
+    _tx->transmit(WELCOME, strlen(WELCOME), true);
+    _tx->transmit(USART, strlen(USART), true);
+
+    char usartAscii = '0' + _usartNumber;
+
+    _tx->transmit(&usartAscii, 1, true);
+    _tx->transmit("\r\n", 2, true);
 }
 
 
-void handleKeyboard(
-    CliRx& rx,
-    CliTx& tx,
+void Shell::displayPrompt()
+{
+    _tx->transmit(PROMPT, strlen(PROMPT), true);
+}
+
+
+void Shell::handleKeyboard(
     CommandLine& cmdLine)
 {
     char echoChar = 0;
     uint16_t numBytes;
 
-    while(auto buffer = rx.getCurrentBuffer(numBytes)) {
+    while(auto buffer = _rx->getCurrentBuffer(numBytes)) {
         for (uint16_t i = 0; i < numBytes; i++) {
             switch (auto curChar = buffer[i]) {
                 case '\r':
-                    cmdLine.process(rx, tx);
+                    cmdLine.process();
                     cmdLine.clear();
-                    tx.transmit(CRLF, 2, true);
-                    displayPrompt(tx);
+                    _tx->transmit(CRLF, 2, true);
+                    displayPrompt();
                 break;
 
                 default:
@@ -70,7 +95,7 @@ void handleKeyboard(
             }
 
             if (echoChar) {
-                tx.transmit(&echoChar, 1, true);
+                _tx->transmit(&echoChar, 1, true);
                 echoChar = 0;
             }
         }
@@ -79,28 +104,28 @@ void handleKeyboard(
 }
 
 
-int cliEntry()
+int Shell::main()
 {
     // set up the receiver
     Synapse rxDataSyn;
-    CliRx rx(CLI_USART_NUM);
+    CliRx rx(_usartNumber);
 
     if (!rxDataSyn || !rx) {
         return 20;
     }
 
-    rx.setCommsParams(CLI_BAUD);
+    rx.setCommsParams(_baud);
     rx.enable(CLI_RX_BYTES, rxDataSyn, 0UL);
 
     // set up the transmitter
     Synapse txReadySyn;
-    CliTx tx(CLI_USART_NUM);
+    CliTx tx(_usartNumber);
     
     if (!txReadySyn || !tx) {
         return 20;
     }
 
-    tx.setCommsParams(CLI_BAUD);
+    tx.setCommsParams(_baud);
     tx.enable(txReadySyn);
 
     // command line storage
@@ -110,13 +135,18 @@ int cliEntry()
         return 20;
     }
     
+    // remember these things now that
+    // we're set up
+    _tx = &tx;
+    _rx = &rx;
+
     // hello!
-    displayWelcome(tx);
-    displayPrompt(tx);
+    displayWelcome();
+    displayPrompt();
 
     // main loop
     while (true) {
         rxDataSyn.wait();
-        handleKeyboard(rx, tx, cmdLine);
+        handleKeyboard(cmdLine);
     }
 }

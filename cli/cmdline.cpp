@@ -59,9 +59,9 @@ bool CommandLine::registerKeyPress(const char c)
 }
 
 
-void CommandLine::process(CliRx& rx, CliTx& tx)
+void CommandLine::process()
 {
-    char* argv[CLI_CMD_LINE_MAX_TOKENS];
+    char* argv[16];
     const uint8_t argc = tokenize(_buffer, argv);
 
     if (argc) {
@@ -90,7 +90,7 @@ uint8_t CommandLine::tokenize(char* s, char* argv[])
     bool lastWasSeparator = true;
     bool inQuotes = false;
 
-    while (*s && tokenCount < CLI_CMD_LINE_MAX_TOKENS) {
+    while (*s && tokenCount < 16) {
         if (*s == '\"') {
             inQuotes = !inQuotes;
             *s = 0;

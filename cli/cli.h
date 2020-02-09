@@ -11,15 +11,38 @@
 
 
 #include <stdint.h>
+
+#include "thread.h"
 #include "usart.h"
+#include "cmdline.h"
 
 
 typedef zero::UsartTx CliTx;
 typedef zero::UsartRx CliRx;
 
-int cliEntry();
 
-const auto CLI_CMD_LINE_MAX_TOKENS = 16;
+namespace zero {
 
+    class Shell : public Thread {
+    public:
+        // ctor
+        Shell(
+            const int usartNumber,
+            const uint32_t baud);
+
+    private:
+        int main();
+
+        void displayWelcome();
+        void displayPrompt();
+        void handleKeyboard(CommandLine& cmdLine);
+
+        const int _usartNumber;
+        const uint32_t _baud;
+        CliTx* _tx;
+        CliRx* _rx;
+    };
+
+}
 
 #endif
