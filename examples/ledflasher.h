@@ -27,7 +27,7 @@ namespace zero {
         LedFlasher(
             const PinField ledPins,
             const uint32_t delayMs,
-            int count = -1);
+            int count = 0);
 
     private:
         int main();
