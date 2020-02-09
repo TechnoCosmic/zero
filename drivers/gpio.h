@@ -99,6 +99,9 @@ namespace zero {
 
     class Gpio {
     public:
+        // meta
+        static void init();
+
         // Life-cycle
         Gpio(const PinField pins);                      // pins to which you want exclusive access
 

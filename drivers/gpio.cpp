@@ -88,6 +88,35 @@ namespace {
 }
 
 
+// tri-state all pins and get the intial input state
+void Gpio::init()
+{
+    #ifdef DDRA
+        DDRA = 0;
+        PORTA = 0;
+        _lastKnownInputs[0] = PINA;
+    #endif
+
+    #ifdef DDRB
+        DDRB = 0;
+        PORTB = 0;
+        _lastKnownInputs[1] = PINB;
+    #endif
+
+    #ifdef DDRC
+        DDRC = 0;
+        PORTC = 0;
+        _lastKnownInputs[2] = PINC;
+    #endif
+
+    #ifdef DDRD
+        DDRD = 0;
+        PORTD = 0;
+        _lastKnownInputs[3] = PIND;
+    #endif
+}
+
+
 // ctor
 Gpio::Gpio(
     const PinField pins)

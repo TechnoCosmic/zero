@@ -20,6 +20,7 @@
 #include "resource.h"
 #include "memory.h"
 #include "debug.h"
+#include "gpio.h"
 #include "list.h"
 #include "util.h"
 
@@ -729,6 +730,11 @@ int main()
 
     // idleThreadEntry is the developer-supplied "do nothing" idle thread
     int idleThreadEntry();
+
+    // initialize the GPIO - make sure everything is tri-stated
+    #ifdef ZERO_DRIVERS_GPIO
+        Gpio::init();
+    #endif
 
     // initialize the debug serial TX first so that anything can use it
     debug::init();
