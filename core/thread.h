@@ -33,7 +33,7 @@ namespace zero {
     // Thread class
     class Thread {
     public:
-        // Meta
+        // meta
         static Thread& getCurrent();                    // Returns the current Thread
         static uint32_t now();                          // Elapsed milliseconds since boot
 
@@ -49,6 +49,7 @@ namespace zero {
             const Synapse* const termSyn = nullptr,     // Synapse to signal when Thread terminates
             int* const exitCode = nullptr);             // Place to put Thread's return code
 
+        // validity checking in the absence of excpetions
         explicit operator bool() const;
 
         // Stack information
