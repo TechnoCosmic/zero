@@ -23,12 +23,17 @@ namespace zero {
     // decendant class.
     class LedFlasher : public Thread {
     public:
-        // ctor
+        // ctors
+        LedFlasher(
+            const PinField ledPins,
+            const uint32_t delayMs,
+            int count = 0);
+
         LedFlasher(
             const PinField ledPins,
             const uint32_t timeOnMs,
             const uint32_t timeOffMs,
-            int count = 0);
+            int count);
 
     private:
         int main();

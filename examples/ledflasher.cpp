@@ -16,6 +16,16 @@ using namespace zero;
 
 LedFlasher::LedFlasher(
     const PinField ledPins,
+    const uint32_t delayMs,
+    const int count)
+:
+    LedFlasher(ledPins, delayMs, delayMs, count)
+{
+}
+
+
+LedFlasher::LedFlasher(
+    const PinField ledPins,
     const uint32_t timeOnMs,
     const uint32_t timeOffMs,
     const int count)
