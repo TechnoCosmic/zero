@@ -35,12 +35,13 @@ namespace zero {
 
         void displayWelcome();
         void displayPrompt();
-        void handleKeyboard(CommandLine& cmdLine);
+        void handleKeyboard();
 
         const int _usartNumber;
         const uint32_t _baud;
         CliTx* _tx;
         CliRx* _rx;
+        CommandLine* _cmdLine;
     };
 
 }

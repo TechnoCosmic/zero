@@ -44,10 +44,11 @@ Shell::Shell(
     }),
 
     // other params
-    _usartNumber{usartNumber},
-    _baud{baud},
-    _tx{nullptr},
-    _rx{nullptr}
+    _usartNumber{ usartNumber },
+    _baud{ baud },
+    _tx{ nullptr },
+    _rx{ nullptr },
+    _cmdLine{ nullptr }
 {
     // ctor body
 }
@@ -71,8 +72,7 @@ void Shell::displayPrompt()
 }
 
 
-void Shell::handleKeyboard(
-    CommandLine& cmdLine)
+void Shell::handleKeyboard()
 {
     char echoChar = 0;
     uint16_t numBytes;
@@ -81,14 +81,14 @@ void Shell::handleKeyboard(
         for (uint16_t i = 0; i < numBytes; i++) {
             switch (auto curChar = buffer[i]) {
                 case '\r':
-                    cmdLine.process();
-                    cmdLine.clear();
+                    _cmdLine->process();
+                    _cmdLine->clear();
                     _tx->transmit(CRLF, 2, true);
                     displayPrompt();
                 break;
 
                 default:
-                    if (cmdLine.registerKeyPress(curChar)) {
+                    if (_cmdLine->registerKeyPress(curChar)) {
                         echoChar = curChar;
                     }
                 break;
@@ -135,10 +135,10 @@ int Shell::main()
         return 20;
     }
     
-    // remember these things now that
-    // we're set up
+    // remember these things now that we're set up
     _tx = &tx;
     _rx = &rx;
+    _cmdLine = &cmdLine;
 
     // hello!
     displayWelcome();
@@ -147,6 +147,6 @@ int Shell::main()
     // main loop
     while (true) {
         rxDataSyn.wait();
-        handleKeyboard(cmdLine);
+        handleKeyboard();
     }
 }
