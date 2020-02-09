@@ -70,18 +70,7 @@ namespace {
     PinField _allocatedPins = 0ULL;                     // for quick determination of available pins
     List<Gpio> _gpioList;                               // for PCINTs
     uint8_t _lastKnownInputs[] = {                      // pin change state tracking
-        #ifdef DDRA
-            0,
-        #endif
-        #ifdef DDRB
-            0,
-        #endif
-        #ifdef DDRC
-            0,
-        #endif
-        #ifdef DDRD
-            0,
-        #endif
+        0, 0, 0, 0,
     };
 
 
