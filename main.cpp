@@ -18,7 +18,7 @@ using namespace zero;
 int startup_sequence()
 {
     // CLI
-    new Thread(256, cliEntry);
+    new Shell(0, DEBUG_BAUD);
 
     return 0;
 }

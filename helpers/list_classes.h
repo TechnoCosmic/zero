@@ -10,6 +10,9 @@
 #include "thread.h"
 
 
-template class List<Gpio>;
+#ifdef ZERO_DRIVERS_GPIO
+    template class List<Gpio>;
+#endif
+
 template class List<Thread>;
 template class OffsetList<Thread>;
