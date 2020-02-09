@@ -14,15 +14,15 @@
 
 zero::Pipe& operator<<(zero::Pipe& out, const char c)
 {
-    out.write(c);
+    out.write( c );
     return out;
 }
 
 
 zero::Pipe& operator<<(zero::Pipe& out, const char* s)
 {
-    while (*s) {
-        out.write(*s++);
+    while ( *s ) {
+        out.write( *s++ );
     }
 
     return out;

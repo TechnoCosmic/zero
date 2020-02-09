@@ -15,8 +15,8 @@ using namespace zero;
 
 // ctor
 Synapse::Synapse() :
-    _thread(&me),
-    _signals(me.allocateSignal())
+    _thread{ &me },
+    _signals{ me.allocateSignal() }
 {
 }
 
@@ -25,7 +25,7 @@ Synapse::Synapse() :
 Synapse::~Synapse()
 {
     if (_thread) {
-        _thread->freeSignals(_signals);
+        _thread->freeSignals( _signals );
     }
 }
 
@@ -48,7 +48,7 @@ Synapse::operator SignalField() const
 void Synapse::signal() const
 {
     if (*this) {
-        _thread->signal(_signals);
+        _thread->signal( _signals );
     }
 }
 
@@ -57,7 +57,7 @@ void Synapse::signal() const
 void Synapse::clearSignals() const
 {
     if (*this) {
-        _thread->clearSignals(_signals);
+        _thread->clearSignals( _signals );
     }
 }
 
@@ -66,7 +66,7 @@ void Synapse::clearSignals() const
 SignalField Synapse::wait(const uint32_t timeoutMs) const
 {
     if (*this && &me == _thread) {
-        return me.wait(_signals, timeoutMs);
+        return me.wait( _signals, timeoutMs );
     }
     else {
         return 0UL;

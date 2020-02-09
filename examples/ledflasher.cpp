@@ -38,7 +38,7 @@ LedFlasher::LedFlasher(
 // the main body of the Thread
 int LedFlasher::main()
 {
-    Gpio led(_ledPins);
+    Gpio led( _ledPins );
 
     if (!led) {
         return 20;
@@ -48,10 +48,10 @@ int LedFlasher::main()
 
     while (true) {
         led.switchOn();
-        me.wait(0UL, _delayMs);
+        me.wait( 0UL, _delayMs );
 
         led.switchOff();
-        me.wait(0UL, _delayMs);
+        me.wait( 0UL, _delayMs );
 
         if (_flashesRemaining > 0) {
             _flashesRemaining--;

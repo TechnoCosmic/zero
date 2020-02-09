@@ -25,14 +25,14 @@ namespace {
 
 CommandLine::CommandLine(const uint16_t size)
 {
-    _buffer = (char*) memory::allocate(size, &_bufferSize);
+    _buffer = (char*) memory::allocate( size, &_bufferSize );
     clear();
 }
 
 
 CommandLine::~CommandLine()
 {
-    memory::free(_buffer, _bufferSize);
+    memory::free( _buffer, _bufferSize );
 }
 
 
@@ -62,7 +62,7 @@ bool CommandLine::registerKeyPress(const char c)
 void CommandLine::process()
 {
     char* argv[16];
-    const uint8_t argc = tokenize(_buffer, argv);
+    const uint8_t argc = tokenize( _buffer, argv );
 
     if (argc) {
         // dispatch here
@@ -97,21 +97,21 @@ uint8_t CommandLine::tokenize(char* s, char* argv[])
             lastWasSeparator = true;
         }
         else {
-            if (inQuotes || !isspace(*s)) {
+            if (inQuotes || !isspace( *s )) {
                 if (lastWasSeparator) {
                     argv[tokenCount++] = s;
                 }
 
                 lastWasSeparator = false;
             }
-            else if (isspace(*s)) {
+            else if (isspace( *s )) {
                 *s = 0;
                 lastWasSeparator = true;
             }
         }
         
         if (tokenCount - 1 == 0) {
-            *s = tolower(*s);
+            *s = tolower( *s );
         }
 
         s++;

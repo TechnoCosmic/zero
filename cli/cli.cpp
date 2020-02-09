@@ -56,19 +56,19 @@ Shell::Shell(
 
 void Shell::displayWelcome()
 {
-    _tx->transmit(WELCOME, strlen(WELCOME), true);
-    _tx->transmit(USART, strlen(USART), true);
+    _tx->transmit( WELCOME, strlen(WELCOME), true );
+    _tx->transmit( USART, strlen(USART), true );
 
     char usartAscii = '0' + _usartNumber;
 
-    _tx->transmit(&usartAscii, 1, true);
-    _tx->transmit("\r\n", 2, true);
+    _tx->transmit( &usartAscii, 1, true );
+    _tx->transmit( "\r\n", 2, true );
 }
 
 
 void Shell::displayPrompt()
 {
-    _tx->transmit(PROMPT, strlen(PROMPT), true);
+    _tx->transmit( PROMPT, strlen(PROMPT), true );
 }
 
 
@@ -77,25 +77,25 @@ void Shell::handleKeyboard()
     char echoChar = 0;
     uint16_t numBytes;
 
-    while(auto buffer = _rx->getCurrentBuffer(numBytes)) {
+    while(auto buffer = _rx->getCurrentBuffer( numBytes )) {
         for (uint16_t i = 0; i < numBytes; i++) {
             switch (auto curChar = buffer[i]) {
                 case '\r':
                     _cmdLine->process();
                     _cmdLine->clear();
-                    _tx->transmit(CRLF, 2, true);
+                    _tx->transmit( CRLF, 2, true );
                     displayPrompt();
                 break;
 
                 default:
-                    if (_cmdLine->registerKeyPress(curChar)) {
+                    if (_cmdLine->registerKeyPress( curChar )) {
                         echoChar = curChar;
                     }
                 break;
             }
 
             if (echoChar) {
-                _tx->transmit(&echoChar, 1, true);
+                _tx->transmit( &echoChar, 1, true );
                 echoChar = 0;
             }
         }
@@ -108,28 +108,28 @@ int Shell::main()
 {
     // set up the receiver
     Synapse rxDataSyn;
-    CliRx rx(_usartNumber);
+    CliRx rx( _usartNumber );
 
     if (!rxDataSyn || !rx) {
         return 20;
     }
 
-    rx.setCommsParams(_baud);
-    rx.enable(CLI_RX_BYTES, rxDataSyn, 0UL);
+    rx.setCommsParams( _baud );
+    rx.enable( CLI_RX_BYTES, rxDataSyn, 0UL );
 
     // set up the transmitter
     Synapse txReadySyn;
-    CliTx tx(_usartNumber);
+    CliTx tx( _usartNumber );
     
     if (!txReadySyn || !tx) {
         return 20;
     }
 
-    tx.setCommsParams(_baud);
-    tx.enable(txReadySyn);
+    tx.setCommsParams( _baud );
+    tx.enable( txReadySyn );
 
     // command line storage
-    CommandLine cmdLine(CLI_CMD_BYTES);
+    CommandLine cmdLine( CLI_CMD_BYTES );
     
     if (!cmdLine) {
         return 20;

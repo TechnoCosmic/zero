@@ -44,7 +44,7 @@ namespace {
     // Returns the number of pages needed to store the supplied number of bytes
     constexpr uint16_t getNumPagesForBytes(const uint16_t bytes)
     {
-        return ROUND_UP(bytes, PAGE_BYTES) / PAGE_BYTES;
+        return ROUND_UP( bytes, PAGE_BYTES ) / PAGE_BYTES;
     }
 }
 
@@ -64,8 +64,8 @@ void* memory::allocate(
 
     // critical section - one Thread allocating at a time, thank you
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {
-        const uint16_t numPages = getNumPagesForBytes(bytesReqd);
-        const int16_t startPage = _sram.findFreePages(numPages, strategy);
+        const uint16_t numPages = getNumPagesForBytes( bytesReqd );
+        const int16_t startPage = _sram.findFreePages( numPages, strategy );
 
         // if there was a chunk the size we wanted
         if (startPage >= 0) {
@@ -74,7 +74,7 @@ void* memory::allocate(
                 curPageNumber < startPage + numPages;
                 curPageNumber++)
             {
-                _sram.markAsUsed(curPageNumber);
+                _sram.markAsUsed( curPageNumber );
             }
 
             // tell the caller how much we gave them
@@ -83,7 +83,7 @@ void* memory::allocate(
             }
 
             // outta here
-            rc = (void*) getAddressForPage(startPage);
+            rc = (void*) getAddressForPage( startPage );
         }
     }
 
@@ -99,8 +99,8 @@ void memory::free(const void* const address, const uint16_t numBytes)
 {
     if (address == nullptr) return;
 
-    const uint16_t numPages = getNumPagesForBytes(numBytes);
-    const uint16_t startPage = getPageForAddress((uint16_t) address);
+    const uint16_t numPages = getNumPagesForBytes( numBytes );
+    const uint16_t startPage = getPageForAddress( (uint16_t) address );
 
     ZERO_ATOMIC_BLOCK(ZERO_ATOMIC_RESTORESTATE) {        
         // run from the first page to the last, ensuring the bitmap says 'free'
@@ -108,7 +108,7 @@ void memory::free(const void* const address, const uint16_t numBytes)
             curPage < startPage + numPages;
             curPage++)
         {
-            _sram.markAsFree(curPage);
+            _sram.markAsFree( curPage );
         }
     }
 }
@@ -117,13 +117,13 @@ void memory::free(const void* const address, const uint16_t numBytes)
 // overloads for new and delete operators
 void* operator new(size_t size)
 {
-    return memory::allocate(size);
+    return memory::allocate( size );
 }
 
 
 void operator delete(void* p, size_t size)
 {
-    memory::free(p, size);
+    memory::free( p, size );
 }
 
 

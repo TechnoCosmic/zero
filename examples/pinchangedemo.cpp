@@ -34,7 +34,7 @@ PinChangeDemo::PinChangeDemo(
 int PinChangeDemo::main()
 {
     Synapse listenSyn;
-    Gpio listenPins(_pins, &listenSyn);
+    Gpio listenPins( _pins, &listenSyn );
 
     if (!listenPins) {
         return 20;
@@ -45,6 +45,6 @@ int PinChangeDemo::main()
 
     while (true) {
         listenSyn.wait();
-        dbg_pgm("Input changed!\r\n");
+        dbg_pgm( "Input changed!\r\n" );
     }
 }

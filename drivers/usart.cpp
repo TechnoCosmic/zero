@@ -90,7 +90,7 @@ UsartTx::UsartTx(const uint8_t deviceNum)
         // obtain the resource
         auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartTx0 + deviceNum);
 
-        if (resource::obtain(resId)) {
+        if (resource::obtain( resId )) {
             _deviceNum = deviceNum;
             _usartTx[deviceNum] = this;
         }
@@ -107,7 +107,7 @@ UsartTx::~UsartTx()
 
         // free the resource
         auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartTx0 + _deviceNum);
-        resource::release(resId);
+        resource::release( resId );
     }
 }
 
@@ -227,7 +227,7 @@ UsartRx::UsartRx(const uint8_t deviceNum)
         // obtain the resource
         auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartRx0 + deviceNum);
 
-        if (resource::obtain(resId)) {
+        if (resource::obtain( resId )) {
             _deviceNum = deviceNum;
             _usartRx[deviceNum] = this;
         }
@@ -243,7 +243,7 @@ UsartRx::~UsartRx()
 
         // free the resource
         auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartRx0 + _deviceNum);
-        resource::release(resId);
+        resource::release( resId );
     }
 }
 
@@ -284,7 +284,7 @@ bool UsartRx::enable(
         delete _rxBuffer;
         _rxBuffer = nullptr;
 
-        if ((_rxBuffer = new DoubleBuffer(bufferSize))) {
+        if ((_rxBuffer = new DoubleBuffer( bufferSize ))) {
             rc = true;
 
             _rxDataReceivedSyn = &rxSyn;
@@ -321,7 +321,7 @@ void UsartRx::disable()
 
 uint8_t* UsartRx::getCurrentBuffer(uint16_t& numBytes)
 {
-    return _rxBuffer->getCurrentBuffer(numBytes);
+    return _rxBuffer->getCurrentBuffer( numBytes );
 }
 
 
@@ -345,7 +345,7 @@ void UsartRx::flush()
         // need more data
         uint8_t nextByte;
 
-        if (!_usartTx[0]->getNextTxByte(nextByte)) {
+        if (!_usartTx[0]->getNextTxByte( nextByte )) {
             UCSR0B &= ~(1 << UDRIE0);
         }
         else {
@@ -359,7 +359,7 @@ void UsartRx::flush()
         register volatile uint8_t newByte = UDR0;
 
         // received data
-        if (_usartRx[0]->_rxBuffer->write(newByte)) {
+        if (_usartRx[0]->_rxBuffer->write( newByte )) {
             if (_usartRx[0]->_rxDataReceivedSyn) {
                 _usartRx[0]->_rxDataReceivedSyn->signal();
             }
@@ -388,7 +388,7 @@ void UsartRx::flush()
         // need more data
         uint8_t nextByte;
 
-        if (!_usartTx[1]->getNextTxByte(nextByte)) {
+        if (!_usartTx[1]->getNextTxByte( nextByte )) {
             UCSR1B &= ~(1 << UDRIE1);
         }
         else {
@@ -402,7 +402,7 @@ void UsartRx::flush()
         register volatile uint8_t newByte = UDR1;
 
         // received data
-        if (_usartRx[1]->_rxBuffer->write(newByte)) {
+        if (_usartRx[1]->_rxBuffer->write( newByte )) {
             if (_usartRx[1]->_rxDataReceivedSyn) {
                 _usartRx[1]->_rxDataReceivedSyn->signal();
             }
@@ -431,7 +431,7 @@ void UsartRx::flush()
         // need more data
         uint8_t nextByte;
 
-        if (!_usartTx[2]->getNextTxByte(nextByte)) {
+        if (!_usartTx[2]->getNextTxByte( nextByte )) {
             UCSR2B &= ~(1 << UDRIE2);
         }
         else {
@@ -445,7 +445,7 @@ void UsartRx::flush()
         register volatile uint8_t newByte = UDR2;
 
         // received data
-        if (_usartRx[2]->_rxBuffer->write(newByte)) {
+        if (_usartRx[2]->_rxBuffer->write( newByte )) {
             if (_usartRx[2]->_rxDataReceivedSyn) {
                 _usartRx[2]->_rxDataReceivedSyn->signal();
             }
@@ -474,7 +474,7 @@ void UsartRx::flush()
         // need more data
         uint8_t nextByte;
 
-        if (!_usartTx[3]->getNextTxByte(nextByte)) {
+        if (!_usartTx[3]->getNextTxByte( nextByte )) {
             UCSR3B &= ~(1 << UDRIE3);
         }
         else {
@@ -488,7 +488,7 @@ void UsartRx::flush()
         register volatile uint8_t newByte = UDR3;
 
         // received data
-        if (_usartRx[3]->_rxBuffer->write(newByte)) {
+        if (_usartRx[3]->_rxBuffer->write( newByte )) {
             if (_usartRx[3]->_rxDataReceivedSyn) {
                 _usartRx[3]->_rxDataReceivedSyn->signal();
             }

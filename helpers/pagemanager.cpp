@@ -34,7 +34,7 @@ using namespace zero;
 template <uint16_t PAGE_COUNT>
 bool PageManager<PAGE_COUNT>::isPageAvailable(const uint16_t pageNumber) const
 {
-    return IS_PAGE_AVAIL(pageNumber);
+    return IS_PAGE_AVAIL( pageNumber );
 }
 
 
@@ -42,7 +42,7 @@ bool PageManager<PAGE_COUNT>::isPageAvailable(const uint16_t pageNumber) const
 template <uint16_t PAGE_COUNT>
 void PageManager<PAGE_COUNT>::markAsFree(const uint16_t pageNumber)
 {
-    MARK_AS_FREE(pageNumber);
+    MARK_AS_FREE( pageNumber );
 }
 
 
@@ -50,7 +50,7 @@ void PageManager<PAGE_COUNT>::markAsFree(const uint16_t pageNumber)
 template <uint16_t PAGE_COUNT>
 void PageManager<PAGE_COUNT>::markAsUsed(const uint16_t pageNumber)
 {
-    MARK_AS_USED(pageNumber);
+    MARK_AS_USED( pageNumber );
 }
 
 
@@ -69,7 +69,7 @@ uint16_t PageManager<PAGE_COUNT>::getFreePageCount() const
     uint16_t rc = 0UL;
 
     for (uint16_t i = 0; i < getTotalPageCount(); i++) {
-        if (isPageAvailable(i)) {
+        if (isPageAvailable( i )) {
             rc++;
         }
     }
@@ -127,7 +127,7 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
     uint16_t pageCount = 0;
 
     for (uint16_t curStep = 0; curStep < PAGE_COUNT; curStep++) {
-        const uint16_t curPage = _strategies[strat](curStep, PAGE_COUNT);
+        const uint16_t curPage = _strategies[strat]( curStep, PAGE_COUNT );
 
         // if the search strategy no longer
         // has any more pages in its scope
@@ -136,7 +136,7 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
         }
 
         // But if that page was free..
-        if (isPageAvailable(curPage)) {
+        if (isPageAvailable( curPage )) {
             // we have one more page than we had before
             pageCount++;
 
@@ -147,7 +147,7 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
 
             // if we've found the right number of pages, stop looking
             if (pageCount == numPagesRequired) {
-                startPage = MIN(startPage, curPage);
+                startPage = MIN( startPage, curPage );
                 break;
             }
         }

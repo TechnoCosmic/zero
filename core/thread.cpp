@@ -87,7 +87,7 @@ namespace {
     int getOffsetForParameter(const uint8_t parameterNumber)
     {
         if (parameterNumber < 9) {
-            return pgm_read_byte((uint16_t) _paramOffsets + parameterNumber);
+            return pgm_read_byte( (uint16_t) _paramOffsets + parameterNumber );
         }
 
         return 0;
@@ -133,10 +133,10 @@ namespace {
         TCCR0A = (1 << WGM01);                          // CTC
         TCCR0B = (1 << CS02);                           // /256 prescalar
 
-        OCR0A = SCALE(62.5)-1;                          // 1ms
+        OCR0A = SCALE( 62.5 )-1;                        // 1ms
         TIMSK0 |= (1 << OCIE0A);                        // enable ISR
 
-        OCR0B = SCALE(62.5)-1;                          // 1ms
+        OCR0B = SCALE( 62.5 )-1;                        // 1ms
         TIMSK0 |= (1 << OCIE0B);                        // enable ISR
     }
 
@@ -169,7 +169,7 @@ static void globalThreadEntry(
     }
 
     // remove from the list of Threads
-    ACTIVE_LIST.remove(t);
+    ACTIVE_LIST.remove( t );
 
     // forget us so that no context is remembered
     // superfluously in the yield() below
@@ -298,7 +298,7 @@ Thread::Thread(
     // ready to run?
     if (flags & TF_READY) {
         // add the Thread into the ready list
-        ACTIVE_LIST.append(*this);
+        ACTIVE_LIST.append( *this );
     }
 }
 
@@ -307,15 +307,14 @@ Thread::Thread(
 Thread::~Thread()
 {
     // deallocate the stack
-    memory::free(_stackBottom, _stackSize);
-    _stackBottom = nullptr;
+    memory::free( _stackBottom, _stackSize );
 }
 
 
 // validity checking
 Thread::operator bool() const
 {
-    return (_stackBottom != nullptr);
+    return _stackBottom != nullptr;
 }
 
 
@@ -442,14 +441,14 @@ static void yield()
         _currentThread->_sp = SP;
 
         // track stack usage at switch point
-        _currentThread->_lowSp = MIN(_currentThread->_lowSp, _currentThread->_sp);
+        _currentThread->_lowSp = MIN( _currentThread->_lowSp, _currentThread->_sp );
 
         // take it out of the running
-        ACTIVE_LIST.remove(*_currentThread);
+        ACTIVE_LIST.remove( *_currentThread );
 
         // see if it wanted to sleep
         if (_currentThread->_timeoutOffset) {
-            _timeoutList.insertByOffset(*_currentThread, _currentThread->_timeoutOffset);
+            _timeoutList.insertByOffset( *_currentThread, _currentThread->_timeoutOffset );
         }
     }
 
@@ -476,8 +475,8 @@ ISR(TIMER0_COMPA_vect)
         }
         
         while (curSleeper && !curSleeper->_timeoutOffset) {
-            _timeoutList.remove(*curSleeper);
-            curSleeper->signal(SIG_TIMEOUT);
+            _timeoutList.remove( *curSleeper );
+            curSleeper->signal( SIG_TIMEOUT );
 
             curSleeper = _timeoutList.getHead();
         }
@@ -516,12 +515,12 @@ ISR(TIMER0_COMPB_vect, ISR_NAKED)
         _currentThread->_sp = SP;
 
         // track peak stack usage at switch point
-        _currentThread->_lowSp = MIN(_currentThread->_lowSp, _currentThread->_sp);
+        _currentThread->_lowSp = MIN( _currentThread->_lowSp, _currentThread->_sp );
 
         // send it to the expired list
         if (_currentThread != _idleThread) {
-            ACTIVE_LIST.remove(*_currentThread);
-            EXPIRED_LIST.append(*_currentThread);
+            ACTIVE_LIST.remove( *_currentThread );
+            EXPIRED_LIST.append( *_currentThread );
         }
     }
 
@@ -568,14 +567,14 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         if (reqdSignalNumber < SIGNAL_BITS) {
-            if (tryAllocateSignal(reqdSignalNumber)) {
+            if (tryAllocateSignal( reqdSignalNumber )) {
                 return 1L << reqdSignalNumber;
             }
         }
         else {
             // start checking after the reserved signals, for speed
             for (auto i = RESERVED_SIGS; i < SIGNAL_BITS; i++) {
-                if (tryAllocateSignal(i)) {
+                if (tryAllocateSignal( i )) {
                     return 1L << i;
                 }
             }
@@ -605,7 +604,7 @@ void Thread::freeSignals(const SignalField signals)
 SignalField Thread::getActiveSignals() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        return (_currentSignals & _waitingSignals);
+        return _currentSignals & _waitingSignals;
     }
 }
 
@@ -681,7 +680,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         }
 
         // clear the recd signals so that we can see repeats of them
-        clearSignals(rc);
+        clearSignals( rc );
 
         // make sure that the timeout is disabled
         _currentThread->_timeoutOffset = 0ULL;
@@ -711,12 +710,12 @@ void Thread::signal(const SignalField sigs)
             // if it's on the timeout list, take it off
             if (_timeoutOffset) {
                 this->_timeoutOffset = 0ULL;
-                _timeoutList.remove(*this);
+                _timeoutList.remove( *this );
             }
 
             // put it at the top of the active list, ready to go
-            ACTIVE_LIST.remove(*this);
-            ACTIVE_LIST.prepend(*this);
+            ACTIVE_LIST.remove( *this );
+            ACTIVE_LIST.prepend( *this );
         }
     }
 }
@@ -735,7 +734,7 @@ int main()
     debug::init();
 
     // create the idle Thread
-    _idleThread = new Thread(0, idleThreadEntry, TF_NONE);
+    _idleThread = new Thread( 0, idleThreadEntry, TF_NONE );
 
     // start Timer0 (does not enable global ints)
     initTimer0();

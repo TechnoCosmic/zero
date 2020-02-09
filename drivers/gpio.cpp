@@ -92,7 +92,7 @@ namespace {
 Gpio::Gpio(
     const PinField pins)
 :
-    Gpio(pins, nullptr, nullptr)
+    Gpio( pins, nullptr, nullptr )
 {
 }
 
@@ -102,7 +102,7 @@ Gpio::Gpio(
     const PinField pins,
     const InputCallback c)
 :
-    Gpio(pins, c, nullptr)
+    Gpio( pins, c, nullptr )
 {
 }
 
@@ -112,7 +112,7 @@ Gpio::Gpio(
     const PinField pins,
     const Synapse* syn)
 :
-    Gpio(pins, nullptr, syn)
+    Gpio( pins, nullptr, syn )
 {
 }
 
@@ -123,10 +123,10 @@ Gpio::Gpio(
     const InputCallback c,
     const Synapse* syn)
 :
-    _prev{nullptr},
-    _next{nullptr},
-    _inputCallback{c},
-    _inputSynapse{syn},
+    _prev{ nullptr },
+    _next{ nullptr },
+    _inputCallback{ c },
+    _inputSynapse{ syn },
     _pins { [&]() -> PinField
     {
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -135,7 +135,7 @@ Gpio::Gpio(
             }
             else {
                 _allocatedPins |= pins;                 // add these to the quick set
-                _gpioList.append(*this);
+                _gpioList.append( *this );
                 return pins;                            // return valid pins to the ctor
             }
         }
@@ -149,7 +149,7 @@ Gpio::~Gpio()
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         _allocatedPins &= ~_pins;                       // free the pins
-        _gpioList.remove(*this);
+        _gpioList.remove( *this );
     }
 }
 
@@ -188,35 +188,35 @@ void Gpio::reset() const
 // Sets all of the owned pins to input
 void Gpio::setAsInput() const
 {
-    setAsInput(_pins);
+    setAsInput( _pins );
 }
 
 
 // Sets all of the owned pins to output
 void Gpio::setAsOutput() const
 {
-    setAsOutput(_pins);
+    setAsOutput( _pins );
 }
 
 
 // Sets all of the owned pins to high
 void Gpio::switchOn() const
 {
-    switchOn(_pins);
+    switchOn( _pins );
 }
 
 
 // Sets all of the owned pins to low
 void Gpio::switchOff() const
 {
-    switchOff(_pins);
+    switchOff( _pins );
 }
 
 
 // Toggles all of the owned pins
 void Gpio::toggle() const
 {
-    toggle(_pins);
+    toggle( _pins );
 }
 
 
@@ -224,7 +224,7 @@ void Gpio::toggle() const
 void Gpio::setAsInput(const PinField pins) const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        const auto cleanPins = ~sanitize(pins);
+        const auto cleanPins = ~sanitize( pins );
 
         #ifdef DDRA
             DDRA &= ((cleanPins >>  0) & 0xFF);
@@ -243,7 +243,7 @@ void Gpio::setAsInput(const PinField pins) const
         #endif
 
         // re-assess which pins are subject to PCINTs
-        Gpio::setPinChange(Gpio::gatherAllInputs());
+        Gpio::setPinChange( Gpio::gatherAllInputs() );
     }
 }
 
@@ -252,7 +252,7 @@ void Gpio::setAsInput(const PinField pins) const
 void Gpio::setAsOutput(const PinField pins) const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        const auto cleanPins = sanitize(pins);
+        const auto cleanPins = sanitize( pins );
 
         #ifdef DDRA
             DDRA |= ((cleanPins >>  0) & 0xFF);
@@ -271,7 +271,7 @@ void Gpio::setAsOutput(const PinField pins) const
         #endif
 
         // re-assess which pins are subject to PCINTs
-        Gpio::setPinChange(Gpio::gatherAllInputs());
+        Gpio::setPinChange( Gpio::gatherAllInputs() );
     }
 }
 
@@ -280,7 +280,7 @@ void Gpio::setAsOutput(const PinField pins) const
 void Gpio::switchOn(const PinField pins) const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        const auto cleanPins = sanitize(pins);
+        const auto cleanPins = sanitize( pins );
 
         #ifdef PORTA
             PORTA |= ((cleanPins >>  0) & 0xFF);
@@ -305,7 +305,7 @@ void Gpio::switchOn(const PinField pins) const
 void Gpio::switchOff(const PinField pins) const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        const auto cleanPins = ~sanitize(pins);
+        const auto cleanPins = ~sanitize( pins );
 
         #ifdef PORTA
             PORTA &= ((cleanPins >>  0) & 0xFF);
@@ -330,7 +330,7 @@ void Gpio::switchOff(const PinField pins) const
 void Gpio::toggle(const PinField pins) const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        const auto cleanPins = sanitize(pins);
+        const auto cleanPins = sanitize( pins );
 
         #ifdef PORTA
             PORTA ^= ((cleanPins >>  0) & 0xFF);
@@ -393,7 +393,7 @@ PinField Gpio::getInputState() const
             rc |= (((PinField) pind) << 24);
         #endif
 
-        return sanitize(rc);
+        return sanitize( rc );
     }
 }
 
@@ -420,7 +420,7 @@ PinField Gpio::getOutputState() const
             rc |= (((PinField) PORTD) << 24);
         #endif
 
-        return sanitize(rc);
+        return sanitize( rc );
     }
 }
 
@@ -429,7 +429,7 @@ PinField Gpio::getOutputState() const
 void Gpio::setOutputState(const PinField v) const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        const PinField cleanPins = sanitize(v);
+        const PinField cleanPins = sanitize( v );
 
         #ifdef PORTA
             const uint8_t allocA = (_pins >> 0) & 0xFF;
@@ -581,7 +581,7 @@ void Gpio::handlePinChange(const int portNumber, const uint8_t newValue)
 #ifdef PC_PORTA_vect
     ISR(PC_PORTA_vect)
     {
-        Gpio::handlePinChange(0, PINA);
+        Gpio::handlePinChange( 0, PINA );
     }
 #endif
 
@@ -589,7 +589,7 @@ void Gpio::handlePinChange(const int portNumber, const uint8_t newValue)
 #ifdef PC_PORTB_vect
     ISR(PC_PORTB_vect)
     {
-        Gpio::handlePinChange(1, PINB);
+        Gpio::handlePinChange( 1, PINB );
     }
 #endif
 
@@ -597,7 +597,7 @@ void Gpio::handlePinChange(const int portNumber, const uint8_t newValue)
 #ifdef PC_PORTC_vect
     ISR(PC_PORTC_vect)
     {
-        Gpio::handlePinChange(2, PINC);
+        Gpio::handlePinChange( 2, PINC );
     }
 #endif
 
@@ -605,7 +605,7 @@ void Gpio::handlePinChange(const int portNumber, const uint8_t newValue)
 #ifdef PC_PORTD_vect
     ISR(PC_PORTD_vect)
     {
-        Gpio::handlePinChange(3, PIND);
+        Gpio::handlePinChange( 3, PIND );
     }
 #endif
 

@@ -74,7 +74,7 @@ SpiMemory::SpiMemory(
 :
     _capacityBytes(capacityBytes)
 {
-    if (!resource::obtain(resource::ResourceId::Spi)) {
+    if (!resource::obtain( resource::ResourceId::Spi) ) {
         return;
     }
 
@@ -89,7 +89,7 @@ SpiMemory::SpiMemory(
     deselect();
 
     // make sure ISRs for SPI are off
-    setSpiIsrEnable(false);
+    setSpiIsrEnable( false );
 
     // full-speed MASTER mode SPI, kkplzthx
     SPCR = (1 << SPE) | (1 << MSTR);
@@ -106,7 +106,7 @@ SpiMemory::~SpiMemory()
 {
     if (*this) {
         // stop interrupting me!
-        setSpiIsrEnable(false);
+        setSpiIsrEnable( false );
 
         // switch off the SPI hardware
         SPCR = 0;
@@ -115,7 +115,6 @@ SpiMemory::~SpiMemory()
         // return the CS line to floating
         if (_chipSelectPin) {
             _chipSelectPin->reset();
-            _chipSelectPin = nullptr;
         }
 
 
@@ -126,7 +125,7 @@ SpiMemory::~SpiMemory()
         }
 
         // free the resource
-        resource::release(resource::ResourceId::Spi);
+        resource::release( resource::ResourceId::Spi );
     }
 }
 
@@ -134,7 +133,7 @@ SpiMemory::~SpiMemory()
 // validity checking
 SpiMemory::operator bool() const
 {
-    return (_chipSelectPin != nullptr);
+    return _chipSelectPin != nullptr;
 }
 
 
@@ -180,10 +179,10 @@ void SpiMemory::read(
         select();
 
         // tell it that we want to read data from srcAddress
-        sendReadCommand(srcAddr);
+        sendReadCommand( srcAddr );
 
         // enable the ISR
-        setSpiIsrEnable(true);
+        setSpiIsrEnable( true );
 
         // push the first one out to kickstart it
         SPDR = 0;
@@ -219,10 +218,10 @@ void SpiMemory::write(
         select();
 
         // tell it that we want to write data to destAddress
-        sendWriteCommand(destAddress);
+        sendWriteCommand( destAddress );
 
         // enable the ISR
-        setSpiIsrEnable(true);
+        setSpiIsrEnable( true );
 
         // push the first one out to kickstart it
         SPDR = *_txCursor++;
@@ -263,7 +262,7 @@ ISR(SPI_STC_vect)
 
     // disable things if we're done
     if (!_xferBytes) {
-        setSpiIsrEnable(false);
+        setSpiIsrEnable( false );
         
         if (_spiReadySyn) {
             _spiReadySyn->signal();
@@ -279,31 +278,31 @@ ISR(SPI_STC_vect)
 void SpiMemory::sendAddress(const uint32_t addr) const
 {
     if (_capacityBytes > (1ULL << 24)) {
-        spiXfer(addr >> 24);
+        spiXfer( addr >> 24 );
     }
 
     if (_capacityBytes > (1ULL << 16)) {
-        spiXfer(addr >> 16);
+        spiXfer( addr >> 16 );
     }
 
-    spiXfer(addr >>  8);
-    spiXfer(addr >>  0);
+    spiXfer( addr >>  8 );
+    spiXfer( addr >>  0 );
 }
 
 
 // sends a CMD_READ to the memory chip
 void SpiMemory::sendReadCommand(const uint32_t addr) const
 {
-    spiXfer(CMD_READ);
-    sendAddress(addr);
+    spiXfer( CMD_READ );
+    sendAddress( addr );
 }
 
 
 // sends a CMD_WRITE to the memory chip
 void SpiMemory::sendWriteCommand(const uint32_t addr) const
 {
-    spiXfer(CMD_WRITE);
-    sendAddress(addr);
+    spiXfer( CMD_WRITE );
+    sendAddress( addr );
 }
 
 

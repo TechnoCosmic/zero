@@ -24,7 +24,7 @@ using namespace zero;
 Pipe::Pipe(const uint16_t size)
 {
     // storage and tracking
-    _buffer = (uint8_t*) memory::allocate(size, &_bufferSize);
+    _buffer = (uint8_t*) memory::allocate( size, &_bufferSize );
     _startIndex = _length = 0UL;
 }
 
@@ -32,7 +32,7 @@ Pipe::Pipe(const uint16_t size)
 // dtor
 Pipe::~Pipe()
 {
-    memory::free(_buffer, _bufferSize);
+    memory::free( _buffer, _bufferSize );
 
     if (_dataAvailSyn) {
         _dataAvailSyn->clearSignals();
@@ -47,7 +47,7 @@ Pipe::~Pipe()
 // validity checking
 Pipe::operator bool() const
 {
-    return (_buffer != nullptr);
+    return _buffer != nullptr;
 }
 
 
@@ -64,7 +64,7 @@ bool Pipe::isEmpty() const
 bool Pipe::isFull() const
 {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        return (_length == _bufferSize);
+        return _length == _bufferSize;
     }
 }
 
@@ -86,7 +86,7 @@ bool Pipe::read(uint8_t& data)
         uint8_t dataToRead = _buffer[_startIndex];
 
         if (_readFilter) {
-            doIt = _readFilter(dataToRead);
+            doIt = _readFilter( dataToRead );
         }
 
         if (doIt) {
@@ -133,7 +133,7 @@ bool Pipe::write(const uint8_t data)
         uint8_t dataToWrite = data;
 
         if (_writeFilter) {
-            doIt = _writeFilter(dataToWrite);
+            doIt = _writeFilter( dataToWrite );
         }
 
         if (doIt) {

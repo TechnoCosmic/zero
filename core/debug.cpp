@@ -35,7 +35,7 @@ namespace {
 void debug::init()
 {
     #ifdef DEBUG_ENABLED
-        _debugPin = new Gpio(DEBUG_PIN);
+        _debugPin = new Gpio( DEBUG_PIN );
         _debugPin->setAsOutput();
         _debugPin->switchOn();
     #endif
@@ -67,7 +67,7 @@ void debug::print(const char d)
             reg >>= 1;
 
             // 52us = 19200bps, 104us = 9600bps
-            _delay_us(DEBUG_DELAY);
+            _delay_us( DEBUG_DELAY );
         }
 
         // maybe restore interrupts
@@ -84,14 +84,14 @@ void debug::print(const char* s, const bool fromFlash)
             char c = *s;
 
             if (fromFlash) {
-                c = pgm_read_byte(s);
+                c = pgm_read_byte( s );
             }
 
             if (!c) {
                 break;
             }
 
-            debug::print((char) c);
+            debug::print( (char) c );
             s++;
         }
     #endif
@@ -102,6 +102,6 @@ void debug::print(const uint16_t n, const int base)
 {
     #ifdef DEBUG_ENABLED
         char buffer[18];
-        debug::print(itoa(n, buffer, base));
+        debug::print( itoa( n, buffer, base ) );
     #endif
 }

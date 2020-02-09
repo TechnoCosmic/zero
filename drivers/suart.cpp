@@ -35,7 +35,7 @@ namespace {
 // ctor
 SuartTx::SuartTx()
 {
-    if (resource::obtain(resource::ResourceId::Timer2)) {
+    if (resource::obtain( resource::ResourceId::Timer2 )) {
         _suartTx = this;
     }
 }
@@ -47,7 +47,7 @@ SuartTx::~SuartTx()
     if (*this) {
         disable();
         _suartTx = nullptr;
-        resource::release(resource::ResourceId::Timer2);
+        resource::release( resource::ResourceId::Timer2 );
     }
 }
 
@@ -197,7 +197,7 @@ void SuartTx::onTick()
         // the next byte to send is fetched by reference
         uint8_t nextByte;
 
-        if (!getNextTxByte(nextByte)) {
+        if (!getNextTxByte( nextByte )) {
             // no more data to send? tidy up, and signal readiness to go again
             _txBuffer = nullptr;
 
