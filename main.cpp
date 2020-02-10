@@ -6,6 +6,8 @@
 //
 
 
+#include <avr/pgmspace.h>
+
 #include "thread.h"
 #include "cli/cli.h"
 #include "examples/ledflasher.h"
@@ -22,7 +24,7 @@ int startup_sequence()
     new Shell( 0, DEBUG_BAUD );
 
     // simple LED flasher
-    new LedFlasher( ZERO_PINB5, 250, 750 );
+    new LedFlasher( PSTR( "led demo" ), ZERO_PINB5, 250, 750 );
 
     return 0;
 }
