@@ -20,7 +20,7 @@ zero's threading model is a simple one...
  - Idle thread is implied lowest-priority, running only when no other thread wants to run
  - Signals implement the blocking system - a Thread that is ```wait()```ing is not in either ready list and will not run
  
- The ```Thread``` class is very data-lean (23 bytes per ```Thread```). ```SREG``` is stored on the Thread's stack (as is ```RAMPZ``` on those MCUs that use it).
+ The ```Thread``` class is very data-lean (25 bytes per ```Thread```). ```SREG``` is stored on the Thread's stack (as is ```RAMPZ``` on those MCUs that use it).
 
  ## Scheduler
  zero's scheduler maintains two (2) doubly-linked lists of ```Thread``` objects - Active, and Expired, which enables zero to implement context-switching in O(1) time.
