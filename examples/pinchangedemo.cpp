@@ -15,11 +15,12 @@ using namespace zero;
 
 // ctor
 PinChangeDemo::PinChangeDemo(
+    const char* const name,
     const PinField pins)
 :
     // call parent ctor, with entryPoint as a lambda.
     // This is a stub that just calls ::main()
-    Thread(0, []()
+    Thread( name, 0, []()
     {
         return ((PinChangeDemo&) me).main();
     }),

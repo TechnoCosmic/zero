@@ -17,11 +17,12 @@ using namespace zero;
 
 // ctor
 SoftwareTx::SoftwareTx(
+    const char* const name,
     const PinField txPins)
 :
     // call parent ctor, with entryPoint as a lambda.
     // This is a stub that just calls ::main()
-    Thread(0, []()
+    Thread( name, 0, []()
     {
         return ((SoftwareTx&) me).main();
     }),

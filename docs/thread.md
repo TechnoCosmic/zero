@@ -8,6 +8,7 @@ Constructs a new Thread object, and begins executing it.
 
 ```
     Thread::Thread(
+        const char* const name,
         const uint16_t stackBytes,
         const ThreadEntry entryPoint,
         const ThreadFlags flags,
@@ -18,6 +19,7 @@ Constructs a new Thread object, and begins executing it.
 ### Parameters
 |Param|Description|
 |-----|-----------|
+|```name```|Name of the Thread. May be null. If non-null, points to a string in Flash memory.|
 |```stackBytes```|Size of the Thread's stack, in bytes. A minimum of 128 bytes will be allocated for the stack.|
 |```entryPoint```|The function that contains the main body of the Thread's code.|
 |```flags```|A bitfield controlling aspects of the thread's behavior. **DEFAULT:** ```TF_READY```|

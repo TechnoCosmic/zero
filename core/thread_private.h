@@ -31,3 +31,5 @@ private:
     SignalField _allocatedSignals;
     SignalField _waitingSignals;
     SignalField _currentSignals;
+
+    const char* const _name;

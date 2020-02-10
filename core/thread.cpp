@@ -224,11 +224,14 @@ bool Thread::isSwitchingEnabled()
 
 // ctor
 Thread::Thread(
+    const char* const name,
     const uint16_t stackSize,                           // size of the stack, in bytes
     const ThreadEntry entry,                            // the Thread's entry function
     const ThreadFlags flags,                            // Optional flags
     const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
     int* const exitCode)                                // Place to put Thread's return code
+:
+    _name{ name }
 {    
     // allocate a stack from the heap
     _stackBottom = (uint8_t*) memory::allocate(
@@ -316,6 +319,13 @@ Thread::~Thread()
 Thread::operator bool() const
 {
     return _stackBottom != nullptr;
+}
+
+
+// Returns the name of the Thread
+const char* Thread::getName() const
+{
+    return _name;
 }
 
 
@@ -740,7 +750,7 @@ int main()
     debug::init();
 
     // create the idle Thread
-    _idleThread = new Thread( 0, idleThreadEntry, TF_NONE );
+    _idleThread = new Thread( PSTR( "idle" ), 0, idleThreadEntry, TF_NONE );
 
     // start Timer0 (does not enable global ints)
     initTimer0();

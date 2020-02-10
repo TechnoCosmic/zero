@@ -25,6 +25,7 @@ namespace zero {
     public:
         // ctor
         SoftwareTx(
+            const char* const name,
             const PinField txPins);
 
     private:

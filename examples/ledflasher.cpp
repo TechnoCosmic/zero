@@ -15,16 +15,18 @@ using namespace zero;
 
 
 LedFlasher::LedFlasher(
+    const char* const name,
     const PinField ledPins,
     const uint32_t delayMs,
     const int count)
 :
-    LedFlasher(ledPins, delayMs, delayMs, count)
+    LedFlasher(name, ledPins, delayMs, delayMs, count)
 {
 }
 
 
 LedFlasher::LedFlasher(
+    const char* const name,
     const PinField ledPins,
     const uint32_t timeOnMs,
     const uint32_t timeOffMs,
@@ -32,7 +34,7 @@ LedFlasher::LedFlasher(
 :
     // call parent ctor, with entryPoint as a lambda.
     // This is a stub that just calls ::main()
-    Thread(0, []()
+    Thread( name, 0, []()
     {
         return ((LedFlasher&) me).main();
     }),

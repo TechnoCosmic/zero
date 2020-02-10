@@ -7,6 +7,7 @@
 
 
 #include <string.h>
+#include <avr/pgmspace.h>
 
 #include "cli.h"
 #include "thread.h"
@@ -38,7 +39,7 @@ Shell::Shell(
 :
     // call parent ctor, with entryPoint as a lambda.
     // This is a stub that just calls ::main()
-    Thread(CLI_STACK_BYTES, []()
+    Thread( PSTR( "cli" ), CLI_STACK_BYTES, []()
     {
         return ((Shell&) me).main();
     }),

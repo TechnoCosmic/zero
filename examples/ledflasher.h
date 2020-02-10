@@ -25,11 +25,13 @@ namespace zero {
     public:
         // ctors
         LedFlasher(
+            const char* const name,
             const PinField ledPins,
             const uint32_t delayMs,
             int count = 0);
 
         LedFlasher(
+            const char* const name,
             const PinField ledPins,
             const uint32_t timeOnMs,
             const uint32_t timeOffMs,
