@@ -105,3 +105,26 @@ void debug::print(const uint16_t n, const int base)
         debug::print( itoa( n, buffer, base ) );
     #endif
 }
+
+
+void debug::assert(const bool v, const char* const msg, const int lineNumber)
+{
+    #ifdef DEBUG_ENABLED
+        if (!v) {
+            const char* const tName = me.getName();
+
+            if (tName) {
+                debug::print( tName, true );
+                debug::print( PSTR( " - assert fail, line " ), true );
+            }
+            else {
+                debug::print( PSTR( "Assert fail, line " ), true );
+            }
+
+            debug::print( lineNumber, 10 );
+            debug::print( PSTR( ": " ), true );
+            debug::print( msg, true );
+            debug::print( PSTR( "\r\n" ), true );
+        }
+    #endif
+}
