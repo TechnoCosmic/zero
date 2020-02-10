@@ -78,7 +78,7 @@ void Shell::handleKeyboard()
     char echoChar = 0;
     uint16_t numBytes;
 
-    while(auto buffer = _rx->getCurrentBuffer( numBytes )) {
+    while (auto buffer = _rx->getCurrentBuffer( numBytes )) {
         for (uint16_t i = 0; i < numBytes; i++) {
             switch (auto curChar = buffer[i]) {
                 case '\r':
