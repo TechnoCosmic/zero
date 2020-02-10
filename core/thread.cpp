@@ -61,6 +61,7 @@ namespace {
     OffsetList<Thread> _timeoutList;                    // the list of Threads wanting to sleep for a time
     Thread* _currentThread = nullptr;                   // the currently executing thread
     Thread* _idleThread = nullptr;                      // to run when there's nothing else to do, and only then
+    uint16_t _nextId = 0UL;                             // ID to use for the next Thread
     volatile uint8_t _activeListNum = 0;                // which of the two ready lists are we using as the active list?
     volatile uint32_t _milliseconds = 0ULL;             // 49 day millisecond counter
     volatile bool _switchingEnabled = true;             // context switching ISR enabled?
@@ -112,6 +113,14 @@ namespace {
         }
 
         return rc;
+    }
+
+
+    uint16_t getNewThreadId()
+    {
+        ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+            return _nextId++;
+        }
     }
 
 
@@ -231,6 +240,7 @@ Thread::Thread(
     const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
     int* const exitCode)                                // Place to put Thread's return code
 :
+    _id{ getNewThreadId() },
     _name{ name }
 {    
     // allocate a stack from the heap
@@ -319,6 +329,13 @@ Thread::~Thread()
 Thread::operator bool() const
 {
     return _stackBottom != nullptr;
+}
+
+
+// Returns the ID of the Thread
+uint16_t Thread::getThreadId() const
+{
+    return _id;
 }
 
 

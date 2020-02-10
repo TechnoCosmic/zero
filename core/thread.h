@@ -55,6 +55,7 @@ namespace zero {
         explicit operator bool() const;
 
         // General
+        uint16_t getThreadId() const;                   // Returns the ID of the Thread
         const char* getName() const;                    // Returns the name of the Thread
 
         // Stack information

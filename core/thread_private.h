@@ -32,4 +32,5 @@ private:
     SignalField _waitingSignals;
     SignalField _currentSignals;
 
+    const uint16_t _id;
     const char* const _name;
