@@ -29,7 +29,8 @@ namespace zero {
     // reserved signals
     const auto RESERVED_SIGS = 1;
     const SignalField SIG_TIMEOUT = (1L << 0);
-
+    const SignalField SIG_ALL_RESERVED = SIG_TIMEOUT;
+    
     // Thread class
     class Thread {
     public:

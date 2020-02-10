@@ -292,7 +292,7 @@ Thread::Thread(
     _lowSp = _sp;
 
     // signal defaults
-    _allocatedSignals = SIG_TIMEOUT;
+    _allocatedSignals = SIG_ALL_RESERVED;
     _waitingSignals = 0UL;
     _currentSignals = 0UL;
 
@@ -601,7 +601,7 @@ void Thread::freeSignals(const SignalField signals)
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // can't free the reserved signals
-        const SignalField sigsTofree = signals & ~SIG_TIMEOUT;
+        const SignalField sigsTofree = signals & ~SIG_ALL_RESERVED;
 
         _allocatedSignals &= ~sigsTofree;
         _waitingSignals &= ~sigsTofree;
