@@ -21,7 +21,7 @@ using namespace zero;
 int startup_sequence()
 {
     // empty CLI
-    new Shell( 0, DEBUG_BAUD );
+    new Shell( 0, 9600 );
 
     // simple LED flasher
     new LedFlasher( PSTR( "led demo" ), ZERO_PINB5, 250, 750 );
