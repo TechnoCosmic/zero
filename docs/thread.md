@@ -42,6 +42,7 @@ Constructs a new Thread object, and begins executing it.
 
 ### Example
 ```
+#include <avr/pgmspace.h>
 #include "thread.h"
 #include "synapse.h"
 
@@ -68,6 +69,7 @@ int startup_sequence()
 
     // define and launch the Thread
     new Thread(
+        PSTR( "asyncDemo" ),
         192,
         myAsyncThread,
         TF_READY,
