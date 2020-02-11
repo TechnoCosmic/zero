@@ -27,10 +27,10 @@ SoftwareTx::SoftwareTx(
         return ((SoftwareTx&) me).main();
     }),
 
-    // other params
+    // other init
     _txPins{ txPins }
 {
-    // ctor body
+    // empty
 }
 
 

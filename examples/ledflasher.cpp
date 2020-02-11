@@ -20,8 +20,9 @@ LedFlasher::LedFlasher(
     const uint32_t delayMs,
     const int count)
 :
-    LedFlasher(name, ledPins, delayMs, delayMs, count)
+    LedFlasher( name, ledPins, delayMs, delayMs, count )
 {
+    // empty
 }
 
 
@@ -39,13 +40,13 @@ LedFlasher::LedFlasher(
         return ((LedFlasher&) me).main();
     }),
 
-    // other params
+    // other init
     _ledPins{ ledPins },
     _timeOnMs{ timeOnMs },
     _timeOffMs{ timeOffMs },
     _flashesRemaining{ count }
 {
-    // ctor body
+    // empty
 }
 
 

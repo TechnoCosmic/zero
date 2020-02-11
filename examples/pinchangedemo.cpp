@@ -25,10 +25,10 @@ PinChangeDemo::PinChangeDemo(
         return ((PinChangeDemo&) me).main();
     }),
 
-    // other params
+    // other init
     _pins{ pins }
 {
-    // ctor body
+    // empty
 }
 
 
