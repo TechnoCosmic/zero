@@ -240,16 +240,13 @@ Thread::Thread(
     const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
     int* const exitCode)                                // Place to put Thread's return code
 :
+    _stackBottom{ (uint8_t*) memory::allocate(
+        MAX(stackSize, MIN_STACK_BYTES),
+        &_stackSize,
+        memory::SearchStrategy::TopDown) },
     _id{ getNewThreadId() },
     _name{ name }
 {    
-    // allocate a stack from the heap
-    _stackBottom = (uint8_t*) memory::allocate(
-        MAX(stackSize, MIN_STACK_BYTES),
-        &_stackSize,
-        memory::SearchStrategy::TopDown
-    );
-
     const uint16_t stackTop = (uint16_t) _stackBottom + _stackSize - 1;
     const uint16_t newStackTop = stackTop - (PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT);
 

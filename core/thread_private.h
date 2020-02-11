@@ -25,7 +25,7 @@ private:
     SignalField getActiveSignals() const;
     bool tryAllocateSignal(const uint16_t signalNumber);
 
-    uint8_t* _stackBottom;
+    uint8_t* const _stackBottom;
     uint16_t _stackSize;
 
     SignalField _allocatedSignals;
