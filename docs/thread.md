@@ -141,6 +141,18 @@ Returns a 32-bit number representing the number of milliseconds elapsed since th
 ### Notes
 Wraps around (overflows) after approximately 49 days of continuous operation.
 
+## getThreadId()
+Returns the unique ID of the Thread.
+```
+    uint16_t Thread::getThreadId() const
+```
+
+## getName()
+Returns a pointer into Flash memory that contains the name of the Thread.
+```
+    const char* Thread::getName() const
+```
+
 ## allocateSignal()
 Allocates a signal for use.
 ```
