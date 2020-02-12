@@ -52,7 +52,8 @@ Outputs debugging information if a condition is ```false```.
 ```
     static void debug::assert(
         const bool c,
-        const char* const msg
+        const char* const msg,
+        const int line
     )
 ```
 
@@ -61,6 +62,7 @@ Outputs debugging information if a condition is ```false```.
 |-----|-----------|
 |```c```|The condition to test.|
 |```msg```|The null-terminated string to output if ```c``` is false.|
+|```line```|The line number in the source code of the assertion.|
 
 ### Notes
-If ```c``` is ```false```, then ```msg``` is sent to ```debug::print```.
+If ```c``` is ```false```, then ```msg``` is sent to ```debug::print```, along with some information about the ```Thread``` and the line number of the issue.
