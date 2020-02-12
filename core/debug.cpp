@@ -107,7 +107,10 @@ void debug::print(const uint16_t n, const int base)
 }
 
 
-void debug::assert(const bool v, const char* const msg, const int lineNumber)
+void debug::assert(
+    const bool v,
+    const char* const msg,
+    const int lineNumber)
 {
     #ifdef DEBUG_ENABLED
         if (!v) {
