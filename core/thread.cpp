@@ -324,7 +324,7 @@ Thread::~Thread()
 // validity checking
 Thread::operator bool() const
 {
-    return _stackBottom != nullptr;
+    return _stackBottom;
 }
 
 

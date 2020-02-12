@@ -211,7 +211,7 @@ bool UsartTx::getNextTxByte(uint8_t& data)
 
 
 void UsartTx::byteTxComplete() {
-    if (!_txBytesRemaining && _txBuffer != nullptr) {
+    if (!_txBytesRemaining && _txBuffer) {
         _txBuffer = nullptr;
 
         if (_txReadySyn) {

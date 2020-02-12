@@ -133,7 +133,7 @@ SpiMemory::~SpiMemory()
 // validity checking
 SpiMemory::operator bool() const
 {
-    return _chipSelectPin != nullptr;
+    return _chipSelectPin;
 }
 
 

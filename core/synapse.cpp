@@ -33,7 +33,7 @@ Synapse::~Synapse()
 // validity checking
 Synapse::operator bool() const
 {
-    return (_thread != nullptr && _signals != 0UL);
+    return _thread && _signals;
 }
 
 

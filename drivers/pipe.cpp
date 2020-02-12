@@ -47,7 +47,7 @@ Pipe::~Pipe()
 // validity checking
 Pipe::operator bool() const
 {
-    return _buffer != nullptr;
+    return _buffer;
 }
 
 

@@ -175,7 +175,7 @@ Gpio::~Gpio()
 // validity checking
 Gpio::operator bool() const
 {
-    return (_pins != 0UL);
+    return _pins;
 }
 
 
