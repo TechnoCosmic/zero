@@ -46,3 +46,21 @@ Interrupts are disabled while each character is transmitted in a tight-loop (app
 No set up or initialization is required by your code - just be sure that the ```makefile``` has the ```DEBUG_*``` settings to your liking, and then call these functions.
 
 For asynchronous and better performing data transmission, see the ```UsartTx``` or ```SuartTx``` classes.
+
+## debug::assert()
+Outputs debugging information if a condition is ```false```.
+```
+    static void debug::assert(
+        const bool c,
+        const char* const msg
+    )
+```
+
+### Parameters
+|Param|Description|
+|-----|-----------|
+|```c```|The condition to test.|
+|```msg```|The null-terminated string to output if ```c``` is false.|
+
+### Notes
+If ```c``` is ```false```, then ```msg``` is sent to ```debug::print```.
