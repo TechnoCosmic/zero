@@ -26,6 +26,8 @@ Using zero's GPIO model means that you cannot manipulate a GPIO pin that you hav
 ## Example
 To access the GPIO pins in zero, allocate a ```Gpio``` object on the stack, specifying the pins you want it to have access to. If you cannot gain exclusive access to even a single pin that you want, no pins will be assigned to your new ```Gpio``` object. To check if your allocation has been successful, use the following code...
 ```
+#include "gpio.h"
+
 int myThread
 {
     Gpio arduinoUnoLed( ZERO_PINB5 );
