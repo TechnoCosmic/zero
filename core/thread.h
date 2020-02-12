@@ -51,7 +51,7 @@ namespace zero {
             const Synapse* const termSyn = nullptr,     // Synapse to signal when Thread terminates
             int* const exitCode = nullptr);             // Place to put Thread's return code
 
-        // validity checking in the absence of excpetions
+        // validity checking in the absence of exceptions
         explicit operator bool() const;
 
         // General
