@@ -581,7 +581,7 @@ void Gpio::handlePinChange(const int portNumber, const uint8_t newValue)
 
             // always call the callback first
             if (cur->_inputCallback) {
-                cur->_inputCallback();
+                cur->_inputCallback(*cur);
             }
 
             // .. and only then the Synapse

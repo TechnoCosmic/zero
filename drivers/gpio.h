@@ -21,7 +21,11 @@
 namespace zero {
 
 
+    // class decl because chicken/egg
+    class Gpio;
+
     typedef uint32_t PinField;
+    typedef void (*InputCallback)(Gpio& pins);
 
 
     // Maps a port number and pin number to a simple integer
@@ -91,10 +95,8 @@ namespace zero {
         #endif
     #endif
 
+
     const int ZERO_NUM_PORTS = ZERO_HIGH_PORT + 1;
-
-
-    typedef void (*InputCallback)();
 
 
     class Gpio {
