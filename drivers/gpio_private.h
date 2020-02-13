@@ -7,10 +7,17 @@
 
 
 public:
+    // meta
+    static void init();
+
     static void handlePinChange(
         const int portNumber,                           // 0 = PINA, 1 = PINB etc
         const uint8_t v);                               // the current value of PINx
 
+    // lifecycle
+    ~Gpio();                                            // frees the pins for re-use
+
+    // list membership
     Gpio* _prev;
     Gpio* _next;
 

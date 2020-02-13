@@ -101,10 +101,7 @@ namespace zero {
 
     class Gpio {
     public:
-        // meta
-        static void init();
-
-        // Life-cycle
+        // lifecycle
         Gpio(const PinField pins);                      // pins to which you want exclusive access
 
         Gpio(
@@ -114,8 +111,6 @@ namespace zero {
         Gpio(
             const PinField pins,                        // pins to which you want exclusive access
             const Synapse& s);                          // Synapse to signal when input pins change state
-
-        ~Gpio();                                        // frees the pins for re-use
 
         explicit operator bool() const;                 // validity checking
 
