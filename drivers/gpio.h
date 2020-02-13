@@ -25,7 +25,7 @@ namespace zero {
     class Gpio;
 
     typedef uint32_t PinField;
-    typedef void (*InputCallback)(Gpio& pins);
+    typedef void (*InputCallback)(const Gpio& pins);
 
 
     // Maps a port number and pin number to a simple integer
