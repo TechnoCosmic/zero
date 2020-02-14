@@ -15,21 +15,19 @@
 
 namespace zero {
 
-
     class DoubleBuffer {
     public:
-        DoubleBuffer(const uint16_t size);
+        DoubleBuffer( const uint16_t size );
         ~DoubleBuffer();
 
-        bool write(const uint8_t d);
-        uint8_t* getCurrentBuffer(uint16_t& numBytes);
+        bool write( const uint8_t d );
+        uint8_t* getCurrentBuffer( uint16_t& numBytes );
         void flush();
 
         #include "doublebuffer_private.h"
     };
 
-
-}
+}    // namespace zero
 
 
 #endif

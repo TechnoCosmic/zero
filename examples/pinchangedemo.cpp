@@ -37,7 +37,7 @@ int PinChangeDemo::main()
     Synapse listenSyn;
     Gpio listenPins( _pins, listenSyn );
 
-    if (!listenPins) {
+    if ( !listenPins ) {
         return 20;
     }
 
@@ -45,10 +45,10 @@ int PinChangeDemo::main()
     listenPins.setAsInput();
     listenPins.switchOn();
 
-    while (true) {
+    while ( true ) {
         listenSyn.wait();
 
-        if (listenPins.getInputState()) {
+        if ( listenPins.getInputState() ) {
             dbg_pgm( "Button up!\r\n" );
         }
         else {

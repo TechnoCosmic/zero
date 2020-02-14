@@ -55,23 +55,23 @@ int LedFlasher::main()
 {
     Gpio led( _ledPins );
 
-    if (!led) {
+    if ( !led ) {
         return 20;
     }
 
     led.setAsOutput();
 
-    while (true) {
+    while ( true ) {
         led.switchOn();
         me.wait( 0UL, _timeOnMs );
 
         led.switchOff();
         me.wait( 0UL, _timeOffMs );
 
-        if (_flashesRemaining > 0) {
+        if ( _flashesRemaining > 0 ) {
             _flashesRemaining--;
 
-            if (!_flashesRemaining) {
+            if ( !_flashesRemaining ) {
                 break;
             }
         }

@@ -32,7 +32,7 @@ using namespace zero;
 
 // Has the page been marked as used, or is it free?
 template <uint16_t PAGE_COUNT>
-bool PageManager<PAGE_COUNT>::isPageAvailable(const uint16_t pageNumber) const
+bool PageManager<PAGE_COUNT>::isPageAvailable( const uint16_t pageNumber ) const
 {
     return IS_PAGE_AVAIL( pageNumber );
 }
@@ -40,7 +40,7 @@ bool PageManager<PAGE_COUNT>::isPageAvailable(const uint16_t pageNumber) const
 
 // Mark the supplied page as free
 template <uint16_t PAGE_COUNT>
-void PageManager<PAGE_COUNT>::markAsFree(const uint16_t pageNumber)
+void PageManager<PAGE_COUNT>::markAsFree( const uint16_t pageNumber )
 {
     MARK_AS_FREE( pageNumber );
 }
@@ -48,7 +48,7 @@ void PageManager<PAGE_COUNT>::markAsFree(const uint16_t pageNumber)
 
 // Mark the supplied page as used
 template <uint16_t PAGE_COUNT>
-void PageManager<PAGE_COUNT>::markAsUsed(const uint16_t pageNumber)
+void PageManager<PAGE_COUNT>::markAsUsed( const uint16_t pageNumber )
 {
     MARK_AS_USED( pageNumber );
 }
@@ -68,12 +68,12 @@ uint16_t PageManager<PAGE_COUNT>::getFreePageCount() const
 {
     uint16_t rc = 0UL;
 
-    for (uint16_t i = 0; i < getTotalPageCount(); i++) {
-        if (isPageAvailable( i )) {
+    for ( uint16_t i = 0; i < getTotalPageCount(); i++ ) {
+        if ( isPageAvailable( i ) ) {
             rc++;
         }
     }
-    
+
     return rc;
 }
 
@@ -87,14 +87,14 @@ uint16_t PageManager<PAGE_COUNT>::getUsedPageCount() const
 
 
 // search strategy function prototypes
-static int16_t getPageForSearchStep_TopDown(const uint16_t step, const uint16_t totalPages);
-static int16_t getPageForSearchStep_BottomUp(const uint16_t step, const uint16_t totalPages);
+static int16_t getPageForSearchStep_TopDown( const uint16_t step, const uint16_t totalPages );
+static int16_t getPageForSearchStep_BottomUp( const uint16_t step, const uint16_t totalPages );
 
 
 // search strategy - BottomUp starts searching the allocation table at the bottom and works up
 static int16_t getPageForSearchStep_BottomUp(
     const uint16_t step,
-    const uint16_t totalPages)
+    const uint16_t totalPages )
 {
     return step;
 }
@@ -103,17 +103,19 @@ static int16_t getPageForSearchStep_BottomUp(
 // search strategy - TopDown starts searching the allocation table at the top and works down
 static int16_t getPageForSearchStep_TopDown(
     const uint16_t step,
-    const uint16_t totalPages)
+    const uint16_t totalPages )
 {
-    return totalPages - (step + 1);
+    return totalPages - ( step + 1 );
 }
 
 
-// set up the vector table for the search strategies
-static int16_t (*_strategies[])(const uint16_t, const uint16_t) = {
-    getPageForSearchStep_TopDown,
-    getPageForSearchStep_BottomUp,
-};
+namespace {
+    // set up the vector table for the search strategies
+    int16_t ( *_strategies[] )( const uint16_t, const uint16_t ) = {
+        getPageForSearchStep_TopDown,
+        getPageForSearchStep_BottomUp,
+    };
+}
 
 
 // This is the main workhorse for the memory allocator. Using only the search strategy supplied,
@@ -121,32 +123,32 @@ static int16_t (*_strategies[])(const uint16_t, const uint16_t) = {
 template <uint16_t PAGE_COUNT>
 int16_t PageManager<PAGE_COUNT>::findFreePages(
     const uint16_t numPagesRequired,
-    const memory::SearchStrategy strat) const
+    const memory::SearchStrategy strat ) const
 {
     uint16_t startPage = (uint16_t) -1;
     uint16_t pageCount = 0;
 
-    for (uint16_t curStep = 0; curStep < PAGE_COUNT; curStep++) {
+    for ( uint16_t curStep = 0; curStep < PAGE_COUNT; curStep++ ) {
         const uint16_t curPage = _strategies[ strat ]( curStep, PAGE_COUNT );
 
         // if the search strategy no longer
         // has any more pages in its scope
-        if (curPage == (uint16_t) -1) {
+        if ( curPage == (uint16_t) -1 ) {
             break;
         }
 
         // But if that page was free..
-        if (isPageAvailable( curPage )) {
+        if ( isPageAvailable( curPage ) ) {
             // we have one more page than we had before
             pageCount++;
 
             // if we didn't have a startPage, we do now
-            if (startPage == (uint16_t) -1) {
+            if ( startPage == (uint16_t) -1 ) {
                 startPage = curPage;
             }
 
             // if we've found the right number of pages, stop looking
-            if (pageCount == numPagesRequired) {
+            if ( pageCount == numPagesRequired ) {
                 startPage = MIN( startPage, curPage );
                 break;
             }
@@ -159,7 +161,7 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
     }
 
     // if we couldn't find right number of pages
-    if (pageCount < numPagesRequired) {
+    if ( pageCount < numPagesRequired ) {
         return -1;
     }
 

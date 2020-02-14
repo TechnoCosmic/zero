@@ -14,7 +14,7 @@
 #include <avr/io.h>
 
 
-#define ROUND_UP(v,r) ((((v)-1)|((r)-1))+1)
+#define ROUND_UP( v, r )        ( ( ( (v) -1 ) | ( (r) -1 ) ) + 1 )
 
 
 const uint16_t SRAM_PAGES = DYNAMIC_BYTES / PAGE_BYTES;
@@ -34,9 +34,9 @@ namespace zero {
     class PageManager {
     public:
         // low-level functions
-        bool isPageAvailable(const uint16_t pageNumber) const;
-        void markAsFree(const uint16_t pageNumber);
-        void markAsUsed(const uint16_t pageNumber);
+        bool isPageAvailable( const uint16_t pageNumber ) const;
+        void markAsFree( const uint16_t pageNumber );
+        void markAsUsed( const uint16_t pageNumber );
 
         uint16_t getTotalPageCount() const;
         uint16_t getUsedPageCount() const;
@@ -45,6 +45,6 @@ namespace zero {
         #include "pagemanager_private.h"
     };
 
-}
+}    // namespace zero
 
 #endif

@@ -28,14 +28,14 @@ namespace zero {
             const char* const name,
             const PinField ledPins,
             const uint32_t delayMs,
-            int count = 0);
+            int count = 0 );
 
         LedFlasher(
             const char* const name,
             const PinField ledPins,
             const uint32_t timeOnMs,
             const uint32_t timeOffMs,
-            int count);
+            int count );
 
     private:
         int main();
@@ -44,10 +44,9 @@ namespace zero {
         const uint32_t _timeOnMs;
         const uint32_t _timeOffMs;
         int _flashesRemaining;
-
     };
 
-}
+}    // namespace zero
 
 
 #endif

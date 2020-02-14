@@ -39,16 +39,16 @@ int SoftwareTx::main()
 {
     SuartTx tx;
     Gpio txPins( _txPins );
-    Synapse txReadySyn;                                 // to learn when we can transmit again
+    Synapse txReadySyn;    // to learn when we can transmit again
 
     // make sure they all claimed their resources
-    if (txPins && txReadySyn && tx) {
+    if ( txPins && txReadySyn && tx ) {
         // set up the communications
         tx.setCommsParams( 9600, txPins );
         tx.enable( txReadySyn );
 
         // main loop
-        while (true) {
+        while ( true ) {
             txReadySyn.wait();                          // wait for transmitter to be ready
             tx.transmit( "Hello, World!\r\n", 15 );     // send some text
         }

@@ -19,9 +19,9 @@ using namespace zero;
 
 
 // ctor
-DoubleBuffer::DoubleBuffer(const uint16_t size)
+DoubleBuffer::DoubleBuffer( const uint16_t size )
 {
-    if ((_buffer = (uint8_t*) memory::allocate( size, &_bufferSize ))) {
+    if ( ( _buffer = (uint8_t*) memory::allocate( size, &_bufferSize ) ) ) {
         _pivot = _bufferSize / 2;
         _writeOffset = 0UL;
         _usedBytes = 0UL;
@@ -37,13 +37,13 @@ DoubleBuffer::~DoubleBuffer()
 
 
 // Writes a byte to the active buffer.
-bool DoubleBuffer::write(const uint8_t d)
+bool DoubleBuffer::write( const uint8_t d )
 {
     bool rc = false;
     const uint8_t oldSreg = SREG;
     cli();
-    
-    if (_usedBytes < _pivot) {
+
+    if ( _usedBytes < _pivot ) {
         _buffer[ _writeOffset + _usedBytes ] = d;
         _usedBytes++;
 
@@ -58,11 +58,11 @@ bool DoubleBuffer::write(const uint8_t d)
 
 // Returns the currently active half of the buffer (if
 // there's any data in it), and swaps buffers.
-uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes)
+uint8_t* DoubleBuffer::getCurrentBuffer( uint16_t& numBytes )
 {
     const uint8_t oldSreg = SREG;
     cli();
-    
+
     uint8_t* rc = nullptr;
 
     // tell the caller how many bytes we have
@@ -72,14 +72,14 @@ uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes)
     _usedBytes = 0;
 
     // return the current half of the buffer
-    if (numBytes) {
+    if ( numBytes ) {
         rc = &_buffer[ _writeOffset ];
     }
 
     // swap to the other half
     _writeOffset = _writeOffset == 0 ? _pivot : 0;
 
-    // restore SREG and escape        
+    // restore SREG and escape
     SREG = oldSreg;
 
     return rc;
@@ -91,9 +91,9 @@ void DoubleBuffer::flush()
 {
     const uint8_t oldSreg = SREG;
     cli();
-        
+
     _writeOffset = 0UL;
     _usedBytes = 0UL;
-        
+
     SREG = oldSreg;
 }

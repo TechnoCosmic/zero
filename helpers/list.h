@@ -12,7 +12,6 @@
 
 namespace zero {
 
-
     template <class T>
     class List {
     public:
@@ -21,10 +20,10 @@ namespace zero {
         T* getHead() const;
         T* getTail() const;
 
-        void prepend(T& item);
-        void append(T& item);
-        void remove(T& item);
-        void insertBefore(T& item, T& before);
+        void prepend( T& item );
+        void append( T& item );
+        void remove( T& item );
+        void insertBefore( T& item, T& before );
 
     protected:
         T* _head;
@@ -35,11 +34,10 @@ namespace zero {
     template <class T>
     class OffsetList : public List<T> {
     public:
-        void remove(T& item);
-        void insertByOffset(T& item, const uint32_t offsetFromNow);
+        void remove( T& item );
+        void insertByOffset( T& item, const uint32_t offsetFromNow );
     };
 
-
-}
+}    // namespace zero
 
 #endif

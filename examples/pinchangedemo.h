@@ -17,20 +17,18 @@
 
 namespace zero {
 
-
     class PinChangeDemo : public Thread {
     public:
         PinChangeDemo(
             const char* const name,
-            const PinField pins);
+            const PinField pins );
 
     private:
         int main();
         const PinField _pins;
     };
 
-
-}
+}    // namespace zero
 
 
 #endif

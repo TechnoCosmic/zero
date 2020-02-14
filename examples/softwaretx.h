@@ -26,15 +26,14 @@ namespace zero {
         // ctor
         SoftwareTx(
             const char* const name,
-            const PinField txPins);
+            const PinField txPins );
 
     private:
         int main();
         const PinField _txPins;
-
     };
 
-}
+}    // namespace zero
 
 
 #endif

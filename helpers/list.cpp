@@ -14,7 +14,7 @@ using namespace zero;
 
 
 template <class T>
-List<T>::List() 
+List<T>::List()
 {
     _head = _tail = nullptr;
 }
@@ -35,43 +35,43 @@ T* List<T>::getTail() const
 
 
 template <class T>
-void List<T>::prepend(T& item)
+void List<T>::prepend( T& item )
 {
     item._prev = nullptr;
     item._next = _head;
 
-    if (_head) {
+    if ( _head ) {
         _head->_prev = &item;
     }
 
     _head = &item;
 
-    if (!_tail) {
+    if ( !_tail ) {
         _tail = &item;
     }
 }
 
 
 template <class T>
-void List<T>::append(T& item)
+void List<T>::append( T& item )
 {
     item._next = nullptr;
     item._prev = _tail;
 
-    if (_tail) {
+    if ( _tail ) {
         _tail->_next = &item;
     }
 
     _tail = &item;
 
-    if (!_head) {
+    if ( !_head ) {
         _head = &item;
     }
 }
 
 
 template <class T>
-void List<T>::remove(T& item)
+void List<T>::remove( T& item )
 {
     const bool wasHead = _head == &item;
     const bool wasTail = _tail == &item;
@@ -79,19 +79,19 @@ void List<T>::remove(T& item)
     T* p = item._prev;
     T* n = item._next;
 
-    if (p) {
+    if ( p ) {
         p->_next = n;
     }
 
-    if (n) {
+    if ( n ) {
         n->_prev = p;
     }
 
-    if (wasHead) {
+    if ( wasHead ) {
         _head = n;
     }
 
-    if (wasTail) {
+    if ( wasTail ) {
         _tail = p;
     }
 
@@ -101,7 +101,7 @@ void List<T>::remove(T& item)
 
 
 template <class T>
-void List<T>::insertBefore(T& item, T& before)
+void List<T>::insertBefore( T& item, T& before )
 {
     const bool newHead = &before == _head;
 
@@ -110,22 +110,22 @@ void List<T>::insertBefore(T& item, T& before)
 
     before._prev = &item;
 
-    if (item._prev) {
+    if ( item._prev ) {
         item._prev->_next = &item;
     }
 
-    if (newHead) {
+    if ( newHead ) {
         _head = &item;
     }
 }
 
 
 template <class T>
-void OffsetList<T>::remove(T& item)
+void OffsetList<T>::remove( T& item )
 {
     // we have to adjust the next item's offset before
     // being allowed to the remove the item from the list
-    if (T* n = item._next) {
+    if ( T* n = item._next ) {
         n->_timeoutOffset += item._timeoutOffset;
     }
 
@@ -134,21 +134,21 @@ void OffsetList<T>::remove(T& item)
 
 
 template <class T>
-void OffsetList<T>::insertByOffset(T& item, const uint32_t intendedOffsetFromNow)
+void OffsetList<T>::insertByOffset( T& item, const uint32_t intendedOffsetFromNow )
 {
     bool added = false;
     uint32_t curOffsetFromNow = 0ULL;
     T* cur = List<T>::getHead();
 
-    while (cur) {
+    while ( cur ) {
         curOffsetFromNow += cur->_timeoutOffset;
 
-        if (curOffsetFromNow > intendedOffsetFromNow) {
+        if ( curOffsetFromNow > intendedOffsetFromNow ) {
             // insert before cur
             List<T>::insertBefore( item, *cur );
 
             // adjust the delta of the incoming item
-            item._timeoutOffset = intendedOffsetFromNow - (curOffsetFromNow - cur->_timeoutOffset);
+            item._timeoutOffset = intendedOffsetFromNow - ( curOffsetFromNow - cur->_timeoutOffset );
 
             // delta of item after us is reduced by our delta
             cur->_timeoutOffset -= item._timeoutOffset;
@@ -165,13 +165,12 @@ void OffsetList<T>::insertByOffset(T& item, const uint32_t intendedOffsetFromNow
 
     // if the item hasn't found a home yet,
     // simply throw it on the end of the list
-    if (!added) {
+    if ( !added ) {
         List<T>::append( item );
 
         // adjust the delta of the incoming item
         item._timeoutOffset = intendedOffsetFromNow - curOffsetFromNow;
     }
-
 }
 
 
