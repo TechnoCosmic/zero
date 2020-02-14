@@ -28,17 +28,17 @@
 using namespace zero;
 
 
-#define INLINE __attribute__((always_inline))
-#define NAKED __attribute__((__naked__))
+#define INLINE __attribute__( ( always_inline ) )
+#define NAKED __attribute__( ( __naked__ ) )
 
 
 // Ready list helpers, to make list accessing and swapping easy and QUICK
-#define ACTIVE_LIST_NUM     (_activeListNum)
-#define EXPIRED_LIST_NUM    (_activeListNum ^ 1)
-#define SWAP_LISTS          _activeListNum ^= 1;
+#define ACTIVE_LIST_NUM ( _activeListNum )
+#define EXPIRED_LIST_NUM ( _activeListNum ^ 1 )
+#define SWAP_LISTS _activeListNum ^= 1;
 
-#define ACTIVE_LIST         _readyLists[ ACTIVE_LIST_NUM ]
-#define EXPIRED_LIST        _readyLists[ EXPIRED_LIST_NUM ]
+#define ACTIVE_LIST _readyLists[ ACTIVE_LIST_NUM ]
+#define EXPIRED_LIST _readyLists[ EXPIRED_LIST_NUM ]
 
 
 // main() is naked because we don't care for the setup upon
@@ -67,17 +67,17 @@ namespace {
     volatile bool _switchingEnabled = true;             // context switching ISR enabled?
 
     // constants
-    const uint8_t SIGNAL_BITS = sizeof(SignalField) * 8;
+    const uint8_t SIGNAL_BITS = sizeof( SignalField ) * 8;
     const uint16_t REGISTER_COUNT = 32;
 
-    #ifdef RAMPZ
-        const uint16_t EXTRAS_COUNT = 2;
-    #else
-        const uint16_t EXTRAS_COUNT = 1;
-    #endif
+#ifdef RAMPZ
+    const uint16_t EXTRAS_COUNT = 2;
+#else
+    const uint16_t EXTRAS_COUNT = 1;
+#endif
 
     const uint16_t MIN_STACK_BYTES = 128;
-    
+
     // the offsets from the stack top (as seen AFTER all the registers have been pushed onto
     // the stack already) of each of the nine (9) parameters that are register-passed by GCC
     const PROGMEM uint8_t _paramOffsets[] = { 24, 26, 28, 30, 2, 4, 6, 8, 10 };
@@ -85,9 +85,9 @@ namespace {
 
     // Determine where in the stack the registers are for a given parameter number
     // NOTE: This is GCC-specific. Different compilers may pass parameters differently.
-    int getOffsetForParameter(const uint8_t parameterNumber)
+    int getOffsetForParameter( const uint8_t parameterNumber )
     {
-        if (parameterNumber < 9) {
+        if ( parameterNumber < 9 ) {
             return pgm_read_byte( (uint16_t) _paramOffsets + parameterNumber );
         }
 
@@ -102,11 +102,11 @@ namespace {
     {
         Thread* rc = ACTIVE_LIST.getHead();
 
-        if (!rc) {
+        if ( !rc ) {
             SWAP_LISTS;
             rc = ACTIVE_LIST.getHead();
 
-            if (!rc) {
+            if ( !rc ) {
                 rc = _idleThread;
             }
         }
@@ -117,7 +117,8 @@ namespace {
 
     uint16_t getNewThreadId()
     {
-        ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+        ATOMIC_BLOCK( ATOMIC_RESTORESTATE )
+        {
             return _nextId++;
         }
     }
@@ -126,10 +127,10 @@ namespace {
     // zero's heartbeat
     void initTimer0()
     {
-        #define SCALE(x) ((F_CPU_MHZ * (x)) / 16UL)
+        #define SCALE( x ) ( ( F_CPU_MHZ * ( x ) ) / 16UL )
 
         #ifndef TIMSK0
-        #define TIMSK0 TIMSK
+            #define TIMSK0 TIMSK
         #endif
 
         // claim the main timer before anyone else does
@@ -139,17 +140,17 @@ namespace {
         power_timer0_enable();                          // switch it on
         TCCR0B = 0;                                     // stop the clock
         TCNT0 = 0;                                      // reset counter to 0
-        TCCR0A = (1 << WGM01);                          // CTC
-        TCCR0B = (1 << CS02);                           // /256 prescalar
+        TCCR0A = ( 1 << WGM01 );                        // CTC
+        TCCR0B = ( 1 << CS02 );                         // /256 prescalar
 
-        OCR0A = SCALE( 62.5 )-1;                        // 1ms
-        TIMSK0 |= (1 << OCIE0A);                        // enable ISR
+        OCR0A = SCALE( 62.5 ) - 1;                      // 1ms
+        TIMSK0 |= ( 1 << OCIE0A );                      // enable ISR
 
-        OCR0B = SCALE( 62.5 )-1;                        // 1ms
-        TIMSK0 |= (1 << OCIE0B);                        // enable ISR
+        OCR0B = SCALE( 62.5 ) - 1;                      // 1ms
+        TIMSK0 |= ( 1 << OCIE0B );                      // enable ISR
     }
 
-}
+}    // namespace
 
 
 // All threads start and end life here
@@ -157,23 +158,23 @@ static void globalThreadEntry(
     Thread& t,
     const uint32_t entry,
     const ThreadFlags flags,
-    Synapse* notifySyn,
-    int* exitCode)
+    Synapse* const notifySyn,
+    int* const exitCode )
 {
     // run the thread and get its exit code
-    int ec = ((ThreadEntry) entry)();
+    int ec = ( (ThreadEntry) entry )();
 
     // we don't want to be disturbed while cleaning up
     cli();
 
     // return the exit code if someone wants it
-    if (exitCode) {
+    if ( exitCode ) {
         *exitCode = ec;
     }
 
     // if someone wanted to be signalled upon
     // this Thread's termination, signal them
-    if (notifySyn) {
+    if ( notifySyn ) {
         notifySyn->signal();
     }
 
@@ -237,60 +238,59 @@ Thread::Thread(
     const ThreadEntry entry,                            // the Thread's entry function
     const ThreadFlags flags,                            // Optional flags
     const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
-    int* const exitCode)                                // Place to put Thread's return code
+    int* const exitCode )                               // Place to put Thread's return code
 :
     _stackBottom{ (uint8_t*) memory::allocate(
         MAX( stackSize, MIN_STACK_BYTES ),
-        &_stackSize,
-        memory::SearchStrategy::TopDown ) },
+        &_stackSize, memory::SearchStrategy::TopDown ) },
     _id{ getNewThreadId() },
     _name{ name }
-{    
+{
     const uint16_t stackTop = (uint16_t) _stackBottom + _stackSize - 1;
-    const uint16_t newStackTop = stackTop - (PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT);
+    const uint16_t newStackTop = stackTop - ( PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT );
 
     // little helper for stack manipulation - yes, we're
     // going to deliberately index through a null pointer!
-    #define SRAM ((uint8_t*) 0)
+    #define SRAM ( (uint8_t*) 0 )
 
     // clear the stack
-    for (auto i = (uint16_t) _stackBottom; i <= stackTop; i++) {
+    for ( auto i = (uint16_t) _stackBottom; i <= stackTop; i++ ) {
         SRAM[ i ] = 0;
     }
-    
+
     // 'push' the program counter onto the stack
-    SRAM[ stackTop - 0 ] = (((uint32_t) globalThreadEntry) >>  0) & 0xFF;
-    SRAM[ stackTop - 1 ] = (((uint32_t) globalThreadEntry) >>  8) & 0xFF;
+    SRAM[ stackTop - 0 ] = ( ( (uint32_t) globalThreadEntry ) >> 0 ) & 0xFF;
+    SRAM[ stackTop - 1 ] = ( ( (uint32_t) globalThreadEntry ) >> 8 ) & 0xFF;
 
 #if PC_COUNT >= 3
-    SRAM[ stackTop - 2 ] = (((uint32_t) globalThreadEntry) >> 16) & 0xFF;
+    SRAM[ stackTop - 2 ] = ( ( (uint32_t) globalThreadEntry ) >> 16 ) & 0xFF;
 #endif
 
 #if PC_COUNT >= 4
-    SRAM[ stackTop - 3 ] = (((uint32_t) globalThreadEntry) >> 24) & 0xFF;
+    SRAM[ stackTop - 3 ] = ( ( (uint32_t) globalThreadEntry ) >> 24 ) & 0xFF;
 #endif
 
     // set the Thread object into parameter 0 (first parameter)
-    SRAM[ newStackTop + getOffsetForParameter(0) - 0 ] = (((uint16_t) this) >> 0) & 0xFF;
-    SRAM[ newStackTop + getOffsetForParameter(0) - 1 ] = (((uint16_t) this) >> 8) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 0 ) - 0 ] = ( ( (uint16_t) this ) >> 0 ) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 0 ) - 1 ] = ( ( (uint16_t) this ) >> 8 ) & 0xFF;
 
     // set the real entry point into parameters 2/1 - this will be called by globalThreadEntry()
-    SRAM[ newStackTop + getOffsetForParameter(2) - 0 ] = (((uint32_t) entry) >>  0) & 0xFF;
-    SRAM[ newStackTop + getOffsetForParameter(2) - 1 ] = (((uint32_t) entry) >>  8) & 0xFF;
-    SRAM[ newStackTop + getOffsetForParameter(1) - 0 ] = (((uint32_t) entry) >> 16) & 0xFF;
-    SRAM[ newStackTop + getOffsetForParameter(1) - 1 ] = (((uint32_t) entry) >> 24) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 2 ) - 0 ] = ( ( (uint32_t) entry ) >> 0 ) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 2 ) - 1 ] = ( ( (uint32_t) entry ) >> 8 ) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 1 ) - 0 ] = ( ( (uint32_t) entry ) >> 16 ) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 1 ) - 1 ] = ( ( (uint32_t) entry ) >> 24 ) & 0xFF;
 
     // set the flags
-    SRAM[ newStackTop + getOffsetForParameter(3) - 0 ] = (((uint16_t) flags) >> 0) & 0xFF;
-    SRAM[ newStackTop + getOffsetForParameter(3) - 1 ] = (((uint16_t) flags) >> 8) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 3 ) - 0 ] = ( ( (uint16_t) flags ) >> 0 ) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 3 ) - 1 ] = ( ( (uint16_t) flags ) >> 8 ) & 0xFF;
 
     // Termination Synapse
-    SRAM[ newStackTop + getOffsetForParameter(4) - 0 ] = (((uint16_t) termSyn) >> 0) & 0xFF;
-    SRAM[ newStackTop + getOffsetForParameter(4) - 1 ] = (((uint16_t) termSyn) >> 8) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 4 ) - 0 ] = ( ( (uint16_t) termSyn ) >> 0 ) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 4 ) - 1 ] = ( ( (uint16_t) termSyn ) >> 8 ) & 0xFF;
 
     // set the place for the exit code
-    SRAM[ newStackTop + getOffsetForParameter(5) - 0 ] = (((uint16_t) exitCode) >> 0) & 0xFF;
-    SRAM[ newStackTop + getOffsetForParameter(5) - 1 ] = (((uint16_t) exitCode) >> 8) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 5 ) - 0 ] = ( ( (uint16_t) exitCode ) >> 0 ) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter( 5 ) - 1 ] = ( ( (uint16_t) exitCode ) >> 8 ) & 0xFF;
 
     // The prepared stack has all the registers + SREG + RAMPZ 'pushed'
     // onto it (zeroed out). This new stack top represents that.
@@ -306,7 +306,7 @@ Thread::Thread(
     _timeoutOffset = 0ULL;
 
     // ready to run?
-    if (flags & TF_READY) {
+    if ( flags & TF_READY ) {
         // add the Thread into the ready list
         ACTIVE_LIST.append( *this );
     }
@@ -345,109 +345,109 @@ const char* Thread::getName() const
 // Returns the peak recorded stack usage, in bytes
 uint16_t Thread::getPeakStackUsage() const
 {
-    return (_stackSize - (_lowSp - (uint16_t) _stackBottom));
+    return ( _stackSize - ( _lowSp - (uint16_t) _stackBottom ) );
 }
 
 
 // Saves the register set
 static void inline saveInitialRegisters()
 {
-    asm volatile ("push r0");
+    asm volatile( "push r0" );
 
-    asm volatile ("in r0, __SREG__");                   // status register
-    asm volatile ("push r0");
+    asm volatile( "in r0, __SREG__" );                  // status register
+    asm volatile( "push r0" );
 #ifdef RAMPZ
-    asm volatile ("in r0, __RAMPZ__");                  // RAMPZ
-    asm volatile ("push r0");
+    asm volatile( "in r0, __RAMPZ__" );                 // RAMPZ
+    asm volatile( "push r0" );
 #endif
-    asm volatile ("push r1");
-    asm volatile ("push r18");
-    asm volatile ("push r19");
-    asm volatile ("push r20");
-    asm volatile ("push r21");
-    asm volatile ("push r22");
-    asm volatile ("push r23");
-    asm volatile ("push r24");
-    asm volatile ("push r25");
-    asm volatile ("push r26");
-    asm volatile ("push r27");
-    asm volatile ("push r28");
-    asm volatile ("push r29");
-    asm volatile ("push r30");
-    asm volatile ("push r31");
+    asm volatile( "push r1" );
+    asm volatile( "push r18" );
+    asm volatile( "push r19" );
+    asm volatile( "push r20" );
+    asm volatile( "push r21" );
+    asm volatile( "push r22" );
+    asm volatile( "push r23" );
+    asm volatile( "push r24" );
+    asm volatile( "push r25" );
+    asm volatile( "push r26" );
+    asm volatile( "push r27" );
+    asm volatile( "push r28" );
+    asm volatile( "push r29" );
+    asm volatile( "push r30" );
+    asm volatile( "push r31" );
 }
 
 
 // Saves the register set
 static void inline saveExtendedRegisters()
 {
-    asm volatile ("push r2");
-    asm volatile ("push r3");
-    asm volatile ("push r4");
-    asm volatile ("push r5");
-    asm volatile ("push r6");
-    asm volatile ("push r7");
-    asm volatile ("push r8");
-    asm volatile ("push r9");
-    asm volatile ("push r10");
-    asm volatile ("push r11");
-    asm volatile ("push r12");
-    asm volatile ("push r13");
-    asm volatile ("push r14");
-    asm volatile ("push r15");
-    asm volatile ("push r16");
-    asm volatile ("push r17");
+    asm volatile( "push r2" );
+    asm volatile( "push r3" );
+    asm volatile( "push r4" );
+    asm volatile( "push r5" );
+    asm volatile( "push r6" );
+    asm volatile( "push r7" );
+    asm volatile( "push r8" );
+    asm volatile( "push r9" );
+    asm volatile( "push r10" );
+    asm volatile( "push r11" );
+    asm volatile( "push r12" );
+    asm volatile( "push r13" );
+    asm volatile( "push r14" );
+    asm volatile( "push r15" );
+    asm volatile( "push r16" );
+    asm volatile( "push r17" );
 }
 
 
 // Restores the register set
 static void inline restoreExtendedRegisters()
 {
-    asm volatile ("pop r17");
-    asm volatile ("pop r16");
-    asm volatile ("pop r15");
-    asm volatile ("pop r14");
-    asm volatile ("pop r13");
-    asm volatile ("pop r12");
-    asm volatile ("pop r11");
-    asm volatile ("pop r10");
-    asm volatile ("pop r9");
-    asm volatile ("pop r8");
-    asm volatile ("pop r7");
-    asm volatile ("pop r6");
-    asm volatile ("pop r5");
-    asm volatile ("pop r4");
-    asm volatile ("pop r3");
-    asm volatile ("pop r2");
+    asm volatile( "pop r17" );
+    asm volatile( "pop r16" );
+    asm volatile( "pop r15" );
+    asm volatile( "pop r14" );
+    asm volatile( "pop r13" );
+    asm volatile( "pop r12" );
+    asm volatile( "pop r11" );
+    asm volatile( "pop r10" );
+    asm volatile( "pop r9" );
+    asm volatile( "pop r8" );
+    asm volatile( "pop r7" );
+    asm volatile( "pop r6" );
+    asm volatile( "pop r5" );
+    asm volatile( "pop r4" );
+    asm volatile( "pop r3" );
+    asm volatile( "pop r2" );
 }
 
 
 // Restores the register set
 static void inline restoreInitialRegisters()
 {
-    asm volatile ("pop r31");
-    asm volatile ("pop r30");
-    asm volatile ("pop r29");
-    asm volatile ("pop r28");
-    asm volatile ("pop r27");
-    asm volatile ("pop r26");
-    asm volatile ("pop r25");
-    asm volatile ("pop r24");
-    asm volatile ("pop r23");
-    asm volatile ("pop r22");
-    asm volatile ("pop r21");
-    asm volatile ("pop r20");
-    asm volatile ("pop r19");
-    asm volatile ("pop r18");
-    asm volatile ("pop r1");
+    asm volatile( "pop r31" );
+    asm volatile( "pop r30" );
+    asm volatile( "pop r29" );
+    asm volatile( "pop r28" );
+    asm volatile( "pop r27" );
+    asm volatile( "pop r26" );
+    asm volatile( "pop r25" );
+    asm volatile( "pop r24" );
+    asm volatile( "pop r23" );
+    asm volatile( "pop r22" );
+    asm volatile( "pop r21" );
+    asm volatile( "pop r20" );
+    asm volatile( "pop r19" );
+    asm volatile( "pop r18" );
+    asm volatile( "pop r1" );
 #ifdef RAMPZ
-    asm volatile ("pop r0");
-    asm volatile ("out __RAMPZ__, r0");
+    asm volatile( "pop r0" );
+    asm volatile( "out __RAMPZ__, r0" );
 #endif
-    asm volatile ("pop r0");
-    asm volatile ("out __SREG__, r0");
+    asm volatile( "pop r0" );
+    asm volatile( "out __SREG__, r0" );
 
-    asm volatile ("pop r0");
+    asm volatile( "pop r0" );
 }
 
 
@@ -458,7 +458,7 @@ static void yield()
     // DND
     cli();
 
-    if (_currentThread) {
+    if ( _currentThread ) {
         // save current context for when we unblock
         saveInitialRegisters();
         saveExtendedRegisters();
@@ -471,7 +471,7 @@ static void yield()
         ACTIVE_LIST.remove( *_currentThread );
 
         // see if it wanted to sleep
-        if (_currentThread->_timeoutOffset) {
+        if ( _currentThread->_timeoutOffset ) {
             _timeoutList.insertByOffset( *_currentThread, _currentThread->_timeoutOffset );
         }
     }
@@ -488,17 +488,17 @@ static void yield()
 
 
 // Millisecond timer and timeout controller
-ISR(TIMER0_COMPA_vect)
+ISR( TIMER0_COMPA_vect )
 {
     _milliseconds++;
 
     // check sleepers
-    if (Thread* curSleeper = _timeoutList.getHead()) {
-        if (curSleeper->_timeoutOffset) {
+    if ( Thread* curSleeper = _timeoutList.getHead() ) {
+        if ( curSleeper->_timeoutOffset ) {
             curSleeper->_timeoutOffset--;
         }
-        
-        while (curSleeper && !curSleeper->_timeoutOffset) {
+
+        while ( curSleeper && !curSleeper->_timeoutOffset ) {
             _timeoutList.remove( *curSleeper );
             curSleeper->signal( SIG_TIMEOUT );
 
@@ -509,26 +509,26 @@ ISR(TIMER0_COMPA_vect)
 
 
 // Pre-emptive context switch
-ISR(TIMER0_COMPB_vect, ISR_NAKED)
+ISR( TIMER0_COMPB_vect, ISR_NAKED )
 {
     // save registers enough to do basic checking
     saveInitialRegisters();
 
     // let's figure out switching
-    if (_currentThread) {
+    if ( _currentThread ) {
         // only subtract time if there's time to subtract
-        if (_currentThread->_ticksRemaining) {
+        if ( _currentThread->_ticksRemaining ) {
             _currentThread->_ticksRemaining--;
         }
 
         // faux priorities - if we're not the head of the active list, then
         // a switch is required so that we run the current head instead
-        if (_switchingEnabled && _currentThread != ACTIVE_LIST.getHead()) {
+        if ( _switchingEnabled && _currentThread != ACTIVE_LIST.getHead() ) {
             _currentThread->_ticksRemaining = 0UL;
         }
 
         // if the Thread has more time to run, or switching is disabled, bail
-        if (_currentThread->_ticksRemaining || !_switchingEnabled) {
+        if ( _currentThread->_ticksRemaining || !_switchingEnabled ) {
             // strategic goto to save undue additional
             // expansion of inline restoreRegisters()
             goto exit;
@@ -542,7 +542,7 @@ ISR(TIMER0_COMPB_vect, ISR_NAKED)
         _currentThread->_lowSp = MIN( _currentThread->_lowSp, _currentThread->_sp );
 
         // send it to the expired list
-        if (_currentThread != _idleThread) {
+        if ( _currentThread != _idleThread ) {
             ACTIVE_LIST.remove( *_currentThread );
             EXPIRED_LIST.append( *_currentThread );
         }
@@ -552,7 +552,7 @@ ISR(TIMER0_COMPB_vect, ISR_NAKED)
     _currentThread = selectNextThread();
 
     // top up the Thread's quantum if it has none left
-    if (!_currentThread->_ticksRemaining) {
+    if ( !_currentThread->_ticksRemaining ) {
         _currentThread->_ticksRemaining = QUANTUM_TICKS;
     }
 
@@ -568,13 +568,13 @@ exit:
 
 
 // Attempts to allocate a specific signal number
-bool Thread::tryAllocateSignal(const uint16_t signalNumber)
+bool Thread::tryAllocateSignal( const uint16_t signalNumber )
 {
-    if (signalNumber >= SIGNAL_BITS) return false;
+    if ( signalNumber >= SIGNAL_BITS ) return false;
 
     const SignalField m = 1L << signalNumber;
 
-    if (!(_allocatedSignals & m)) {
+    if ( !( _allocatedSignals & m ) ) {
         _allocatedSignals |= m;
         return true;
     }
@@ -587,18 +587,18 @@ bool Thread::tryAllocateSignal(const uint16_t signalNumber)
 // If you supply a specific signal number, only that signal will be
 // allocated, and only if it is currently free. Supplying -1 here
 // will let the kernel find a free signal number for you.
-SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
+SignalField Thread::allocateSignal( const uint16_t reqdSignalNumber )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        if (reqdSignalNumber < SIGNAL_BITS) {
-            if (tryAllocateSignal( reqdSignalNumber )) {
+        if ( reqdSignalNumber < SIGNAL_BITS ) {
+            if ( tryAllocateSignal( reqdSignalNumber ) ) {
                 return 1L << reqdSignalNumber;
             }
         }
         else {
             // start checking after the reserved signals, for speed
-            for (auto i = RESERVED_SIGS; i < SIGNAL_BITS; i++) {
-                if (tryAllocateSignal( i )) {
+            for ( auto i = RESERVED_SIGS; i < SIGNAL_BITS; i++ ) {
+                if ( tryAllocateSignal( i ) ) {
                     return 1L << i;
                 }
             }
@@ -610,7 +610,7 @@ SignalField Thread::allocateSignal(const uint16_t reqdSignalNumber)
 
 
 // Frees a signal number and allows its re-use by the Thread
-void Thread::freeSignals(const SignalField signals)
+void Thread::freeSignals( const SignalField signals )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // can't free the reserved signals
@@ -643,23 +643,23 @@ SignalField Thread::getCurrentSignals() const
 
 
 // Clears a set of signals and returns the remaining ones
-SignalField Thread::clearSignals(const SignalField sigs)
+SignalField Thread::clearSignals( const SignalField sigs )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        return (_currentSignals &= ~sigs);
+        return ( _currentSignals &= ~sigs );
     }
 }
 
 
 // Waits for any of a set of signals, returning a SignalField
 // representing which of those signals woke the Thread up
-SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
+SignalField Thread::wait( const SignalField sigs, const uint32_t timeoutMs )
 {
     SignalField rc = 0;
 
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {    
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // A Thread can wait only on it's own signals.
-        if (_currentThread != this) {
+        if ( _currentThread != this ) {
             return 0;
         }
 
@@ -669,7 +669,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         // make sure the signal gets used if the Thread wants a timeout set
         _timeoutOffset = timeoutMs;
 
-        if (_timeoutOffset) {
+        if ( _timeoutOffset ) {
             _waitingSignals |= SIG_TIMEOUT;
         }
         else {
@@ -682,7 +682,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         _waitingSignals &= _allocatedSignals;
 
         // if we're not going to end up waiting on anything, bail
-        if (!_waitingSignals) {
+        if ( !_waitingSignals ) {
             return 0;
         }
 
@@ -690,7 +690,7 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
         rc = getActiveSignals();
 
         // if there aren't any, block to wait for them
-        if (!rc) {
+        if ( !rc ) {
             // this will block until at least one signal is
             // received that we are waiting for. Execution
             // will resume immediately following the yield()
@@ -716,23 +716,23 @@ SignalField Thread::wait(const SignalField sigs, const uint32_t timeoutMs)
 
 
 // Send signals to a Thread, potentially waking it up
-void Thread::signal(const SignalField sigs)
+void Thread::signal( const SignalField sigs )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         const bool alreadySignalled = getActiveSignals();
 
         // set the signals
-        _currentSignals |= (sigs & _allocatedSignals);
+        _currentSignals |= ( sigs & _allocatedSignals );
 
         // do we need to wake the Thread?
-        if (_currentThread != this &&                   // if we're not signalling ourselves and,
-            !alreadySignalled &&                        // this thread isn't already in the active list, and,
-            getActiveSignals())                         // it now has signals that would wake it up, ...
+        if ( _currentThread != this &&                  // if we're not signalling ourselves and,
+             !alreadySignalled &&                       // this thread isn't already in the active list, and,
+             getActiveSignals() )                       // it now has signals that would wake it up, ...
         {
             // ... then move it to the active list ready to run
 
             // if it's on the timeout list, take it off
-            if (_timeoutOffset) {
+            if ( _timeoutOffset ) {
                 this->_timeoutOffset = 0ULL;
                 _timeoutList.remove( *this );
             }
@@ -754,8 +754,8 @@ int main()
     // idleThreadEntry is the developer-supplied "do nothing" idle thread
     int idleThreadEntry();
 
-    // initialize the GPIO - make sure everything is tri-stated
     #ifdef ZERO_DRIVERS_GPIO
+        // initialize the GPIO - make sure everything is tri-stated
         Gpio::init();
     #endif
 

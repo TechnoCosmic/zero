@@ -18,19 +18,19 @@ namespace zero {
     // class decl because chicken/egg
     class Synapse;
 
-    typedef int (*ThreadEntry)();
+    typedef int ( *ThreadEntry )();
 
     typedef uint16_t SignalField;
     typedef uint16_t ThreadFlags;
 
     const ThreadFlags TF_NONE = 0;
-    const ThreadFlags TF_READY = (1L << 0);
+    const ThreadFlags TF_READY = ( 1L << 0 );
 
     // reserved signals
     const auto RESERVED_SIGS = 1;
-    const SignalField SIG_TIMEOUT = (1L << 0);
+    const SignalField SIG_TIMEOUT = ( 1L << 0 );
     const SignalField SIG_ALL_RESERVED = SIG_TIMEOUT;
-    
+
     // Thread class
     class Thread {
     public:
@@ -49,7 +49,7 @@ namespace zero {
             const ThreadEntry entry,                    // the Thread's entry function
             const ThreadFlags flags = TF_READY,         // Optional flags
             const Synapse* const termSyn = nullptr,     // Synapse to signal when Thread terminates
-            int* const exitCode = nullptr);             // Place to put Thread's return code
+            int* const exitCode = nullptr );            // Place to put Thread's return code
 
         // validity checking in the absence of exceptions
         explicit operator bool() const;
@@ -62,42 +62,44 @@ namespace zero {
         uint16_t getPeakStackUsage() const;
 
         // Signals Management
-        SignalField allocateSignal(const uint16_t reqdSignalNumber = -1);
-        void freeSignals(const SignalField signals);
+        SignalField allocateSignal( const uint16_t reqdSignalNumber = -1 );
+        void freeSignals( const SignalField signals );
 
         SignalField getCurrentSignals() const;
-        SignalField clearSignals(const SignalField sigs);
+        SignalField clearSignals( const SignalField sigs );
 
-        SignalField wait(const SignalField sigs, const uint32_t timeoutMs = 0ULL);
-        void signal(const SignalField sigs);
+        SignalField wait( const SignalField sigs, const uint32_t timeoutMs = 0ULL );
+        void signal( const SignalField sigs );
 
         // Don't touch! That means you! :)
         #include "thread_private.h"
     };
 
-}
+}    // namespace zero
 
 
 #define me Thread::getCurrent()
 
 
 // Funky little ATOMIC_BLOCK macro clones for context switching
-static __inline__ uint8_t __iForbidRetVal() {
+static __inline__ uint8_t __iForbidRetVal()
+{
     zero::Thread::forbid();
     return 1;
 }
 
 
-static __inline__ void __iZeroRestore(const uint8_t* const __tmr_save) {
-    if (*__tmr_save) {
+static __inline__ void __iZeroRestore( const uint8_t* const __tmr_save )
+{
+    if ( *__tmr_save ) {
         zero::Thread::permit();
     }
 }
 
 
-#define ZERO_ATOMIC_BLOCK(t)        for ( t, __ToDo = __iForbidRetVal(); __ToDo ; __ToDo = 0 )
+#define ZERO_ATOMIC_BLOCK( t )      for ( t, __ToDo = __iForbidRetVal(); __ToDo; __ToDo = 0 )
 #define ZERO_ATOMIC_FORCEON         uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t) 1)
-#define ZERO_ATOMIC_RESTORESTATE    uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t)(zero::Thread::isSwitchingEnabled())
+#define ZERO_ATOMIC_RESTORESTATE    uint8_t tmr_save __attribute__( ( __cleanup__( __iZeroRestore ) ) ) = ( uint8_t )( zero::Thread::isSwitchingEnabled() )
 
 
 #endif

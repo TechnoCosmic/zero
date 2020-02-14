@@ -17,31 +17,29 @@ namespace zero {
 
     class debug {
     public:
+        static void print( const char c );
+        static void print( const char* s, const bool fromFlash = false );
+        static void print( const uint16_t n, const int base = 10 );
 
-        // public
-        static void print(const char c);
-        static void print(const char* s, const bool fromFlash = false);
-        static void print(const uint16_t n, const int base = 10);
-
-        static void assert(const bool v, const char* const msg, const int lineNumber = 0);
+        static void assert( const bool v, const char* const msg, const int lineNumber = 0 );
 
         #include "debug_private.h"
     };
 
-}
+}    // namespace zero
 
 #ifdef DEBUG_ENABLED
-    #define dbg(x) zero::debug::print( x )
-    #define dbg_pgm(x) zero::debug::print( (char*)(PSTR( x )), true )
-    #define dbg_int(x) zero::debug::print( (x), 10 )
+    #define dbg( x ) zero::debug::print( x )
+    #define dbg_pgm( x ) zero::debug::print( (char*) ( PSTR( x ) ), true )
+    #define dbg_int( x ) zero::debug::print( ( x ), 10 )
 
-    #define dbg_assert(v, msg) zero::debug::assert( (v), PSTR( msg ), __LINE__);
+    #define dbg_assert( v, msg ) zero::debug::assert( ( v ), PSTR( msg ), __LINE__ );
 #else
-    #define dbg(x) ;
-    #define dbg_pgm(x) ;
-    #define dbg_int(x) ;
+    #define dbg( x ) ;
+    #define dbg_pgm( x ) ;
+    #define dbg_int( x ) ;
 
-    #define dbg_assert(v, msg) ;
+    #define dbg_assert( v, msg ) ;
 #endif
 
 

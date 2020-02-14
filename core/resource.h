@@ -32,12 +32,12 @@ namespace zero {
             Spi,
         };
 
-        bool obtain(const ResourceId r);
-        void release(const ResourceId r);
+        bool obtain( const ResourceId r );
+        void release( const ResourceId r );
 
-    };
+    };    // namespace resource
 
-}
+}    // namespace zero
 
 
 #endif

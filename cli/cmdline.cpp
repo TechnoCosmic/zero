@@ -20,10 +20,10 @@ using namespace zero;
 namespace {
     const auto BACKSPACE = 8;
     const auto ESCAPE = 27;
-}
+}    // namespace
 
 
-CommandLine::CommandLine(const uint16_t size)
+CommandLine::CommandLine( const uint16_t size )
 {
     _buffer = (char*) memory::allocate( size, &_bufferSize );
     clear();
@@ -36,19 +36,19 @@ CommandLine::~CommandLine()
 }
 
 
-bool CommandLine::registerKeyPress(const char c)
+bool CommandLine::registerKeyPress( const char c )
 {
-    if (c == ESCAPE) {
+    if ( c == ESCAPE ) {
         return false;
     }
-    else if (c == BACKSPACE) {
-        if (_cursor) {
+    else if ( c == BACKSPACE ) {
+        if ( _cursor ) {
             _buffer[ --_cursor ] = 0;
             return true;
         }
     }
     else {
-        if (_cursor < _bufferSize - 1) {
+        if ( _cursor < _bufferSize - 1 ) {
             _buffer[ _cursor++ ] = c;
             _buffer[ _cursor ] = 0;
             return true;
@@ -64,7 +64,7 @@ void CommandLine::process()
     char* argv[ 16 ];
     const uint8_t argc = tokenize( _buffer, argv );
 
-    if (argc) {
+    if ( argc ) {
         // dispatch here
     }
 }
@@ -84,33 +84,33 @@ CommandLine::operator bool() const
 }
 
 
-uint8_t CommandLine::tokenize(char* s, char* argv[])
+uint8_t CommandLine::tokenize( char* s, char* argv[] )
 {
     uint8_t tokenCount = 0;
     bool lastWasSeparator = true;
     bool inQuotes = false;
 
-    while (*s && tokenCount < 16) {
-        if (*s == '\"') {
+    while ( *s && tokenCount < 16 ) {
+        if ( *s == '\"' ) {
             inQuotes = !inQuotes;
             *s = 0;
             lastWasSeparator = true;
         }
         else {
-            if (inQuotes || !isspace( *s )) {
-                if (lastWasSeparator) {
+            if ( inQuotes || !isspace( *s ) ) {
+                if ( lastWasSeparator ) {
                     argv[ tokenCount++ ] = s;
                 }
 
                 lastWasSeparator = false;
             }
-            else if (isspace( *s )) {
+            else if ( isspace( *s ) ) {
                 *s = 0;
                 lastWasSeparator = true;
             }
         }
-        
-        if (tokenCount - 1 == 0) {
+
+        if ( tokenCount - 1 == 0 ) {
             *s = tolower( *s );
         }
 

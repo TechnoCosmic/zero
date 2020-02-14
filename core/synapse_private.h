@@ -7,8 +7,8 @@
 
 
 private:
-    Synapse(const Synapse& s) = delete;
-    void operator=(const Synapse& s) = delete;
+    Synapse( const Synapse& s ) = delete;
+    void operator=( const Synapse& s ) = delete;
 
     Thread* const _thread;
     const SignalField _signals;

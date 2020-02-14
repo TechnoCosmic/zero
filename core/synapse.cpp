@@ -24,7 +24,7 @@ Synapse::Synapse() :
 // dtor
 Synapse::~Synapse()
 {
-    if (_thread) {
+    if ( _thread ) {
         _thread->freeSignals( _signals );
     }
 }
@@ -47,7 +47,7 @@ Synapse::operator SignalField() const
 // Signal the thread
 void Synapse::signal() const
 {
-    if (*this) {
+    if ( *this ) {
         _thread->signal( _signals );
     }
 }
@@ -56,16 +56,16 @@ void Synapse::signal() const
 // Clears the signals
 void Synapse::clearSignals() const
 {
-    if (*this) {
+    if ( *this ) {
         _thread->clearSignals( _signals );
     }
 }
 
 
 // Waits for the signals to be set, blocking if necessary
-SignalField Synapse::wait(const uint32_t timeoutMs) const
+SignalField Synapse::wait( const uint32_t timeoutMs ) const
 {
-    if (*this && &me == _thread) {
+    if ( *this && &me == _thread ) {
         return me.wait( _signals, timeoutMs );
     }
     else {

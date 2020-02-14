@@ -28,7 +28,7 @@ namespace zero {
         // ctor
         Shell(
             const int usartNumber,
-            const uint32_t baud);
+            const uint32_t baud );
 
     private:
         int main();
@@ -44,6 +44,6 @@ namespace zero {
         CommandLine* _cmdLine;
     };
 
-}
+}    // namespace zero
 
 #endif

@@ -14,25 +14,25 @@
 #include "pagemanager.h"
 
 
-#define ALIGNED(x) __attribute__((__aligned__((x))))
+#define ALIGNED( x ) __attribute__( ( __aligned__( ( x ) ) ) )
 
 
 namespace zero {
 
-	namespace memory {
+    namespace memory {
 
-		// allocate a contiguous chunk of memory
-		void* allocate(
-			const uint16_t bytesReqd,
-			uint16_t* const allocatedBytes = nullptr,
-			const SearchStrategy strategy = memory::SearchStrategy::BottomUp);
+        // allocate a contiguous chunk of memory
+        void* allocate(
+            const uint16_t bytesReqd,
+            uint16_t* const allocatedBytes = nullptr,
+            const SearchStrategy strategy = memory::SearchStrategy::BottomUp );
 
-		// deallocate a contiguous chunk of memory
-		void free(const void* const address, const uint16_t numBytes);
+        // deallocate a contiguous chunk of memory
+        void free( const void* const address, const uint16_t numBytes );
 
-	}
+    }    // namespace memory
 
-}
+}    // namespace zero
 
 
 #endif

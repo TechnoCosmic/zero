@@ -12,5 +12,5 @@ public:
 private:
     debug() = delete;                                   // delete ctor
     ~debug() = delete;                                  // delete dtor
-    debug(const debug& d) = delete;                     // delete copy ctor
-    void operator=(const debug &d) = delete;            // delete assign op
+    debug( const debug& d ) = delete;                   // delete copy ctor
+    void operator=( const debug& d ) = delete;          // delete assign op

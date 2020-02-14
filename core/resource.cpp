@@ -18,12 +18,12 @@ namespace {
 }
 
 
-bool resource::obtain(const ResourceId id)
+bool resource::obtain( const ResourceId id )
 {
     const uint16_t m = 1L << (uint16_t) id;
 
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        if (!(_resourceMap & m)) {
+        if ( !( _resourceMap & m ) ) {
             _resourceMap |= m;
             return true;
         }
@@ -33,9 +33,9 @@ bool resource::obtain(const ResourceId id)
 }
 
 
-void resource::release(const ResourceId id)
+void resource::release( const ResourceId id )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        _resourceMap &= ~(1L << (uint16_t) id);
+        _resourceMap &= ~( 1L << (uint16_t) id );
     }
 }
