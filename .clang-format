@@ -65,6 +65,8 @@ ForEachMacros:
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH
+  - ATOMIC_BLOCK
+  - ZERO_ATOMIC_BLOCK
 IncludeBlocks:   Preserve
 IncludeCategories:
   - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
@@ -121,8 +123,6 @@ Standard:        Cpp11
 StatementMacros:
   - Q_UNUSED
   - QT_REQUIRE_VERSION
-  - ATOMIC_BLOCK
-  - ZERO_ATOMIC_BLOCK
 TabWidth:        4
 UseTab:          Never
 ...
