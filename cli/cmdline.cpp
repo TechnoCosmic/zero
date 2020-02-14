@@ -43,14 +43,14 @@ bool CommandLine::registerKeyPress(const char c)
     }
     else if (c == BACKSPACE) {
         if (_cursor) {
-            _buffer[--_cursor] = 0;
+            _buffer[ --_cursor ] = 0;
             return true;
         }
     }
     else {
         if (_cursor < _bufferSize - 1) {
-            _buffer[_cursor++] = c;
-            _buffer[_cursor] = 0;
+            _buffer[ _cursor++ ] = c;
+            _buffer[ _cursor ] = 0;
             return true;
         }
     }
@@ -61,7 +61,7 @@ bool CommandLine::registerKeyPress(const char c)
 
 void CommandLine::process()
 {
-    char* argv[16];
+    char* argv[ 16 ];
     const uint8_t argc = tokenize( _buffer, argv );
 
     if (argc) {
@@ -73,7 +73,7 @@ void CommandLine::process()
 void CommandLine::clear()
 {
     _cursor = 0;
-    _buffer[0] = 0;
+    _buffer[ 0 ] = 0;
 }
 
 
@@ -99,7 +99,7 @@ uint8_t CommandLine::tokenize(char* s, char* argv[])
         else {
             if (inQuotes || !isspace( *s )) {
                 if (lastWasSeparator) {
-                    argv[tokenCount++] = s;
+                    argv[ tokenCount++ ] = s;
                 }
 
                 lastWasSeparator = false;

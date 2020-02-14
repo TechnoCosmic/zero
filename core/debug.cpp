@@ -101,7 +101,7 @@ void debug::print(const char* s, const bool fromFlash)
 void debug::print(const uint16_t n, const int base)
 {
     #ifdef DEBUG_ENABLED
-        char buffer[18];
+        char buffer[ 18 ];
         debug::print( itoa( n, buffer, base ) );
     #endif
 }

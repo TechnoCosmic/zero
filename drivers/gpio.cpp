@@ -83,25 +83,25 @@ void Gpio::init()
     #ifdef DDRA
         DDRA = 0;
         PORTA = 0;
-        _lastKnownInputs[0] = PINA;
+        _lastKnownInputs[ 0 ] = PINA;
     #endif
 
     #ifdef DDRB
         DDRB = 0;
         PORTB = 0;
-        _lastKnownInputs[1] = PINB;
+        _lastKnownInputs[ 1 ] = PINB;
     #endif
 
     #ifdef DDRC
         DDRC = 0;
         PORTC = 0;
-        _lastKnownInputs[2] = PINC;
+        _lastKnownInputs[ 2 ] = PINC;
     #endif
 
     #ifdef DDRD
         DDRD = 0;
         PORTD = 0;
-        _lastKnownInputs[3] = PIND;
+        _lastKnownInputs[ 3 ] = PIND;
     #endif
 }
 
@@ -564,10 +564,10 @@ PinField Gpio::gatherAllInputPins()
 void Gpio::handlePinChange(const int portNumber, const uint8_t newValue)
 {
     // figure out which pins actually changed
-    const PinField changedInPort = newValue ^ _lastKnownInputs[portNumber];
+    const PinField changedInPort = newValue ^ _lastKnownInputs[ portNumber ];
     const PinField changedField = changedInPort << (portNumber << 3);
 
-    _lastKnownInputs[portNumber] = newValue;
+    _lastKnownInputs[ portNumber ] = newValue;
 
     // find out who we need to notify
     Gpio* cur = _gpioList.getHead();

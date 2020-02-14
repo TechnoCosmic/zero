@@ -83,7 +83,7 @@ bool Pipe::read(uint8_t& data)
 
         // select the byte and invoke the filter
         bool doIt = true;
-        uint8_t dataToRead = _buffer[_startIndex];
+        uint8_t dataToRead = _buffer[ _startIndex ];
 
         if (_readFilter) {
             doIt = _readFilter( dataToRead );
@@ -137,7 +137,7 @@ bool Pipe::write(const uint8_t data)
         }
 
         if (doIt) {
-            _buffer[index] = dataToWrite;
+            _buffer[ index ] = dataToWrite;
             _length++;
 
             if (_dataAvailSyn) {

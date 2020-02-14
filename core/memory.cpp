@@ -21,7 +21,7 @@ using namespace zero::memory;
 namespace {
     
     // The SRAM that the dynamic allocator can hand out to callers
-    uint8_t ALIGNED(64) _memoryArea[DYNAMIC_BYTES];
+    uint8_t ALIGNED(64) _memoryArea[ DYNAMIC_BYTES ];
 
     // The bit mapped page manager
     PageManager<SRAM_PAGES> _sram;

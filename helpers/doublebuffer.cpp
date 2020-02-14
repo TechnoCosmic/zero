@@ -44,7 +44,7 @@ bool DoubleBuffer::write(const uint8_t d)
     cli();
     
     if (_usedBytes < _pivot) {
-        _buffer[_writeOffset + _usedBytes] = d;
+        _buffer[ _writeOffset + _usedBytes ] = d;
         _usedBytes++;
 
         rc = true;
@@ -73,7 +73,7 @@ uint8_t* DoubleBuffer::getCurrentBuffer(uint16_t& numBytes)
 
     // return the current half of the buffer
     if (numBytes) {
-        rc = &_buffer[_writeOffset];
+        rc = &_buffer[ _writeOffset ];
     }
 
     // swap to the other half

@@ -13,4 +13,4 @@ public:
         const memory::SearchStrategy strat) const;
 
 private:
-    uint8_t _memoryMap[ROUND_UP(PAGE_COUNT, 8) / 8];
+    uint8_t _memoryMap[ ROUND_UP(PAGE_COUNT, 8) / 8 ];

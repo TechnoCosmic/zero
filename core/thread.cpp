@@ -37,8 +37,8 @@ using namespace zero;
 #define EXPIRED_LIST_NUM    (_activeListNum ^ 1)
 #define SWAP_LISTS          _activeListNum ^= 1;
 
-#define ACTIVE_LIST         _readyLists[ACTIVE_LIST_NUM]
-#define EXPIRED_LIST        _readyLists[EXPIRED_LIST_NUM]
+#define ACTIVE_LIST         _readyLists[ ACTIVE_LIST_NUM ]
+#define EXPIRED_LIST        _readyLists[ EXPIRED_LIST_NUM ]
 
 
 // main() is naked because we don't care for the setup upon
@@ -57,7 +57,7 @@ static void INLINE restoreInitialRegisters();
 
 namespace {
     // globals
-    List<Thread> _readyLists[2];                        // the threads that will run
+    List<Thread> _readyLists[ 2 ];                      // the threads that will run
     OffsetList<Thread> _timeoutList;                    // the list of Threads wanting to sleep for a time
     Thread* _currentThread = nullptr;                   // the currently executing thread
     Thread* _idleThread = nullptr;                      // to run when there's nothing else to do, and only then
@@ -255,42 +255,42 @@ Thread::Thread(
 
     // clear the stack
     for (auto i = (uint16_t) _stackBottom; i <= stackTop; i++) {
-        SRAM[i] = 0;
+        SRAM[ i ] = 0;
     }
     
     // 'push' the program counter onto the stack
-    SRAM[stackTop - 0] = (((uint32_t) globalThreadEntry) >>  0) & 0xFF;
-    SRAM[stackTop - 1] = (((uint32_t) globalThreadEntry) >>  8) & 0xFF;
+    SRAM[ stackTop - 0 ] = (((uint32_t) globalThreadEntry) >>  0) & 0xFF;
+    SRAM[ stackTop - 1 ] = (((uint32_t) globalThreadEntry) >>  8) & 0xFF;
 
 #if PC_COUNT >= 3
-    SRAM[stackTop - 2] = (((uint32_t) globalThreadEntry) >> 16) & 0xFF;
+    SRAM[ stackTop - 2 ] = (((uint32_t) globalThreadEntry) >> 16) & 0xFF;
 #endif
 
 #if PC_COUNT >= 4
-    SRAM[stackTop - 3] = (((uint32_t) globalThreadEntry) >> 24) & 0xFF;
+    SRAM[ stackTop - 3 ] = (((uint32_t) globalThreadEntry) >> 24) & 0xFF;
 #endif
 
     // set the Thread object into parameter 0 (first parameter)
-    SRAM[newStackTop + getOffsetForParameter(0) - 0] = (((uint16_t) this) >> 0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(0) - 1] = (((uint16_t) this) >> 8) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(0) - 0 ] = (((uint16_t) this) >> 0) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(0) - 1 ] = (((uint16_t) this) >> 8) & 0xFF;
 
     // set the real entry point into parameters 2/1 - this will be called by globalThreadEntry()
-    SRAM[newStackTop + getOffsetForParameter(2) - 0] = (((uint32_t) entry) >>  0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(2) - 1] = (((uint32_t) entry) >>  8) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(1) - 0] = (((uint32_t) entry) >> 16) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(1) - 1] = (((uint32_t) entry) >> 24) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(2) - 0 ] = (((uint32_t) entry) >>  0) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(2) - 1 ] = (((uint32_t) entry) >>  8) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(1) - 0 ] = (((uint32_t) entry) >> 16) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(1) - 1 ] = (((uint32_t) entry) >> 24) & 0xFF;
 
     // set the flags
-    SRAM[newStackTop + getOffsetForParameter(3) - 0] = (((uint16_t) flags) >> 0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(3) - 1] = (((uint16_t) flags) >> 8) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(3) - 0 ] = (((uint16_t) flags) >> 0) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(3) - 1 ] = (((uint16_t) flags) >> 8) & 0xFF;
 
     // Termination Synapse
-    SRAM[newStackTop + getOffsetForParameter(4) - 0] = (((uint16_t) termSyn) >> 0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(4) - 1] = (((uint16_t) termSyn) >> 8) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(4) - 0 ] = (((uint16_t) termSyn) >> 0) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(4) - 1 ] = (((uint16_t) termSyn) >> 8) & 0xFF;
 
     // set the place for the exit code
-    SRAM[newStackTop + getOffsetForParameter(5) - 0] = (((uint16_t) exitCode) >> 0) & 0xFF;
-    SRAM[newStackTop + getOffsetForParameter(5) - 1] = (((uint16_t) exitCode) >> 8) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(5) - 0 ] = (((uint16_t) exitCode) >> 0) & 0xFF;
+    SRAM[ newStackTop + getOffsetForParameter(5) - 1 ] = (((uint16_t) exitCode) >> 8) & 0xFF;
 
     // The prepared stack has all the registers + SREG + RAMPZ 'pushed'
     // onto it (zeroed out). This new stack top represents that.

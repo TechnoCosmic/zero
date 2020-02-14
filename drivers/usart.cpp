@@ -78,8 +78,8 @@ volatile uint8_t* _UDR_base = &UDR0;
 
 
 namespace {
-    UsartTx* _usartTx[NUM_DEVICES];
-    UsartRx* _usartRx[NUM_DEVICES];
+    UsartTx* _usartTx[ NUM_DEVICES ];
+    UsartRx* _usartRx[ NUM_DEVICES ];
 }
 
 
@@ -92,7 +92,7 @@ UsartTx::UsartTx(const uint8_t deviceNum)
 
         if (resource::obtain( resId )) {
             _deviceNum = deviceNum;
-            _usartTx[deviceNum] = this;
+            _usartTx[ deviceNum ] = this;
         }
     }
 }
@@ -101,9 +101,9 @@ UsartTx::UsartTx(const uint8_t deviceNum)
 // dtor
 UsartTx::~UsartTx()
 {
-    if (_usartTx[_deviceNum] == this) {
+    if (_usartTx[ _deviceNum ] == this) {
         disable();
-        _usartTx[_deviceNum] = nullptr;
+        _usartTx[ _deviceNum ] = nullptr;
 
         // free the resource
         auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartTx0 + _deviceNum);
@@ -115,7 +115,7 @@ UsartTx::~UsartTx()
 // validity checking
 UsartTx::operator bool() const
 {
-    return (_usartTx[_deviceNum] == this);
+    return (_usartTx[ _deviceNum ] == this);
 }
 
 
@@ -229,7 +229,7 @@ UsartRx::UsartRx(const uint8_t deviceNum)
 
         if (resource::obtain( resId )) {
             _deviceNum = deviceNum;
-            _usartRx[deviceNum] = this;
+            _usartRx[ deviceNum ] = this;
         }
     }
 }
@@ -237,9 +237,9 @@ UsartRx::UsartRx(const uint8_t deviceNum)
 
 UsartRx::~UsartRx()
 {
-    if (_usartRx[_deviceNum] == this) {
+    if (_usartRx[ _deviceNum ] == this) {
         disable();
-        _usartRx[_deviceNum] = nullptr;
+        _usartRx[ _deviceNum ] = nullptr;
 
         // free the resource
         auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartRx0 + _deviceNum);
@@ -251,7 +251,7 @@ UsartRx::~UsartRx()
 // validity checking
 UsartRx::operator bool() const
 {
-    return (_usartRx[_deviceNum] == this);
+    return (_usartRx[ _deviceNum ] == this);
 }
 
 
@@ -336,7 +336,7 @@ void UsartRx::flush()
     ISR(USART_TX_vect)
     {
         // last byte complete
-        _usartTx[0]->byteTxComplete();
+        _usartTx[ 0 ]->byteTxComplete();
     }
 
 
@@ -345,7 +345,7 @@ void UsartRx::flush()
         // need more data
         uint8_t nextByte;
 
-        if (!_usartTx[0]->getNextTxByte( nextByte )) {
+        if (!_usartTx[ 0 ]->getNextTxByte( nextByte )) {
             UCSR0B &= ~(1 << UDRIE0);
         }
         else {
@@ -359,14 +359,14 @@ void UsartRx::flush()
         register volatile uint8_t newByte = UDR0;
 
         // received data
-        if (_usartRx[0]->_rxBuffer->write( newByte )) {
-            if (_usartRx[0]->_rxDataReceivedSyn) {
-                _usartRx[0]->_rxDataReceivedSyn->signal();
+        if (_usartRx[ 0 ]->_rxBuffer->write( newByte )) {
+            if (_usartRx[ 0 ]->_rxDataReceivedSyn) {
+                _usartRx[ 0 ]->_rxDataReceivedSyn->signal();
             }
         }
         else {
-            if (_usartRx[0]->_rxOverflowSyn) {
-                _usartRx[0]->_rxOverflowSyn->signal();
+            if (_usartRx[ 0 ]->_rxOverflowSyn) {
+                _usartRx[ 0 ]->_rxOverflowSyn->signal();
             }
         }
     }
@@ -379,7 +379,7 @@ void UsartRx::flush()
     ISR(USART1_TX_vect)
     {
         // last byte complete
-        _usartTx[1]->byteTxComplete();
+        _usartTx[ 1 ]->byteTxComplete();
     }
 
 
@@ -388,7 +388,7 @@ void UsartRx::flush()
         // need more data
         uint8_t nextByte;
 
-        if (!_usartTx[1]->getNextTxByte( nextByte )) {
+        if (!_usartTx[ 1 ]->getNextTxByte( nextByte )) {
             UCSR1B &= ~(1 << UDRIE1);
         }
         else {
@@ -402,14 +402,14 @@ void UsartRx::flush()
         register volatile uint8_t newByte = UDR1;
 
         // received data
-        if (_usartRx[1]->_rxBuffer->write( newByte )) {
-            if (_usartRx[1]->_rxDataReceivedSyn) {
-                _usartRx[1]->_rxDataReceivedSyn->signal();
+        if (_usartRx[ 1 ]->_rxBuffer->write( newByte )) {
+            if (_usartRx[ 1 ]->_rxDataReceivedSyn) {
+                _usartRx[ 1 ]->_rxDataReceivedSyn->signal();
             }
         }
         else {
-            if (_usartRx[1]->_rxOverflowSyn) {
-                _usartRx[1]->_rxOverflowSyn->signal();
+            if (_usartRx[ 1 ]->_rxOverflowSyn) {
+                _usartRx[ 1 ]->_rxOverflowSyn->signal();
             }
         }
     }
@@ -422,7 +422,7 @@ void UsartRx::flush()
     ISR(USART2_TX_vect)
     {
         // last byte complete
-        _usartTx[2]->byteTxComplete();
+        _usartTx[ 2 ]->byteTxComplete();
     }
 
 
@@ -431,7 +431,7 @@ void UsartRx::flush()
         // need more data
         uint8_t nextByte;
 
-        if (!_usartTx[2]->getNextTxByte( nextByte )) {
+        if (!_usartTx[ 2 ]->getNextTxByte( nextByte )) {
             UCSR2B &= ~(1 << UDRIE2);
         }
         else {
@@ -445,14 +445,14 @@ void UsartRx::flush()
         register volatile uint8_t newByte = UDR2;
 
         // received data
-        if (_usartRx[2]->_rxBuffer->write( newByte )) {
-            if (_usartRx[2]->_rxDataReceivedSyn) {
-                _usartRx[2]->_rxDataReceivedSyn->signal();
+        if (_usartRx[ 2 ]->_rxBuffer->write( newByte )) {
+            if (_usartRx[ 2 ]->_rxDataReceivedSyn) {
+                _usartRx[ 2 ]->_rxDataReceivedSyn->signal();
             }
         }
         else {
-            if (_usartRx[2]->_rxOverflowSyn) {
-                _usartRx[2]->_rxOverflowSyn->signal();
+            if (_usartRx[ 2 ]->_rxOverflowSyn) {
+                _usartRx[ 2 ]->_rxOverflowSyn->signal();
             }
         }
     }
@@ -465,7 +465,7 @@ void UsartRx::flush()
     ISR(USART3_TX_vect)
     {
         // last byte complete
-        _usartTx[3]->byteTxComplete();
+        _usartTx[ 3 ]->byteTxComplete();
     }
 
 
@@ -474,7 +474,7 @@ void UsartRx::flush()
         // need more data
         uint8_t nextByte;
 
-        if (!_usartTx[3]->getNextTxByte( nextByte )) {
+        if (!_usartTx[ 3 ]->getNextTxByte( nextByte )) {
             UCSR3B &= ~(1 << UDRIE3);
         }
         else {
@@ -488,14 +488,14 @@ void UsartRx::flush()
         register volatile uint8_t newByte = UDR3;
 
         // received data
-        if (_usartRx[3]->_rxBuffer->write( newByte )) {
-            if (_usartRx[3]->_rxDataReceivedSyn) {
-                _usartRx[3]->_rxDataReceivedSyn->signal();
+        if (_usartRx[ 3 ]->_rxBuffer->write( newByte )) {
+            if (_usartRx[ 3 ]->_rxDataReceivedSyn) {
+                _usartRx[ 3 ]->_rxDataReceivedSyn->signal();
             }
         }
         else {
-            if (_usartRx[3]->_rxOverflowSyn) {
-                _usartRx[3]->_rxOverflowSyn->signal();
+            if (_usartRx[ 3 ]->_rxOverflowSyn) {
+                _usartRx[ 3 ]->_rxOverflowSyn->signal();
             }
         }
     }

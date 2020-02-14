@@ -80,7 +80,7 @@ void Shell::handleKeyboard()
 
     while (auto buffer = _rx->getCurrentBuffer( numBytes )) {
         for (uint16_t i = 0; i < numBytes; i++) {
-            switch (auto curChar = buffer[i]) {
+            switch (auto curChar = buffer[ i ]) {
                 case '\r':
                     _cmdLine->process();
                     _cmdLine->clear();
