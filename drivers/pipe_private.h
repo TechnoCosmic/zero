@@ -7,8 +7,8 @@
 
 
 private:
-    Pipe(const Pipe& p) = delete;
-    void operator=(const Pipe& p) = delete;
+    Pipe( const Pipe& p ) = delete;
+    void operator=( const Pipe& p ) = delete;
 
     uint8_t* _buffer = nullptr;
     uint16_t _bufferSize = 0UL;

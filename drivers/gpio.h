@@ -33,7 +33,7 @@ namespace zero {
         return ( (uint32_t) port << 3 ) | ( (uint32_t) pin & 7 );
     }
 
-
+    // clang-format off
     #ifdef PORTD
         const PinField ZERO_PIND0 = ( 1L << pinPort( 3, 0 ) );
         const PinField ZERO_PIND1 = ( 1L << pinPort( 3, 1 ) );
@@ -93,7 +93,7 @@ namespace zero {
             #define ZERO_HIGH_PORT 0
         #endif
     #endif
-
+    // clang-format on
 
     const int ZERO_NUM_PORTS = ZERO_HIGH_PORT + 1;
 

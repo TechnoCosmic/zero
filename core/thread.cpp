@@ -117,8 +117,7 @@ namespace {
 
     uint16_t getNewThreadId()
     {
-        ATOMIC_BLOCK( ATOMIC_RESTORESTATE )
-        {
+        ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
             return _nextId++;
         }
     }

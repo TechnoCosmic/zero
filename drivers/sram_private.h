@@ -14,12 +14,12 @@ public:
     void deselect() const;
 
 private:
-    SpiMemory(const SpiMemory& m) = delete;
-    void operator=(const SpiMemory& m) = delete;
+    SpiMemory( const SpiMemory& m ) = delete;
+    void operator=( const SpiMemory& m ) = delete;
 
-    void sendAddress(const uint32_t addr) const;
-    void sendReadCommand(const uint32_t addr) const;
-    void sendWriteCommand(const uint32_t addr) const;
+    void sendAddress( const uint32_t addr ) const;
+    void sendReadCommand( const uint32_t addr ) const;
+    void sendWriteCommand( const uint32_t addr ) const;
 
     const uint32_t _capacityBytes = 0ULL;
     const Gpio* _chipSelectPin = nullptr;

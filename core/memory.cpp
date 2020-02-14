@@ -63,8 +63,7 @@ void* memory::allocate(
     }
 
     // critical section - one Thread allocating at a time, thank you
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE )
-    {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         const uint16_t numPages = getNumPagesForBytes( bytesReqd );
         const int16_t startPage = _sram.findFreePages( numPages, strategy );
 
@@ -103,8 +102,7 @@ void memory::free( const void* const address, const uint16_t numBytes )
     const uint16_t numPages = getNumPagesForBytes( numBytes );
     const uint16_t startPage = getPageForAddress( (uint16_t) address );
 
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE )
-    {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         // run from the first page to the last, ensuring the bitmap says 'free'
         for ( uint16_t curPage = startPage;
             curPage < startPage + numPages;

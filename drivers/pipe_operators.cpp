@@ -12,14 +12,14 @@
 #include "pipe.h"
 
 
-zero::Pipe& operator<<(zero::Pipe& out, const char c)
+zero::Pipe& operator<<( zero::Pipe& out, const char c )
 {
     out.write( c );
     return out;
 }
 
 
-zero::Pipe& operator<<(zero::Pipe& out, const char* s)
+zero::Pipe& operator<<( zero::Pipe& out, const char* s )
 {
     while ( *s ) {
         out.write( *s++ );

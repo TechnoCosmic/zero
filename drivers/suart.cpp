@@ -35,7 +35,7 @@ namespace {
 // ctor
 SuartTx::SuartTx()
 {
-    if (resource::obtain( resource::ResourceId::Timer2 )) {
+    if ( resource::obtain( resource::ResourceId::Timer2 ) ) {
         _suartTx = this;
     }
 }
@@ -44,7 +44,7 @@ SuartTx::SuartTx()
 // dtor
 SuartTx::~SuartTx()
 {
-    if (*this) {
+    if ( *this ) {
         disable();
         _suartTx = nullptr;
         resource::release( resource::ResourceId::Timer2 );
@@ -55,28 +55,28 @@ SuartTx::~SuartTx()
 // validity checking
 SuartTx::operator bool() const
 {
-    return (_suartTx == this);
+    return ( _suartTx == this );
 }
 
 
 // starts the periodic bit-timer for transmission
 void SuartTx::startTxTimer() const
 {
-    const uint16_t scaledMs = (F_CPU / (16UL * _baud)) - 1;
+    const uint16_t scaledMs = ( F_CPU / ( 16UL * _baud ) ) - 1;
 
     TCCR2B = 0;                                         // make sure timer is stopped
     TCNT2 = 0;                                          // reset the counter
-    TCCR2A = (1 << WGM21);                              // CTC
-    OCR2A = (scaledMs / 2) - 1;                         // scaled for F_CPU
-    TIMSK2 |= (1 << OCIE2A);                            // enable Timer2 ISR
-    TCCR2B = ((1 << CS21) | (1 << CS20));               // start Timer2 with pre-scaler 32
+    TCCR2A = ( 1 << WGM21 );                            // CTC
+    OCR2A = ( scaledMs / 2 ) - 1;                       // scaled for F_CPU
+    TIMSK2 |= ( 1 << OCIE2A );                          // enable Timer2 ISR
+    TCCR2B = ( ( 1 << CS21 ) | ( 1 << CS20 ) );         // start Timer2 with pre-scaler 32
 }
 
 
 // stops the bit-timer
 void SuartTx::stopTxTimer() const
 {
-    TIMSK2 &= ~(1 << OCIE2A);                           // disable Timer ISR
+    TIMSK2 &= ~( 1 << OCIE2A );                         // disable Timer ISR
     TCCR2B = 0;                                         // make sure timer is stopped
     TCNT2 = 0;                                          // reset the counter
 }
@@ -85,7 +85,7 @@ void SuartTx::stopTxTimer() const
 // Sets the communications parameters for the software transmitter
 void SuartTx::setCommsParams(
     const uint32_t baud,                                // the speed of the communications
-    Gpio& pin)                                          // the Gpio object to use for the TX line
+    Gpio& pin )                                         // the Gpio object to use for the TX line
 {
     ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         disable();
@@ -97,19 +97,19 @@ void SuartTx::setCommsParams(
 
 
 // Enables the software transmitter
-bool SuartTx::enable(Synapse& txReadySyn)
+bool SuartTx::enable( Synapse& txReadySyn )
 {
-    if (!txReadySyn) return false;
+    if ( !txReadySyn ) return false;
 
     ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         _gpio->setAsOutput();
         _gpio->switchOn();
 
-        power_timer2_enable();                          // power the Timer
+        power_timer2_enable();    // power the Timer
 
         _txReadySyn = &txReadySyn;
         _txReadySyn->signal();
-        
+
         return true;
     }
 }
@@ -120,13 +120,13 @@ void SuartTx::disable()
 {
     ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         stopTxTimer();
-        power_timer2_disable();                         // depower the Timer
+        power_timer2_disable();    // depower the Timer
 
-        if (_gpio) {
+        if ( _gpio ) {
             _gpio->reset();
         }
 
-        if (_txReadySyn) {
+        if ( _txReadySyn ) {
             _txReadySyn->clearSignals();
             _txReadySyn = nullptr;
         }
@@ -138,18 +138,18 @@ void SuartTx::disable()
 bool SuartTx::transmit(
     const void* buffer,
     const uint16_t sz,
-    const bool allowBlock)
+    const bool allowBlock )
 {
-    if (allowBlock && _txReadySyn) {
+    if ( allowBlock && _txReadySyn ) {
         _txReadySyn->wait();
     }
- 
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        if (_txBuffer) return false;
-        if (!buffer) return false;
-        if (!sz) return false;
 
-        if (_txReadySyn) {
+    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
+        if ( _txBuffer ) return false;
+        if ( !buffer ) return false;
+        if ( !sz ) return false;
+
+        if ( _txReadySyn ) {
             _txReadySyn->clearSignals();
         }
 
@@ -166,13 +166,13 @@ bool SuartTx::transmit(
 
 
 // Gets the next byte from the transmission buffer, if there is one
-bool SuartTx::getNextTxByte(uint8_t& data)
+bool SuartTx::getNextTxByte( uint8_t& data )
 {
     bool rc = false;
 
     data = 0;
 
-    if (_txBytesRemaining) {
+    if ( _txBytesRemaining ) {
         data = *_txBuffer++;
         _txBytesRemaining--;
 
@@ -186,7 +186,7 @@ bool SuartTx::getNextTxByte(uint8_t& data)
 void SuartTx::onTick()
 {
     // just in time fetch of data to send
-    if (!_txReg) {
+    if ( !_txReg ) {
         // Switch off transmission, even if there are more bytes. We will reset and
         // restart the timer if we need to transmit more data. This improves transmission
         // accuracy when the MCU is experiencing a lot of task switching and ISRs are
@@ -197,27 +197,27 @@ void SuartTx::onTick()
         // the next byte to send is fetched by reference
         uint8_t nextByte;
 
-        if (!getNextTxByte( nextByte )) {
+        if ( !getNextTxByte( nextByte ) ) {
             // no more data to send? tidy up, and signal readiness to go again
             _txBuffer = nullptr;
 
-            if (_txReadySyn) {
+            if ( _txReadySyn ) {
                 _txReadySyn->signal();
             }
         }
         else {
             // load next byte
             _txReg = nextByte << 1;
-            _txReg &= ~(1L << 0);                       // force start bit low
-            _txReg |= (1L << 9);                        // stop bit high (so it ends high)
+            _txReg &= ~( 1L << 0 );                     // force start bit low
+            _txReg |= ( 1L << 9 );                      // stop bit high (so it ends high)
 
             startTxTimer();
         }
     }
 
-    if (_txReg) {
+    if ( _txReg ) {
         // we're mid-byte, keep pumping out the bits
-        if (_txReg & 1) {
+        if ( _txReg & 1 ) {
             _gpio->switchOn();
         }
         else {
@@ -230,9 +230,9 @@ void SuartTx::onTick()
 
 
 // Timer tick ISR for the bit-clock
-ISR(TIMER2_COMPA_vect)
+ISR( TIMER2_COMPA_vect )
 {
-    if (_suartTx) {
+    if ( _suartTx ) {
         _suartTx->onTick();
     }
 }

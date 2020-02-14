@@ -29,22 +29,22 @@ namespace zero {
 
         void setCommsParams(
             const uint32_t baud,                        // the speed of the communications
-            Gpio& pin);                                 // Gpio object to use for the TX line
+            Gpio& pin );                                // Gpio object to use for the TX line
 
-        bool enable(Synapse& txReadySyn);
+        bool enable( Synapse& txReadySyn );
         void disable();
-        
+
         bool transmit(
             const void* buffer,
             const uint16_t sz,
-            const bool allowBlock = false);
+            const bool allowBlock = false );
 
         explicit operator bool() const;
 
         #include "suart_private.h"
     };
 
-}
+}    // namespace zero
 
 
 #endif

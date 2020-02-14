@@ -20,11 +20,11 @@
 
 namespace zero {
 
-    typedef bool (*PipeFilter)(uint8_t& data);
+    typedef bool ( *PipeFilter )( uint8_t& data );
 
     class Pipe {
     public:
-        Pipe(const uint16_t size);
+        Pipe( const uint16_t size );
         ~Pipe();
 
         explicit operator bool() const;
@@ -32,26 +32,24 @@ namespace zero {
         bool isEmpty() const;
         bool isFull() const;
 
-        bool read(uint8_t& data);
-        bool write(const uint8_t data);
+        bool read( uint8_t& data );
+        bool write( const uint8_t data );
         void flush();
 
-        void setReadFilter(PipeFilter p);
-        void setWriteFilter(PipeFilter p);
+        void setReadFilter( PipeFilter p );
+        void setWriteFilter( PipeFilter p );
 
-        void setRoomAvailSynapse(Synapse& s);
-        void setDataAvailSynapse(Synapse& s);
+        void setRoomAvailSynapse( Synapse& s );
+        void setDataAvailSynapse( Synapse& s );
 
         #include "pipe_private.h"
     };
 
+}    // namespace zero
 
-}
 
-
-zero::Pipe& operator<<(zero::Pipe& out, const char c);
-zero::Pipe& operator<<(zero::Pipe& out, const char* s);
-
+zero::Pipe& operator<<( zero::Pipe& out, const char c );
+zero::Pipe& operator<<( zero::Pipe& out, const char* s );
 
 
 #endif
