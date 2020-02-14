@@ -14,5 +14,5 @@ public:
 private:
     uint8_t _deviceNum = 0;
 
-    UsartRx(const UsartRx& u) = delete;
-    void operator=(const UsartRx& u) = delete;
+    UsartRx( const UsartRx& u ) = delete;
+    void operator=( const UsartRx& u ) = delete;

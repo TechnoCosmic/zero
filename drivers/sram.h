@@ -28,25 +28,25 @@ namespace zero {
         SpiMemory(
             const uint32_t capacityBytes,               // how many bytes does the chip hold?
             const Gpio& chipSelect,                     // Gpio object for the CS line
-            const Synapse& readySyn);                   // Synapse to fire when ready to transfer
+            const Synapse& readySyn );                  // Synapse to fire when ready to transfer
 
         void read(
             void* dest,                                 // destination address, in local SRAM
             const uint32_t srcAddr,                     // source address for the data, in external SPI memory
-            const uint32_t numBytes);                   // number of bytes to read
+            const uint32_t numBytes );                  // number of bytes to read
 
         void write(
             const void* src,                            // source data address, in local SRAM
             const uint32_t destAddress,                 // destination address, in external SPI memory
-            const uint32_t numBytes);                   // number of the bytes to write
+            const uint32_t numBytes );                  // number of the bytes to write
 
         explicit operator bool() const;
-        
+
         #include "sram_private.h"
     };
 
 
-}
+}    // namespace zero
 
 
 #endif

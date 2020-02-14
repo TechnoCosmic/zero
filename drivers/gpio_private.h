@@ -7,12 +7,12 @@
 
 
 public:
-    // meta
+// meta
     static void init();
 
     static void handlePinChange(
         const int portNumber,                           // 0 = PINA, 1 = PINB etc
-        const uint8_t v);                               // the current value of PINx
+        const uint8_t v );                              // the current value of PINx
 
     // lifecycle
     ~Gpio();                                            // frees the pins for re-use
@@ -21,16 +21,16 @@ public:
     Gpio* _prev;
     Gpio* _next;
 
-private:
+    private:
     Gpio(
         const PinField pins,                            // pins to which you want exclusive access
         const InputCallback c,                          // optional callback when input pins change state
-        const Synapse* s);                              // optional Synapse to signal when input pins change state
+        const Synapse* s );                             // optional Synapse to signal when input pins change state
 
-    static void setInterrupts(const PinField pins);     // sets the on/off state of all PCINTs
+    static void setInterrupts( const PinField pins );   // sets the on/off state of all PCINTs
     static PinField gatherAllInputPins();               // returns all input pins across all ports
 
-    inline PinField sanitize(const PinField pins) const;
+    inline PinField sanitize( const PinField pins ) const;
 
     const InputCallback _inputCallback;                 // called when an input pin changes state
     const Synapse* _inputSynapse;                       // signalled when an input pin changes state

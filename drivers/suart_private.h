@@ -7,20 +7,20 @@
 
 
 public:
-    void onTick();
+void onTick();
 
 private:
-    SuartTx(const SuartTx& s) = delete;
-    void operator=(const SuartTx& s) = delete;
+    SuartTx( const SuartTx& s ) = delete;
+    void operator=( const SuartTx& s ) = delete;
 
-    bool getNextTxByte(uint8_t& data);
+    bool getNextTxByte( uint8_t& data );
     void startTxTimer() const;
     void stopTxTimer() const;
 
     // buffer-level stuff
     uint8_t* _txBuffer = nullptr;
     uint16_t _txBytesRemaining = 0UL;
-    Synapse* _txReadySyn = nullptr;;
+    Synapse* _txReadySyn = nullptr;
 
     // sub-byte management
     uint16_t _txReg = 0UL;

@@ -44,37 +44,41 @@ namespace {
 
 
     // switches the SPI transfer-complete ISR on and off
-    void setSpiIsrEnable(const bool en)
+    void setSpiIsrEnable( const bool en )
     {
-        if (en) {
-            SPCR |= (1 << SPIE);
+        if ( en ) {
+            SPCR |= ( 1 << SPIE );
         }
         else {
-            SPCR &= ~(1 << SPIE);
+            SPCR &= ~( 1 << SPIE );
         }
     }
 
 
     // busy-poll exchanges one byte over SPI
-    uint8_t spiXfer(const uint8_t c)
+    uint8_t spiXfer( const uint8_t c )
     {
         SPDR = c;
-        while (!(SPSR & (1 << SPIF)));
+
+        while ( !( SPSR & ( 1 << SPIF ) ) ) {
+            // empty
+        }
+
         return SPDR;
     }
 
-}
+}    // namespace
 
 
 // ctor
 SpiMemory::SpiMemory(
     const uint32_t capacityBytes,                       // how many bytes does the chip hold?
     const Gpio& chipSelect,                             // Gpio object for the CS line
-    const Synapse& readySyn)                            // Synapse to fire when ready to transfer
+    const Synapse& readySyn )                           // Synapse to fire when ready to transfer
 :
-    _capacityBytes(capacityBytes)
+    _capacityBytes( capacityBytes )
 {
-    if (!resource::obtain( resource::ResourceId::Spi) ) {
+    if ( !resource::obtain( resource::ResourceId::Spi ) ) {
         return;
     }
 
@@ -82,7 +86,7 @@ SpiMemory::SpiMemory(
     _chipSelectPin->setAsOutput();
 
     // setup the SPI GPIO
-    SPI_DDR |= (SCLK | MOSI);
+    SPI_DDR |= ( SCLK | MOSI );
     SPI_DDR &= ~MISO;
 
     // make sure it's not selected
@@ -92,8 +96,8 @@ SpiMemory::SpiMemory(
     setSpiIsrEnable( false );
 
     // full-speed MASTER mode SPI, kkplzthx
-    SPCR = (1 << SPE) | (1 << MSTR);
-    SPSR |= (1 << SPI2X);
+    SPCR = ( 1 << SPE ) | ( 1 << MSTR );
+    SPSR |= ( 1 << SPI2X );
 
     // signal the Synapse that we're ready to go
     _spiReadySyn = &readySyn;
@@ -104,7 +108,7 @@ SpiMemory::SpiMemory(
 // dtor
 SpiMemory::~SpiMemory()
 {
-    if (*this) {
+    if ( *this ) {
         // stop interrupting me!
         setSpiIsrEnable( false );
 
@@ -113,13 +117,13 @@ SpiMemory::~SpiMemory()
         SPSR = 0;
 
         // return the CS line to floating
-        if (_chipSelectPin) {
+        if ( _chipSelectPin ) {
             _chipSelectPin->reset();
         }
 
 
         // clear signals and forget
-        if (_spiReadySyn) {
+        if ( _spiReadySyn ) {
             _spiReadySyn->clearSignals();
             _spiReadySyn = nullptr;
         }
@@ -155,17 +159,19 @@ void SpiMemory::deselect() const
 void SpiMemory::read(
     void* dest,                                         // destination address, in local SRAM
     const uint32_t srcAddr,                             // source address for the data, in external SPI memory
-    const uint32_t numBytes)                            // number of bytes to read
+    const uint32_t numBytes )                           // number of bytes to read
 {
     // wait until there's no controller using the SPI
-    while (_curController);
+    while ( _curController ) {
+        // empty
+    }
 
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // tell the ISR who we are
         _curController = this;
 
         // make sure no-one falls through while we're working
-        if (_spiReadySyn) {
+        if ( _spiReadySyn ) {
             _spiReadySyn->clearSignals();
         }
 
@@ -173,7 +179,7 @@ void SpiMemory::read(
         _txCursor = nullptr;                            // we are reading data, so no TX buffer
         _rxCursor = (uint8_t*) dest;
         _xferBytes = numBytes;
-        _spiXferMode = SpiXferMode::Rx;        
+        _spiXferMode = SpiXferMode::Rx;
 
         // tell the SPI chip that we want to talk to it
         select();
@@ -194,20 +200,23 @@ void SpiMemory::read(
 void SpiMemory::write(
     const void* src,                                    // source data address, in local SRAM
     const uint32_t destAddress,                         // destination address, in external SPI memory
-    const uint32_t numBytes)                            // number of the bytes to write
+    const uint32_t numBytes )                           // number of the bytes to write
 {
     // wait until there's no controller using the SPI
-    while (_curController);
+    while ( _curController ) {
+        // empty
+    }
 
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE )
+    {
         // tell the ISR who we are
         _curController = this;
 
         // make sure no-one falls through while we're working
-        if (_spiReadySyn) {
+        if ( _spiReadySyn ) {
             _spiReadySyn->clearSignals();
         }
-    
+
         // set up the housekeeping
         _rxCursor = nullptr;                            // writing means no RX buffer
         _txCursor = (uint8_t*) src;
@@ -230,13 +239,13 @@ void SpiMemory::write(
 
 
 // This ISR is run whenever the SPI hardware finishes exchanging a single byte
-ISR(SPI_STC_vect)
+ISR( SPI_STC_vect )
 {
     uint8_t rxByte = 0;
     bool storeRxByte = false;
 
     // capture the input
-    if (_spiXferMode == SpiXferMode::Rx) {
+    if ( _spiXferMode == SpiXferMode::Rx ) {
         rxByte = SPDR;
         storeRxByte = true;
     }
@@ -245,9 +254,9 @@ ISR(SPI_STC_vect)
     _xferBytes--;
 
     // if there's more data to transfer...
-    if (_xferBytes) {
+    if ( _xferBytes ) {
         // send the correct output
-        if (_spiXferMode == SpiXferMode::Tx) {
+        if ( _spiXferMode == SpiXferMode::Tx ) {
             SPDR = *_txCursor++;
         }
         else {
@@ -256,15 +265,15 @@ ISR(SPI_STC_vect)
     }
 
     // remember the received byte
-    if (storeRxByte) {
+    if ( storeRxByte ) {
         *_rxCursor++ = rxByte;
     }
 
     // disable things if we're done
-    if (!_xferBytes) {
+    if ( !_xferBytes ) {
         setSpiIsrEnable( false );
-        
-        if (_spiReadySyn) {
+
+        if ( _spiReadySyn ) {
             _spiReadySyn->signal();
         }
 
@@ -275,23 +284,23 @@ ISR(SPI_STC_vect)
 
 
 // sends an address to the memory chip
-void SpiMemory::sendAddress(const uint32_t addr) const
+void SpiMemory::sendAddress( const uint32_t addr ) const
 {
-    if (_capacityBytes > (1ULL << 24)) {
+    if ( _capacityBytes > ( 1ULL << 24 ) ) {
         spiXfer( addr >> 24 );
     }
 
-    if (_capacityBytes > (1ULL << 16)) {
+    if ( _capacityBytes > ( 1ULL << 16 ) ) {
         spiXfer( addr >> 16 );
     }
 
-    spiXfer( addr >>  8 );
-    spiXfer( addr >>  0 );
+    spiXfer( addr >> 8 );
+    spiXfer( addr >> 0 );
 }
 
 
 // sends a CMD_READ to the memory chip
-void SpiMemory::sendReadCommand(const uint32_t addr) const
+void SpiMemory::sendReadCommand( const uint32_t addr ) const
 {
     spiXfer( CMD_READ );
     sendAddress( addr );
@@ -299,7 +308,7 @@ void SpiMemory::sendReadCommand(const uint32_t addr) const
 
 
 // sends a CMD_WRITE to the memory chip
-void SpiMemory::sendWriteCommand(const uint32_t addr) const
+void SpiMemory::sendWriteCommand( const uint32_t addr ) const
 {
     spiXfer( CMD_WRITE );
     sendAddress( addr );

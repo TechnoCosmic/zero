@@ -29,17 +29,17 @@ namespace zero {
 
     class UsartTx {
     public:
-        UsartTx(const uint8_t deviceNum);
+        UsartTx( const uint8_t deviceNum );
         ~UsartTx();
 
-        void setCommsParams(const uint32_t baud);
-        bool enable(Synapse& txReadySyn);
+        void setCommsParams( const uint32_t baud );
+        bool enable( Synapse& txReadySyn );
         void disable();
 
         bool transmit(
             const void* buffer,
             const uint16_t sz,
-            const bool allowBlock = false);
+            const bool allowBlock = false );
 
         explicit operator bool() const;
 
@@ -48,26 +48,26 @@ namespace zero {
 
     class UsartRx {
     public:
-        UsartRx(const uint8_t deviceNum);
+        UsartRx( const uint8_t deviceNum );
         ~UsartRx();
 
-        void setCommsParams(const uint32_t baud);
+        void setCommsParams( const uint32_t baud );
 
         bool enable(
             const uint16_t bufferSize,
             Synapse& dataRecdSyn,
-            Synapse* overflowSyn);
+            Synapse* overflowSyn );
 
         void disable();
-        uint8_t* getCurrentBuffer(uint16_t& numBytes);
+        uint8_t* getCurrentBuffer( uint16_t& numBytes );
         void flush();
-    
+
         explicit operator bool() const;
-        
+
         #include "usartrx_private.h"
     };
 
-}
+}    // namespace zero
 
 
 #endif
