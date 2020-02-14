@@ -31,16 +31,16 @@ namespace {
     };
 
 
-    const uint8_t CMD_READ = 3;
-    const uint8_t CMD_WRITE = 2;
+    const uint8_t CMD_READ{ 3 };
+    const uint8_t CMD_WRITE{ 2 };
 
-    auto _spiXferMode = SpiXferMode::Tx;
-    volatile uint8_t* _txCursor = nullptr;
-    volatile uint8_t* _rxCursor = nullptr;
-    volatile uint32_t _xferBytes = 0ULL;
+    auto _spiXferMode{ SpiXferMode::Tx };
+    volatile uint8_t* _txCursor{ nullptr };
+    volatile uint8_t* _rxCursor{ nullptr };
+    volatile uint32_t _xferBytes{ 0ULL };
 
-    const Synapse* _spiReadySyn = nullptr;
-    SpiMemory* _curController = nullptr;
+    const Synapse* _spiReadySyn{ nullptr };
+    SpiMemory* _curController{ nullptr };
 
 
     // switches the SPI transfer-complete ISR on and off
@@ -240,8 +240,8 @@ void SpiMemory::write(
 // This ISR is run whenever the SPI hardware finishes exchanging a single byte
 ISR( SPI_STC_vect )
 {
-    uint8_t rxByte = 0;
-    bool storeRxByte = false;
+    uint8_t rxByte{ 0 };
+    bool storeRxByte{ false };
 
     // capture the input
     if ( _spiXferMode == SpiXferMode::Rx ) {

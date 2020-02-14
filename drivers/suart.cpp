@@ -28,7 +28,7 @@ using namespace zero;
 
 
 namespace {
-    SuartTx* _suartTx = nullptr;
+    SuartTx* _suartTx{ nullptr };
 }
 
 
@@ -62,7 +62,7 @@ SuartTx::operator bool() const
 // starts the periodic bit-timer for transmission
 void SuartTx::startTxTimer() const
 {
-    const uint16_t scaledMs = ( F_CPU / ( 16UL * _baud ) ) - 1;
+    const uint16_t scaledMs{ (uint16_t) ( F_CPU / ( 16UL * _baud ) ) - 1 };
 
     TCCR2B = 0;                                         // make sure timer is stopped
     TCNT2 = 0;                                          // reset the counter
@@ -105,7 +105,7 @@ bool SuartTx::enable( Synapse& txReadySyn )
         _gpio->setAsOutput();
         _gpio->switchOn();
 
-        power_timer2_enable();    // power the Timer
+        power_timer2_enable();                          // power the Timer
 
         _txReadySyn = &txReadySyn;
         _txReadySyn->signal();
@@ -120,7 +120,7 @@ void SuartTx::disable()
 {
     ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         stopTxTimer();
-        power_timer2_disable();    // depower the Timer
+        power_timer2_disable();                         // depower the Timer
 
         if ( _gpio ) {
             _gpio->reset();
@@ -168,7 +168,7 @@ bool SuartTx::transmit(
 // Gets the next byte from the transmission buffer, if there is one
 bool SuartTx::getNextTxByte( uint8_t& data )
 {
-    bool rc = false;
+    bool rc{ false };
 
     data = 0;
 

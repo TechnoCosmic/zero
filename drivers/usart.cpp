@@ -49,27 +49,27 @@ volatile uint8_t* _UBRRH_base = &UBRR0H;
 volatile uint8_t* _UBRRL_base = &UBRR0L;
 volatile uint8_t* _UDR_base = &UDR0;
 
-#define UCSRB(p) *((volatile uint8_t*) (_UCSRB_base+(p*8)))
-#define UCSRC(p) *((volatile uint8_t*) (_UCSRC_base+(p*8)))
-#define UBRRH(p) *((volatile uint8_t*) (_UBRRH_base+(p*8)))
-#define UBRRL(p) *((volatile uint8_t*) (_UBRRL_base+(p*8)))
-#define UDR(p) *((volatile uint8_t*) (_UDR_base+(p*8)))
+#define UCSRB( p ) *( (volatile uint8_t*) ( _UCSRB_base + ( p * 8 ) ) )
+#define UCSRC( p ) *( (volatile uint8_t*) ( _UCSRC_base + ( p * 8 ) ) )
+#define UBRRH( p ) *( (volatile uint8_t*) ( _UBRRH_base + ( p * 8 ) ) )
+#define UBRRL( p ) *( (volatile uint8_t*) ( _UBRRL_base + ( p * 8 ) ) )
+#define UDR( p ) *( (volatile uint8_t*) ( _UDR_base + ( p * 8 ) ) )
 
 
-#define TX_BITS ((1 << TXEN0) | (1 << TXCIE0))
-#define RX_BITS ((1 << RXEN0) | (1 << RXCIE0))
+#define TX_BITS ( ( 1 << TXEN0 ) | ( 1 << TXCIE0 ) )
+#define RX_BITS ( ( 1 << RXEN0 ) | ( 1 << RXCIE0 ) )
 
 
-#if defined(UCSR3B)
+#if defined( UCSR3B )
     const int NUM_DEVICES = 4;
 
-#elif defined(UCSR2B)
+#elif defined( UCSR2B )
     const int NUM_DEVICES = 3;
 
-#elif defined(UCSR1B)
+#elif defined( UCSR1B )
     const int NUM_DEVICES = 2;
 
-#elif defined(UCSR0B)
+#elif defined( UCSR0B )
     const int NUM_DEVICES = 1;
 
 #else
@@ -80,17 +80,17 @@ volatile uint8_t* _UDR_base = &UDR0;
 namespace {
     UsartTx* _usartTx[ NUM_DEVICES ];
     UsartRx* _usartRx[ NUM_DEVICES ];
-}
+}    // namespace
 
 
 // ctor
-UsartTx::UsartTx(const uint8_t deviceNum)
+UsartTx::UsartTx( const uint8_t deviceNum )
 {
-    if (deviceNum < NUM_DEVICES) {
+    if ( deviceNum < NUM_DEVICES ) {
         // obtain the resource
-        auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartTx0 + deviceNum);
+        auto resId = (resource::ResourceId)( (uint16_t) resource::ResourceId::UsartTx0 + deviceNum );
 
-        if (resource::obtain( resId )) {
+        if ( resource::obtain( resId ) ) {
             _deviceNum = deviceNum;
             _usartTx[ deviceNum ] = this;
         }
@@ -101,12 +101,12 @@ UsartTx::UsartTx(const uint8_t deviceNum)
 // dtor
 UsartTx::~UsartTx()
 {
-    if (_usartTx[ _deviceNum ] == this) {
+    if ( _usartTx[ _deviceNum ] == this ) {
         disable();
         _usartTx[ _deviceNum ] = nullptr;
 
         // free the resource
-        auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartTx0 + _deviceNum);
+        auto resId = (resource::ResourceId)( (uint16_t) resource::ResourceId::UsartTx0 + _deviceNum );
         resource::release( resId );
     }
 }
@@ -115,32 +115,32 @@ UsartTx::~UsartTx()
 // validity checking
 UsartTx::operator bool() const
 {
-    return (_usartTx[ _deviceNum ] == this);
+    return ( _usartTx[ _deviceNum ] == this );
 }
 
 
 // Sets the communications parameters
-void UsartTx::setCommsParams(const uint32_t baud)
+void UsartTx::setCommsParams( const uint32_t baud )
 {
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        const uint16_t scaledMs{ (uint16_t) ( F_CPU / ( 16UL * baud ) ) - 1 };
 
         // 8-none-1
-        UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
+        UCSRC( _deviceNum ) |= ( 1 << UCSZ01 ) | ( 1 << UCSZ00 );
 
         // speed
-        UBRRH(_deviceNum) = (uint8_t) scaledMs >> 8;
-        UBRRL(_deviceNum) = (uint8_t) scaledMs;
+        UBRRH( _deviceNum ) = (uint8_t) scaledMs >> 8;
+        UBRRL( _deviceNum ) = (uint8_t) scaledMs;
     }
 }
 
 
-bool UsartTx::enable(Synapse& txReadySyn)
+bool UsartTx::enable( Synapse& txReadySyn )
 {
-    if (!txReadySyn) return false;
+    if ( !txReadySyn ) return false;
 
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        UCSRB(_deviceNum) |= TX_BITS;
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        UCSRB( _deviceNum ) |= TX_BITS;
 
         _txReadySyn = &txReadySyn;
         _txReadySyn->signal();
@@ -152,13 +152,13 @@ bool UsartTx::enable(Synapse& txReadySyn)
 
 void UsartTx::disable()
 {
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        if (_txReadySyn) {
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        if ( _txReadySyn ) {
             _txReadySyn->clearSignals();
             _txReadySyn = nullptr;
         }
 
-        UCSRB(_deviceNum) &= ~TX_BITS;
+        UCSRB( _deviceNum ) &= ~TX_BITS;
     }
 }
 
@@ -166,18 +166,18 @@ void UsartTx::disable()
 bool UsartTx::transmit(
     const void* buffer,
     const uint16_t sz,
-    const bool allowBlock)
+    const bool allowBlock )
 {
-    if (allowBlock && _txReadySyn) {
+    if ( allowBlock && _txReadySyn ) {
         _txReadySyn->wait();
     }
-    
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        if (_txBuffer) return false;
-        if (!buffer) return false;
-        if (!sz) return false;
 
-        if (_txReadySyn) {
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        if ( _txBuffer ) return false;
+        if ( !buffer ) return false;
+        if ( !sz ) return false;
+
+        if ( _txReadySyn ) {
             _txReadySyn->clearSignals();
         }
 
@@ -186,20 +186,20 @@ bool UsartTx::transmit(
         _txBytesRemaining = sz;
 
         // enable the ISR that starts the transmission
-        UCSRB(_deviceNum) |= (1 << UDRIE0);
+        UCSRB( _deviceNum ) |= ( 1 << UDRIE0 );
 
         return true;
     }
 }
 
 
-bool UsartTx::getNextTxByte(uint8_t& data)
+bool UsartTx::getNextTxByte( uint8_t& data )
 {
-    bool rc = false;
+    bool rc{ false };
 
     data = 0;
 
-    if (_txBytesRemaining) {
+    if ( _txBytesRemaining ) {
         data = *_txBuffer++;
         _txBytesRemaining--;
 
@@ -210,24 +210,25 @@ bool UsartTx::getNextTxByte(uint8_t& data)
 }
 
 
-void UsartTx::byteTxComplete() {
-    if (!_txBytesRemaining && _txBuffer) {
+void UsartTx::byteTxComplete()
+{
+    if ( !_txBytesRemaining && _txBuffer ) {
         _txBuffer = nullptr;
 
-        if (_txReadySyn) {
+        if ( _txReadySyn ) {
             _txReadySyn->signal();
         }
     }
 }
 
 
-UsartRx::UsartRx(const uint8_t deviceNum)
+UsartRx::UsartRx( const uint8_t deviceNum )
 {
-    if (deviceNum < NUM_DEVICES) {
+    if ( deviceNum < NUM_DEVICES ) {
         // obtain the resource
-        auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartRx0 + deviceNum);
+        auto resId = (resource::ResourceId)( (uint16_t) resource::ResourceId::UsartRx0 + deviceNum );
 
-        if (resource::obtain( resId )) {
+        if ( resource::obtain( resId ) ) {
             _deviceNum = deviceNum;
             _usartRx[ deviceNum ] = this;
         }
@@ -237,12 +238,12 @@ UsartRx::UsartRx(const uint8_t deviceNum)
 
 UsartRx::~UsartRx()
 {
-    if (_usartRx[ _deviceNum ] == this) {
+    if ( _usartRx[ _deviceNum ] == this ) {
         disable();
         _usartRx[ _deviceNum ] = nullptr;
 
         // free the resource
-        auto resId = (resource::ResourceId)((uint16_t) resource::ResourceId::UsartRx0 + _deviceNum);
+        auto resId = (resource::ResourceId)( (uint16_t) resource::ResourceId::UsartRx0 + _deviceNum );
         resource::release( resId );
     }
 }
@@ -251,32 +252,29 @@ UsartRx::~UsartRx()
 // validity checking
 UsartRx::operator bool() const
 {
-    return (_usartRx[ _deviceNum ] == this);
+    return ( _usartRx[ _deviceNum ] == this );
 }
 
 
-void UsartRx::setCommsParams(const uint32_t baud)
+void UsartRx::setCommsParams( const uint32_t baud )
 {
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        const uint16_t scaledMs = (F_CPU / (16UL * baud)) - 1;
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        const uint16_t scaledMs{ (uint16_t) (F_CPU / ( 16UL * baud ) ) - 1 };
 
         // 8-none-1
-        UCSRC(_deviceNum) |= (1 << UCSZ01) | (1 << UCSZ00);
+        UCSRC( _deviceNum ) |= ( 1 << UCSZ01 ) | ( 1 << UCSZ00 );
 
         // speed
-        UBRRH(_deviceNum) = (uint8_t) scaledMs >> 8;
-        UBRRL(_deviceNum) = (uint8_t) scaledMs;
+        UBRRH( _deviceNum ) = (uint8_t) scaledMs >> 8;
+        UBRRL( _deviceNum ) = (uint8_t) scaledMs;
     }
 }
 
 
-bool UsartRx::enable(
-    const uint16_t bufferSize,
-    Synapse& rxSyn,
-    Synapse* ovfSyn)
+bool UsartRx::enable( const uint16_t bufferSize, Synapse& rxSyn, Synapse* ovfSyn )
 {
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        bool rc = false;
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        bool rc{ false };
 
         _rxDataReceivedSyn = nullptr;
         _rxOverflowSyn = nullptr;
@@ -284,15 +282,15 @@ bool UsartRx::enable(
         delete _rxBuffer;
         _rxBuffer = nullptr;
 
-        if ((_rxBuffer = new DoubleBuffer( bufferSize ))) {
+        if ( ( _rxBuffer = new DoubleBuffer( bufferSize ) ) ) {
             rc = true;
 
             _rxDataReceivedSyn = &rxSyn;
             _rxOverflowSyn = ovfSyn;
 
-            UCSRB(_deviceNum) |= RX_BITS;
+            UCSRB( _deviceNum ) |= RX_BITS;
         }
-        
+
         return rc;
     }
 }
@@ -300,18 +298,18 @@ bool UsartRx::enable(
 
 void UsartRx::disable()
 {
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        UCSRB(_deviceNum) &= ~RX_BITS;
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        UCSRB( _deviceNum ) &= ~RX_BITS;
 
         delete _rxBuffer;
         _rxBuffer = nullptr;
 
-        if (_rxDataReceivedSyn) {
+        if ( _rxDataReceivedSyn ) {
             _rxDataReceivedSyn->clearSignals();
             _rxDataReceivedSyn = nullptr;
         }
 
-        if (_rxOverflowSyn) {
+        if ( _rxOverflowSyn ) {
             _rxOverflowSyn->clearSignals();
             _rxOverflowSyn = nullptr;
         }
@@ -319,7 +317,7 @@ void UsartRx::disable()
 }
 
 
-uint8_t* UsartRx::getCurrentBuffer(uint16_t& numBytes)
+uint8_t* UsartRx::getCurrentBuffer( uint16_t& numBytes )
 {
     return _rxBuffer->getCurrentBuffer( numBytes );
 }
@@ -327,178 +325,150 @@ uint8_t* UsartRx::getCurrentBuffer(uint16_t& numBytes)
 
 void UsartRx::flush()
 {
-    _rxBuffer->flush();     
+    _rxBuffer->flush();
+}
+
+
+void UsartRx::onRx( const uint8_t deviceNum, const uint8_t data )
+{
+    if ( _usartRx[ deviceNum ]->_rxBuffer->write( data ) ) {
+        if ( _usartRx[ deviceNum ]->_rxDataReceivedSyn ) {
+            _usartRx[ deviceNum ]->_rxDataReceivedSyn->signal();
+        }
+    }
+    else {
+        if ( _usartRx[ deviceNum ]->_rxOverflowSyn ) {
+            _usartRx[ deviceNum ]->_rxOverflowSyn->signal();
+        }
+    }
 }
 
 
 #ifdef UCSR0B
 
-    ISR(USART_TX_vect)
-    {
-        // last byte complete
-        _usartTx[ 0 ]->byteTxComplete();
+ISR( USART_TX_vect )
+{
+    // last byte complete
+    _usartTx[ 0 ]->byteTxComplete();
+}
+
+
+ISR( USART_UDRE_vect )
+{
+    // need more data
+    uint8_t nextByte;
+
+    if ( !_usartTx[ 0 ]->getNextTxByte( nextByte ) ) {
+        UCSR0B &= ~( 1 << UDRIE0 );
     }
-
-
-    ISR(USART_UDRE_vect)
-    {
-        // need more data
-        uint8_t nextByte;
-
-        if (!_usartTx[ 0 ]->getNextTxByte( nextByte )) {
-            UCSR0B &= ~(1 << UDRIE0);
-        }
-        else {
-            UDR0 = nextByte;
-        }
+    else {
+        UDR0 = nextByte;
     }
+}
 
 
-    ISR(USART_RX_vect)
-    {
-        register volatile uint8_t newByte = UDR0;
-
-        // received data
-        if (_usartRx[ 0 ]->_rxBuffer->write( newByte )) {
-            if (_usartRx[ 0 ]->_rxDataReceivedSyn) {
-                _usartRx[ 0 ]->_rxDataReceivedSyn->signal();
-            }
-        }
-        else {
-            if (_usartRx[ 0 ]->_rxOverflowSyn) {
-                _usartRx[ 0 ]->_rxOverflowSyn->signal();
-            }
-        }
-    }
+ISR( USART_RX_vect )
+{
+    register volatile uint8_t newByte = UDR0;
+    UsartRx::onRx( 0, newByte );
+}
 
 #endif
 
 
 #ifdef UCSR1B
 
-    ISR(USART1_TX_vect)
-    {
-        // last byte complete
-        _usartTx[ 1 ]->byteTxComplete();
+ISR( USART1_TX_vect )
+{
+    // last byte complete
+    _usartTx[ 1 ]->byteTxComplete();
+}
+
+
+ISR( USART1_UDRE_vect )
+{
+    // need more data
+    uint8_t nextByte;
+
+    if ( !_usartTx[ 1 ]->getNextTxByte( nextByte ) ) {
+        UCSR1B &= ~( 1 << UDRIE1 );
     }
-
-
-    ISR(USART1_UDRE_vect)
-    {
-        // need more data
-        uint8_t nextByte;
-
-        if (!_usartTx[ 1 ]->getNextTxByte( nextByte )) {
-            UCSR1B &= ~(1 << UDRIE1);
-        }
-        else {
-            UDR1 = nextByte;
-        }
+    else {
+        UDR1 = nextByte;
     }
+}
 
 
-    ISR(USART1_RX_vect)
-    {
-        register volatile uint8_t newByte = UDR1;
-
-        // received data
-        if (_usartRx[ 1 ]->_rxBuffer->write( newByte )) {
-            if (_usartRx[ 1 ]->_rxDataReceivedSyn) {
-                _usartRx[ 1 ]->_rxDataReceivedSyn->signal();
-            }
-        }
-        else {
-            if (_usartRx[ 1 ]->_rxOverflowSyn) {
-                _usartRx[ 1 ]->_rxOverflowSyn->signal();
-            }
-        }
-    }
+ISR( USART1_RX_vect )
+{
+    register volatile uint8_t newByte = UDR1;
+    UsartRx::onRx( 1, newByte );
+}
 
 #endif
 
 
 #ifdef UCSR2B
 
-    ISR(USART2_TX_vect)
-    {
-        // last byte complete
-        _usartTx[ 2 ]->byteTxComplete();
+ISR( USART2_TX_vect )
+{
+    // last byte complete
+    _usartTx[ 2 ]->byteTxComplete();
+}
+
+
+ISR( USART2_UDRE_vect )
+{
+    // need more data
+    uint8_t nextByte;
+
+    if ( !_usartTx[ 2 ]->getNextTxByte( nextByte ) ) {
+        UCSR2B &= ~( 1 << UDRIE2 );
     }
-
-
-    ISR(USART2_UDRE_vect)
-    {
-        // need more data
-        uint8_t nextByte;
-
-        if (!_usartTx[ 2 ]->getNextTxByte( nextByte )) {
-            UCSR2B &= ~(1 << UDRIE2);
-        }
-        else {
-            UDR2 = nextByte;
-        }
+    else {
+        UDR2 = nextByte;
     }
+}
 
 
-    ISR(USART2_RX_vect)
-    {
-        register volatile uint8_t newByte = UDR2;
-
-        // received data
-        if (_usartRx[ 2 ]->_rxBuffer->write( newByte )) {
-            if (_usartRx[ 2 ]->_rxDataReceivedSyn) {
-                _usartRx[ 2 ]->_rxDataReceivedSyn->signal();
-            }
-        }
-        else {
-            if (_usartRx[ 2 ]->_rxOverflowSyn) {
-                _usartRx[ 2 ]->_rxOverflowSyn->signal();
-            }
-        }
-    }
+ISR( USART2_RX_vect )
+{
+    register volatile uint8_t newByte = UDR2;
+    UsartRx::onRx( 2, newByte );
+}
 
 #endif
 
 
 #ifdef UCSR3B
 
-    ISR(USART3_TX_vect)
-    {
-        // last byte complete
-        _usartTx[ 3 ]->byteTxComplete();
+ISR( USART3_TX_vect )
+{
+    // last byte complete
+    _usartTx[ 3 ]->byteTxComplete();
+}
+
+
+ISR( USART3_UDRE_vect )
+{
+    // need more data
+    uint8_t nextByte;
+
+    if ( !_usartTx[ 3 ]->getNextTxByte( nextByte ) ) {
+        UCSR3B &= ~( 1 << UDRIE3 );
     }
-
-
-    ISR(USART3_UDRE_vect)
-    {
-        // need more data
-        uint8_t nextByte;
-
-        if (!_usartTx[ 3 ]->getNextTxByte( nextByte )) {
-            UCSR3B &= ~(1 << UDRIE3);
-        }
-        else {
-            UDR3 = nextByte;
-        }
+    else {
+        UDR3 = nextByte;
     }
+}
 
 
-    ISR(USART3_RX_vect)
-    {
-        register volatile uint8_t newByte = UDR3;
+ISR( USART3_RX_vect )
+{
+    register volatile uint8_t newByte = UDR3;
+    UsartRx::onRx( 3, newByte );
+}
 
-        // received data
-        if (_usartRx[ 3 ]->_rxBuffer->write( newByte )) {
-            if (_usartRx[ 3 ]->_rxDataReceivedSyn) {
-                _usartRx[ 3 ]->_rxDataReceivedSyn->signal();
-            }
-        }
-        else {
-            if (_usartRx[ 3 ]->_rxOverflowSyn) {
-                _usartRx[ 3 ]->_rxOverflowSyn->signal();
-            }
-        }
-    }
 
 #endif
 

@@ -14,7 +14,7 @@ private:
     UsartTx( const UsartTx& s ) = delete;
     void operator=( const UsartTx& s ) = delete;
 
-    uint8_t _deviceNum = 0;
-    uint8_t* _txBuffer = nullptr;
-    uint16_t _txBytesRemaining = 0UL;
-    Synapse* _txReadySyn = nullptr;
+    uint8_t _deviceNum{ 0 };
+    uint8_t* _txBuffer{ nullptr };
+    uint16_t _txBytesRemaining{ 0UL };
+    Synapse* _txReadySyn{ nullptr };

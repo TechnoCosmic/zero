@@ -7,12 +7,14 @@
 
 
 public:
-    Synapse* _rxDataReceivedSyn = nullptr;
-    Synapse* _rxOverflowSyn = nullptr;
-    DoubleBuffer* _rxBuffer = nullptr;
+    static void onRx( const uint8_t deviceNum, const uint8_t data );
+
+    Synapse* _rxDataReceivedSyn{ nullptr };
+    Synapse* _rxOverflowSyn{ nullptr };
+    DoubleBuffer* _rxBuffer{ nullptr };
 
 private:
-    uint8_t _deviceNum = 0;
-
     UsartRx( const UsartRx& u ) = delete;
     void operator=( const UsartRx& u ) = delete;
+
+    uint8_t _deviceNum = 0;

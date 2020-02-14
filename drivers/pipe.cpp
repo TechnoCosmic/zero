@@ -21,7 +21,7 @@ using namespace zero;
 
 
 // ctor
-Pipe::Pipe(const uint16_t size)
+Pipe::Pipe( const uint16_t size )
 {
     // storage and tracking
     _buffer = (uint8_t*) memory::allocate( size, &_bufferSize );
@@ -34,11 +34,11 @@ Pipe::~Pipe()
 {
     memory::free( _buffer, _bufferSize );
 
-    if (_dataAvailSyn) {
+    if ( _dataAvailSyn ) {
         _dataAvailSyn->clearSignals();
     }
 
-    if (_roomAvailSyn) {
+    if ( _roomAvailSyn ) {
         _roomAvailSyn->clearSignals();
     }
 }
@@ -54,7 +54,7 @@ Pipe::operator bool() const
 // Returns true if the Pipe is empty, false otherwise
 bool Pipe::isEmpty() const
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         return _length == 0;
     }
 }
@@ -63,7 +63,7 @@ bool Pipe::isEmpty() const
 // Returns true if the Pipe is full, false otherwise
 bool Pipe::isFull() const
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         return _length == _bufferSize;
     }
 }
@@ -71,34 +71,34 @@ bool Pipe::isFull() const
 
 // Reads a byte from the Pipe. Returns true if data was
 // successfully read, false otherwise.
-bool Pipe::read(uint8_t& data)
+bool Pipe::read( uint8_t& data )
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        bool rc = false;
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+        bool rc{ false };
 
-        while (isEmpty() && _dataAvailSyn) {
+        while ( isEmpty() && _dataAvailSyn ) {
             _dataAvailSyn->wait();
             cli();
         }
 
         // select the byte and invoke the filter
-        bool doIt = true;
-        uint8_t dataToRead = _buffer[ _startIndex ];
+        bool doIt{ true };
+        uint8_t dataToRead{ _buffer[ _startIndex ] };
 
-        if (_readFilter) {
+        if ( _readFilter ) {
             doIt = _readFilter( dataToRead );
         }
 
-        if (doIt) {
+        if ( doIt ) {
             data = dataToRead;
             _startIndex++;
             _length--;
 
-            if (_startIndex == _bufferSize) {
+            if ( _startIndex == _bufferSize ) {
                 _startIndex = 0UL;
             }
 
-            if (_roomAvailSyn) {
+            if ( _roomAvailSyn ) {
                 _roomAvailSyn->signal();
             }
 
@@ -112,35 +112,35 @@ bool Pipe::read(uint8_t& data)
 
 // Writes a byte to the Pipe. Returns true if data was
 // successfully written, false otherwise.
-bool Pipe::write(const uint8_t data)
+bool Pipe::write( const uint8_t data )
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        bool rc = false;
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+        bool rc{ false };
 
-        while (isFull() && _roomAvailSyn) {
+        while ( isFull() && _roomAvailSyn ) {
             _roomAvailSyn->wait();
             cli();
         }
-        
+
         uint16_t index = _startIndex + _length;
 
-        if (index >= _bufferSize) {
+        if ( index >= _bufferSize ) {
             index -= _bufferSize;
         }
-        
-        // invoke the filter
-        bool doIt = true;
-        uint8_t dataToWrite = data;
 
-        if (_writeFilter) {
+        // invoke the filter
+        bool doIt{ true };
+        uint8_t dataToWrite{ data };
+
+        if ( _writeFilter ) {
             doIt = _writeFilter( dataToWrite );
         }
 
-        if (doIt) {
+        if ( doIt ) {
             _buffer[ index ] = dataToWrite;
             _length++;
 
-            if (_dataAvailSyn) {
+            if ( _dataAvailSyn ) {
                 _dataAvailSyn->signal();
             }
 
@@ -155,14 +155,14 @@ bool Pipe::write(const uint8_t data)
 // Empties the Pipe
 void Pipe::flush()
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         _startIndex = _length = 0UL;
 
-        if (_dataAvailSyn) {
+        if ( _dataAvailSyn ) {
             _dataAvailSyn->clearSignals();
         }
 
-        if (_roomAvailSyn) {
+        if ( _roomAvailSyn ) {
             _roomAvailSyn->signal();
         }
     }
@@ -170,18 +170,18 @@ void Pipe::flush()
 
 
 // Assigns read filter to the Pipe
-void Pipe::setReadFilter(PipeFilter f)
+void Pipe::setReadFilter( PipeFilter f )
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         _readFilter = f;
     }
 }
 
 
 // Assigns write filter to the Pipe
-void Pipe::setWriteFilter(PipeFilter f)
+void Pipe::setWriteFilter( PipeFilter f )
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         _writeFilter = f;
     }
 }
@@ -189,12 +189,12 @@ void Pipe::setWriteFilter(PipeFilter f)
 
 // Assigns a Synapse to signal when the Pipe has
 // room to accept more data.
-void Pipe::setRoomAvailSynapse(Synapse& s)
+void Pipe::setRoomAvailSynapse( Synapse& s )
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         _roomAvailSyn = &s;
 
-        if (!isFull()) {
+        if ( !isFull() ) {
             _roomAvailSyn->signal();
         }
         else {
@@ -206,12 +206,12 @@ void Pipe::setRoomAvailSynapse(Synapse& s)
 
 // Assigns a Synapse to signal when the Pipe has
 // data waiting to be read.
-void Pipe::setDataAvailSynapse(Synapse& s)
+void Pipe::setDataAvailSynapse( Synapse& s )
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         _dataAvailSyn = &s;
 
-        if (!isEmpty()) {
+        if ( !isEmpty() ) {
             _dataAvailSyn->signal();
         }
         else {

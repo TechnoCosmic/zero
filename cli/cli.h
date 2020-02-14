@@ -27,7 +27,7 @@ namespace zero {
     public:
         // ctor
         Shell(
-            const int usartNumber,
+            const uint8_t usartNumber,
             const uint32_t baud );
 
     private:
@@ -37,7 +37,7 @@ namespace zero {
         void displayPrompt();
         void handleKeyboard();
 
-        const int _usartNumber;
+        const uint8_t _usartNumber;
         const uint32_t _baud;
         CliTx* _tx;
         CliRx* _rx;

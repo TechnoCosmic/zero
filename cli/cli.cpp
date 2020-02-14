@@ -34,7 +34,7 @@ namespace {
 
 // ctor
 Shell::Shell(
-    const int usartNumber,
+    const uint8_t usartNumber,
     const uint32_t baud)
 :
     // call parent ctor, with entryPoint as a lambda.
@@ -75,7 +75,7 @@ void Shell::displayPrompt()
 
 void Shell::handleKeyboard()
 {
-    char echoChar = 0;
+    char echoChar{ 0 };
     uint16_t numBytes;
 
     while (auto buffer = _rx->getCurrentBuffer( numBytes )) {
@@ -109,7 +109,7 @@ int Shell::main()
 {
     // set up the receiver
     Synapse rxDataSyn;
-    CliRx rx( _usartNumber );
+    CliRx rx{ _usartNumber };
 
     if (!rxDataSyn || !rx) {
         return 20;
@@ -120,7 +120,7 @@ int Shell::main()
 
     // set up the transmitter
     Synapse txReadySyn;
-    CliTx tx( _usartNumber );
+    CliTx tx{ _usartNumber };
     
     if (!txReadySyn || !tx) {
         return 20;
