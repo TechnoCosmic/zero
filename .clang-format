@@ -121,6 +121,8 @@ Standard:        Cpp11
 StatementMacros:
   - Q_UNUSED
   - QT_REQUIRE_VERSION
+  - ATOMIC_BLOCK
+  - ZERO_ATOMIC_BLOCK
 TabWidth:        4
 UseTab:          Never
 ...
