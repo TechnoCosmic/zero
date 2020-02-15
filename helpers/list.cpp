@@ -73,8 +73,8 @@ void List<T>::append( T& item )
 template <class T>
 void List<T>::remove( T& item )
 {
-    const bool wasHead = _head == &item;
-    const bool wasTail = _tail == &item;
+    const bool wasHead{ _head == &item };
+    const bool wasTail{ _tail == &item };
 
     T* p = item._prev;
     T* n = item._next;
@@ -103,7 +103,7 @@ void List<T>::remove( T& item )
 template <class T>
 void List<T>::insertBefore( T& item, T& before )
 {
-    const bool newHead = &before == _head;
+    const bool newHead{ &before == _head };
 
     item._next = &before;
     item._prev = before._prev;
