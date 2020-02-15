@@ -58,7 +58,7 @@ int myThread
         arduinoUnoLed.switchOff();
 
         // flash 25 times and then exit
-        for ( auto i{ 0U }; i < 50; i++ ) {
+        for ( auto i = 0; i < 50; i++ ) {
             arduinoUnoLed.toggle();
             me.wait( 0, 500 );
         }

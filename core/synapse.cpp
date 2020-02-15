@@ -69,6 +69,6 @@ SignalField Synapse::wait( const uint32_t timeoutMs ) const
         return me.wait( _signals, timeoutMs );
     }
     else {
-        return 0U;
+        return 0;
     }
 }

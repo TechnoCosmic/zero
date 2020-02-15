@@ -24,7 +24,7 @@ namespace {
 
 #ifdef DEBUG_ENABLED
 
-    const int DEBUG_DELAY{ ( 10000U / ( DEBUG_BAUD / 100 ) ) };
+    const int DEBUG_DELAY{ ( 10000 / ( DEBUG_BAUD / 100 ) ) };
     Gpio* _debugPin{ nullptr };
 
 #endif

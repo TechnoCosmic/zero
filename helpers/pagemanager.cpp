@@ -66,7 +66,7 @@ uint16_t PageManager<PAGE_COUNT>::getTotalPageCount() const
 template <uint16_t PAGE_COUNT>
 uint16_t PageManager<PAGE_COUNT>::getFreePageCount() const
 {
-    uint16_t rc{ 0U };
+    uint16_t rc{ 0 };
 
     for ( uint16_t i = 0; i < getTotalPageCount(); i++ ) {
         if ( isPageAvailable( i ) ) {
@@ -87,12 +87,12 @@ uint16_t PageManager<PAGE_COUNT>::getUsedPageCount() const
 
 
 // search strategy function prototypes
-static int16_t getPageForSearchStep_TopDown( const uint16_t step, const uint16_t totalPages );
-static int16_t getPageForSearchStep_BottomUp( const uint16_t step, const uint16_t totalPages );
+static uint16_t getPageForSearchStep_TopDown( const uint16_t step, const uint16_t totalPages );
+static uint16_t getPageForSearchStep_BottomUp( const uint16_t step, const uint16_t totalPages );
 
 
 // search strategy - BottomUp starts searching the allocation table at the bottom and works up
-static int16_t getPageForSearchStep_BottomUp(
+static uint16_t getPageForSearchStep_BottomUp(
     const uint16_t step,
     const uint16_t totalPages )
 {
@@ -101,7 +101,7 @@ static int16_t getPageForSearchStep_BottomUp(
 
 
 // search strategy - TopDown starts searching the allocation table at the top and works down
-static int16_t getPageForSearchStep_TopDown(
+static uint16_t getPageForSearchStep_TopDown(
     const uint16_t step,
     const uint16_t totalPages )
 {
@@ -111,7 +111,7 @@ static int16_t getPageForSearchStep_TopDown(
 
 namespace {
     // set up the vector table for the search strategies
-    int16_t ( *_strategies[] )( const uint16_t, const uint16_t ) = {
+    uint16_t ( *_strategies[] )( const uint16_t, const uint16_t ) = {
         getPageForSearchStep_TopDown,
         getPageForSearchStep_BottomUp,
     };
@@ -125,17 +125,11 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
     const uint16_t numPagesRequired,
     const memory::SearchStrategy strat ) const
 {
-    uint16_t startPage = (uint16_t) -1;
-    uint16_t pageCount = 0;
+    uint16_t startPage{ (uint16_t) - 1 };
+    uint16_t pageCount{ 0 };
 
     for ( uint16_t curStep = 0; curStep < PAGE_COUNT; curStep++ ) {
-        const uint16_t curPage = _strategies[ strat ]( curStep, PAGE_COUNT );
-
-        // if the search strategy no longer
-        // has any more pages in its scope
-        if ( curPage == (uint16_t) -1 ) {
-            break;
-        }
+        const uint16_t curPage{ _strategies[ strat ]( curStep, PAGE_COUNT ) };
 
         // But if that page was free..
         if ( isPageAvailable( curPage ) ) {
@@ -155,7 +149,7 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
         }
         else {
             // wasn't free? start the search from scratch
-            startPage = -1;
+            startPage = (uint16_t) -1;
             pageCount = 0;
         }
     }

@@ -17,7 +17,7 @@
 #define ROUND_UP( v, r )        ( ( ( (v) -1 ) | ( (r) -1 ) ) + 1 )
 
 
-const uint16_t SRAM_PAGES = DYNAMIC_BYTES / PAGE_BYTES;
+const uint16_t SRAM_PAGES{ DYNAMIC_BYTES / PAGE_BYTES };
 
 
 namespace zero {

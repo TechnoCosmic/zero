@@ -61,7 +61,7 @@ namespace {
     OffsetList<Thread> _timeoutList;                    // the list of Threads wanting to sleep for a time
     Thread* _currentThread{ nullptr };                  // the currently executing thread
     Thread* _idleThread{ nullptr };                     // to run when there's nothing else to do, and only then
-    uint16_t _nextId{ 0U };                             // ID to use for the next Thread
+    uint16_t _nextId{ 0 };                              // ID to use for the next Thread
     volatile uint8_t _activeListNum{ 0 };               // which of the two ready lists are we using as the active list?
     volatile uint32_t _milliseconds{ 0UL };             // 49 day millisecond counter
     volatile bool _switchingEnabled{ true };            // context switching ISR enabled?
@@ -298,8 +298,8 @@ Thread::Thread(
 
     // signal defaults
     _allocatedSignals = SIG_ALL_RESERVED;
-    _waitingSignals = 0U;
-    _currentSignals = 0U;
+    _waitingSignals = 0;
+    _currentSignals = 0;
 
     // sleeping time
     _timeoutOffset = 0UL;
@@ -654,7 +654,7 @@ SignalField Thread::clearSignals( const SignalField sigs )
 // representing which of those signals woke the Thread up
 SignalField Thread::wait( const SignalField sigs, const uint32_t timeoutMs )
 {
-    SignalField rc{ 0U };
+    SignalField rc{ 0 };
 
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // A Thread can wait only on it's own signals.

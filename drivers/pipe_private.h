@@ -11,9 +11,9 @@ private:
     void operator=( const Pipe& p ) = delete;
 
     uint8_t* _buffer{ nullptr };
-    uint16_t _bufferSize{ 0U };
-    uint16_t _startIndex{ 0U };
-    uint16_t _length{ 0U };
+    uint16_t _bufferSize{ 0 };
+    uint16_t _startIndex{ 0 };
+    uint16_t _length{ 0 };
 
     Synapse* _roomAvailSyn{ nullptr };
     Synapse* _dataAvailSyn{ nullptr };

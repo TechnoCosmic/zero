@@ -59,7 +59,7 @@ void* memory::allocate(
     void* rc{ nullptr };
 
     if ( allocatedBytes ) {
-        *allocatedBytes = 0U;
+        *allocatedBytes = 0;
     }
 
     // critical section - one Thread allocating at a time, thank you

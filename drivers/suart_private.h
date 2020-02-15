@@ -19,11 +19,11 @@ private:
 
     // buffer-level stuff
     uint8_t* _txBuffer{ nullptr };
-    uint16_t _txBytesRemaining{ 0U };
+    uint16_t _txBytesRemaining{ 0 };
     Synapse* _txReadySyn{ nullptr };
 
     // sub-byte management
-    uint16_t _txReg{ 0U };
+    uint16_t _txReg{ 0 };
 
     // GPIO and comms
     uint32_t _baud{ 0UL };

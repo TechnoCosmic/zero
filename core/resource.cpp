@@ -14,7 +14,7 @@ using namespace zero;
 
 
 namespace {
-    uint16_t _resourceMap = 0UL;
+    uint16_t _resourceMap{ 0 };
 }
 
 
