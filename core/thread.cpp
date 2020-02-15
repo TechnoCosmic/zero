@@ -650,6 +650,13 @@ SignalField Thread::clearSignals( const SignalField sigs )
 }
 
 
+// Blocks for a given number of milliseconds
+void Thread::delay( const uint32_t ms )
+{
+    wait( 0, ms );
+}
+
+
 // Waits for any of a set of signals, returning a SignalField
 // representing which of those signals woke the Thread up
 SignalField Thread::wait( const SignalField sigs, const uint32_t timeoutMs )
