@@ -224,7 +224,7 @@ Waits for one or more signals to occur, blocking if necessary.
 ```
     SignalField Thread::wait(
         const SignalField sigs,
-        const uint32_t timeoutMs = 0ULL
+        const uint32_t timeoutMs = 0UL
         )
 ```
 

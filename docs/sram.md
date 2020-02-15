@@ -72,7 +72,7 @@ int spiMemoryDemo
     Gpio csPin( ZERO_PINB4 );                           // CS for the SPI memory chip
     Synapse sramReadySig;                               // to learn when the xfer is done
     SpiMemory extSram(
-        131072ULL,                                      // I'm using a 23LCV1024 (1Mbit)
+        131072UL,                                       // I'm using a 23LCV1024 (1Mbit)
         csPin,
         sramReadySig
     );

@@ -68,7 +68,7 @@ namespace zero {
         SignalField getCurrentSignals() const;
         SignalField clearSignals( const SignalField sigs );
 
-        SignalField wait( const SignalField sigs, const uint32_t timeoutMs = 0ULL );
+        SignalField wait( const SignalField sigs, const uint32_t timeoutMs = 0UL );
         void signal( const SignalField sigs );
 
         // Don't touch! That means you! :)

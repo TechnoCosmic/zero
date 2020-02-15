@@ -40,7 +40,7 @@ Allocates SRAM for use by the caller.
 
 int memoryDemo()
 {
-    uint16_t allocatedBytes = 0UL;
+    uint16_t allocatedBytes = 0U;
     auto myBuffer = (char*) memory::allocate( 35, &allocatedBytes, memory::SearchStrategy::TopDown );
 
     // do stuff with the memory here...
@@ -48,7 +48,7 @@ int memoryDemo()
     // free it
     memory::free( myBuffer, allocatedBytes );
     myBuffer = nullptr;
-    allocatedBytes = 0UL;
+    allocatedBytes = 0U;
 }
 ```
 

@@ -126,7 +126,7 @@ namespace {
     // zero's heartbeat
     void initTimer0()
     {
-        #define SCALE( x ) ( ( F_CPU_MHZ * ( x ) ) / 16UL )
+        #define SCALE( x ) ( ( F_CPU_MHZ * ( x ) ) / 16U )
 
         #ifndef TIMSK0
             #define TIMSK0 TIMSK

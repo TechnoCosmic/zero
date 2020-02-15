@@ -259,7 +259,7 @@ UsartRx::operator bool() const
 void UsartRx::setCommsParams( const uint32_t baud )
 {
     ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        const uint16_t scaledMs{ (uint16_t) (F_CPU / ( 16UL * baud ) ) - 1 };
+        const uint16_t scaledMs{ (uint16_t) ( F_CPU / ( 16UL * baud ) ) - 1 };
 
         // 8-none-1
         UCSRC( _deviceNum ) |= ( 1 << UCSZ01 ) | ( 1 << UCSZ00 );

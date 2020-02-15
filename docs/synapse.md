@@ -35,7 +35,7 @@ Calls ```Thread::clearSignals()``` with the signals associated with the ```Synap
 Waits for the signal(s) represented by the ```Synapse```, blocking if required. 
 ```
     SignalField Synapse::wait(
-        const uint32_t timeoutMs = 0ULL
+        const uint32_t timeoutMs = 0UL
         )
 ```
 

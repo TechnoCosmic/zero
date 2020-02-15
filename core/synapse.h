@@ -26,7 +26,7 @@ namespace zero {
 
         void signal() const;
         void clearSignals() const;
-        SignalField wait( const uint32_t timeoutMs = 0ULL ) const;
+        SignalField wait( const uint32_t timeoutMs = 0UL ) const;
 
         #include "synapse_private.h"
     };

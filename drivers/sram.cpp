@@ -285,11 +285,11 @@ ISR( SPI_STC_vect )
 // sends an address to the memory chip
 void SpiMemory::sendAddress( const uint32_t addr ) const
 {
-    if ( _capacityBytes > ( 1ULL << 24 ) ) {
+    if ( _capacityBytes > ( 1UL << 24 ) ) {
         spiXfer( addr >> 24 );
     }
 
-    if ( _capacityBytes > ( 1ULL << 16 ) ) {
+    if ( _capacityBytes > ( 1UL << 16 ) ) {
         spiXfer( addr >> 16 );
     }
 
