@@ -66,7 +66,7 @@ uint16_t PageManager<PAGE_COUNT>::getTotalPageCount() const
 template <uint16_t PAGE_COUNT>
 uint16_t PageManager<PAGE_COUNT>::getFreePageCount() const
 {
-    uint16_t rc = 0UL;
+    uint16_t rc{ 0U };
 
     for ( uint16_t i = 0; i < getTotalPageCount(); i++ ) {
         if ( isPageAvailable( i ) ) {

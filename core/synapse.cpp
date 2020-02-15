@@ -33,7 +33,7 @@ Synapse::~Synapse()
 // validity checking
 Synapse::operator bool() const
 {
-    return _thread && _signals;
+    return _thread and _signals;
 }
 
 
@@ -65,10 +65,10 @@ void Synapse::clearSignals() const
 // Waits for the signals to be set, blocking if necessary
 SignalField Synapse::wait( const uint32_t timeoutMs ) const
 {
-    if ( *this && &me == _thread ) {
+    if ( *this and &me == _thread ) {
         return me.wait( _signals, timeoutMs );
     }
     else {
-        return 0UL;
+        return 0U;
     }
 }

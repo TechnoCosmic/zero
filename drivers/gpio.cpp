@@ -66,7 +66,7 @@ namespace {
     #endif
 
 
-    PinField _allocatedPins{ 0ULL };                    // for quick determination of available pins
+    PinField _allocatedPins{ 0UL };                     // for quick determination of available pins
     List<Gpio> _gpioList;                               // for PCINTs
     uint8_t _lastKnownInputs[] = {
         // pin change state tracking
@@ -154,7 +154,7 @@ Gpio::Gpio(
     {
         ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
             if ( _allocatedPins & pins ) {
-                return 0ULL;                            // pins could not be allocated
+                return 0UL;                             // pins could not be allocated
             }
             else {
                 _allocatedPins |= pins;                 // add these to the quick set
@@ -399,7 +399,7 @@ uint32_t Gpio::getInputState() const
         #endif
 
         // now merge them into the [almost] final PinField
-        PinField rc{ 0ULL };
+        PinField rc{ 0UL };
 
         #ifdef PINA
             rc |= ( ( (PinField) pina ) << 0 );
@@ -426,7 +426,7 @@ uint32_t Gpio::getInputState() const
 uint32_t Gpio::getOutputState() const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        PinField rc{ 0ULL };
+        PinField rc{ 0UL };
 
         #ifdef PORTA
             rc |= ( ( (PinField) PORTA ) << 0 );
@@ -539,7 +539,7 @@ void Gpio::setInterrupts( const PinField pins )
 PinField Gpio::gatherAllInputPins()
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        PinField rc{ 0ULL };
+        PinField rc{ 0UL };
 
         #ifdef DDRA
             const uint8_t inputsA = ~DDRA;
@@ -579,7 +579,7 @@ void Gpio::handlePinChange( const uint8_t portNumber, const uint8_t newValue )
     Gpio* cur{ _gpioList.getHead() };
     PinField remaining{ changedField };
 
-    while ( remaining && cur ) {
+    while ( remaining and cur ) {
         const PinField curPins{ cur->getAllocatedPins() };
 
         if ( curPins & remaining ) {

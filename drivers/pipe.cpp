@@ -25,7 +25,7 @@ Pipe::Pipe( const uint16_t size )
 {
     // storage and tracking
     _buffer = (uint8_t*) memory::allocate( size, &_bufferSize );
-    _startIndex = _length = 0UL;
+    _startIndex = _length = 0U;
 }
 
 
@@ -76,7 +76,7 @@ bool Pipe::read( uint8_t& data )
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         bool rc{ false };
 
-        while ( isEmpty() && _dataAvailSyn ) {
+        while ( isEmpty() and _dataAvailSyn ) {
             _dataAvailSyn->wait();
             cli();
         }
@@ -95,7 +95,7 @@ bool Pipe::read( uint8_t& data )
             _length--;
 
             if ( _startIndex == _bufferSize ) {
-                _startIndex = 0UL;
+                _startIndex = 0U;
             }
 
             if ( _roomAvailSyn ) {
@@ -117,7 +117,7 @@ bool Pipe::write( const uint8_t data )
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         bool rc{ false };
 
-        while ( isFull() && _roomAvailSyn ) {
+        while ( isFull() and _roomAvailSyn ) {
             _roomAvailSyn->wait();
             cli();
         }
@@ -156,7 +156,7 @@ bool Pipe::write( const uint8_t data )
 void Pipe::flush()
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        _startIndex = _length = 0UL;
+        _startIndex = _length = 0U;
 
         if ( _dataAvailSyn ) {
             _dataAvailSyn->clearSignals();

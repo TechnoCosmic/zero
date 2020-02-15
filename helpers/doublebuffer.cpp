@@ -23,8 +23,8 @@ DoubleBuffer::DoubleBuffer( const uint16_t size )
 {
     if ( ( _buffer = (uint8_t*) memory::allocate( size, &_bufferSize ) ) ) {
         _pivot = _bufferSize / 2;
-        _writeOffset = 0UL;
-        _usedBytes = 0UL;
+        _writeOffset = 0U;
+        _usedBytes = 0U;
     }
 }
 
@@ -92,8 +92,8 @@ void DoubleBuffer::flush()
     const uint8_t oldSreg = SREG;
     cli();
 
-    _writeOffset = 0UL;
-    _usedBytes = 0UL;
+    _writeOffset = 0U;
+    _usedBytes = 0U;
 
     SREG = oldSreg;
 }
