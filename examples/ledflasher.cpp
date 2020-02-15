@@ -63,10 +63,10 @@ int LedFlasher::main()
 
     while ( true ) {
         led.switchOn();
-        me.wait( 0U, _timeOnMs );
+        me.wait( 0, _timeOnMs );
 
         led.switchOff();
-        me.wait( 0U, _timeOffMs );
+        me.wait( 0, _timeOffMs );
 
         if ( _flashesRemaining > 0 ) {
             _flashesRemaining--;
