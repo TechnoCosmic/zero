@@ -265,7 +265,7 @@ Blocks for a given number of milliseconds.
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```ms```|The amount of time to block for, in milliseconds.|
+|```ms```|The amount of time to block, in milliseconds.|
 
 ### Notes
 Equivalent to calling ```::wait( 0, ms )```.
