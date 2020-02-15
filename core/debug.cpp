@@ -24,7 +24,7 @@ namespace {
 
 #ifdef DEBUG_ENABLED
 
-    const int DEBUG_DELAY{ ( 10000UL / ( DEBUG_BAUD / 100 ) ) };
+    const int DEBUG_DELAY{ ( 10000U / ( DEBUG_BAUD / 100 ) ) };
     Gpio* _debugPin{ nullptr };
 
 #endif
@@ -81,7 +81,7 @@ void debug::print( const char* s, const bool fromFlash )
 {
 #ifdef DEBUG_ENABLED
     while ( true ) {
-        char c = *s;
+        char c{ *s };
 
         if ( fromFlash ) {
             c = pgm_read_byte( s );
@@ -111,7 +111,7 @@ void debug::assert( const bool v, const char* const msg, const int lineNumber )
 {
 #ifdef DEBUG_ENABLED
     if ( !v ) {
-        const char* const tName = me.getName();
+        const char* const tName{ me.getName() };
 
         if ( tName ) {
             debug::print( tName, true );

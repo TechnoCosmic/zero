@@ -37,7 +37,7 @@ namespace {
     auto _spiXferMode{ SpiXferMode::Tx };
     volatile uint8_t* _txCursor{ nullptr };
     volatile uint8_t* _rxCursor{ nullptr };
-    volatile uint32_t _xferBytes{ 0ULL };
+    volatile uint32_t _xferBytes{ 0UL };
 
     const Synapse* _spiReadySyn{ nullptr };
     SpiMemory* _curController{ nullptr };

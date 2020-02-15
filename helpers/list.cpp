@@ -136,9 +136,9 @@ void OffsetList<T>::remove( T& item )
 template <class T>
 void OffsetList<T>::insertByOffset( T& item, const uint32_t intendedOffsetFromNow )
 {
-    bool added = false;
-    uint32_t curOffsetFromNow = 0ULL;
-    T* cur = List<T>::getHead();
+    bool added{ false };
+    uint32_t curOffsetFromNow{ 0UL };
+    T* cur{ List<T>::getHead() };
 
     while ( cur ) {
         curOffsetFromNow += cur->_timeoutOffset;

@@ -56,7 +56,7 @@ void* memory::allocate(
     uint16_t* const allocatedBytes,
     const SearchStrategy strategy )
 {
-    void* rc = nullptr;
+    void* rc{ nullptr };
 
     if ( allocatedBytes ) {
         *allocatedBytes = 0UL;
@@ -64,8 +64,8 @@ void* memory::allocate(
 
     // critical section - one Thread allocating at a time, thank you
     ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        const uint16_t numPages = getNumPagesForBytes( bytesReqd );
-        const int16_t startPage = _sram.findFreePages( numPages, strategy );
+        const uint16_t numPages{ getNumPagesForBytes( bytesReqd ) };
+        const int16_t startPage{ _sram.findFreePages( numPages, strategy ) };
 
         // if there was a chunk the size we wanted
         if ( startPage >= 0 ) {
@@ -99,8 +99,8 @@ void memory::free( const void* const address, const uint16_t numBytes )
 {
     if ( address == nullptr ) return;
 
-    const uint16_t numPages = getNumPagesForBytes( numBytes );
-    const uint16_t startPage = getPageForAddress( (uint16_t) address );
+    const uint16_t numPages{ getNumPagesForBytes( numBytes ) };
+    const uint16_t startPage{ getPageForAddress( (uint16_t) address ) };
 
     ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
         // run from the first page to the last, ensuring the bitmap says 'free'

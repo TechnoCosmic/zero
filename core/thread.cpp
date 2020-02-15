@@ -59,21 +59,21 @@ namespace {
     // globals
     List<Thread> _readyLists[ 2 ];                      // the threads that will run
     OffsetList<Thread> _timeoutList;                    // the list of Threads wanting to sleep for a time
-    Thread* _currentThread = nullptr;                   // the currently executing thread
-    Thread* _idleThread = nullptr;                      // to run when there's nothing else to do, and only then
-    uint16_t _nextId = 0UL;                             // ID to use for the next Thread
-    volatile uint8_t _activeListNum = 0;                // which of the two ready lists are we using as the active list?
-    volatile uint32_t _milliseconds = 0ULL;             // 49 day millisecond counter
-    volatile bool _switchingEnabled = true;             // context switching ISR enabled?
+    Thread* _currentThread{ nullptr };                  // the currently executing thread
+    Thread* _idleThread{ nullptr };                     // to run when there's nothing else to do, and only then
+    uint16_t _nextId{ 0U };                             // ID to use for the next Thread
+    volatile uint8_t _activeListNum{ 0 };               // which of the two ready lists are we using as the active list?
+    volatile uint32_t _milliseconds{ 0UL };             // 49 day millisecond counter
+    volatile bool _switchingEnabled{ true };            // context switching ISR enabled?
 
     // constants
-    const uint8_t SIGNAL_BITS = sizeof( SignalField ) * 8;
-    const uint16_t REGISTER_COUNT = 32;
+    const uint8_t SIGNAL_BITS{ sizeof( SignalField ) * 8 };
+    const uint16_t REGISTER_COUNT{ 32 };
 
 #ifdef RAMPZ
-    const uint16_t EXTRAS_COUNT = 2;
+    const uint16_t EXTRAS_COUNT{ 2 };
 #else
-    const uint16_t EXTRAS_COUNT = 1;
+    const uint16_t EXTRAS_COUNT{ 1 };
 #endif
 
     const uint16_t MIN_STACK_BYTES = 128;
@@ -100,7 +100,7 @@ namespace {
     // choose the idle Thread.
     Thread* selectNextThread()
     {
-        Thread* rc = ACTIVE_LIST.getHead();
+        Thread* rc{ ACTIVE_LIST.getHead() };
 
         if ( !rc ) {
             SWAP_LISTS;
@@ -161,7 +161,7 @@ static void globalThreadEntry(
     int* const exitCode )
 {
     // run the thread and get its exit code
-    int ec = ( (ThreadEntry) entry )();
+    int ec{ ( (ThreadEntry) entry )() };
 
     // we don't want to be disturbed while cleaning up
     cli();
@@ -245,15 +245,15 @@ Thread::Thread(
     _id{ getNewThreadId() },
     _name{ name }
 {
-    const uint16_t stackTop = (uint16_t) _stackBottom + _stackSize - 1;
-    const uint16_t newStackTop = stackTop - ( PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT );
+    const uint16_t stackTop{ (uint16_t) _stackBottom + _stackSize - 1 };
+    const uint16_t newStackTop{ stackTop - ( PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT ) };
 
     // little helper for stack manipulation - yes, we're
     // going to deliberately index through a null pointer!
     #define SRAM ( (uint8_t*) 0 )
 
     // clear the stack
-    for ( auto i = (uint16_t) _stackBottom; i <= stackTop; i++ ) {
+    for ( auto i{ (uint16_t) _stackBottom }; i <= stackTop; i++ ) {
         SRAM[ i ] = 0;
     }
 
@@ -298,11 +298,11 @@ Thread::Thread(
 
     // signal defaults
     _allocatedSignals = SIG_ALL_RESERVED;
-    _waitingSignals = 0UL;
-    _currentSignals = 0UL;
+    _waitingSignals = 0U;
+    _currentSignals = 0U;
 
     // sleeping time
-    _timeoutOffset = 0ULL;
+    _timeoutOffset = 0UL;
 
     // ready to run?
     if ( flags & TF_READY ) {
@@ -497,7 +497,7 @@ ISR( TIMER0_COMPA_vect )
             curSleeper->_timeoutOffset--;
         }
 
-        while ( curSleeper && !curSleeper->_timeoutOffset ) {
+        while ( curSleeper and !curSleeper->_timeoutOffset ) {
             _timeoutList.remove( *curSleeper );
             curSleeper->signal( SIG_TIMEOUT );
 
@@ -522,12 +522,12 @@ ISR( TIMER0_COMPB_vect, ISR_NAKED )
 
         // faux priorities - if we're not the head of the active list, then
         // a switch is required so that we run the current head instead
-        if ( _switchingEnabled && _currentThread != ACTIVE_LIST.getHead() ) {
-            _currentThread->_ticksRemaining = 0UL;
+        if ( _switchingEnabled and _currentThread != ACTIVE_LIST.getHead() ) {
+            _currentThread->_ticksRemaining = 0;
         }
 
         // if the Thread has more time to run, or switching is disabled, bail
-        if ( _currentThread->_ticksRemaining || !_switchingEnabled ) {
+        if ( _currentThread->_ticksRemaining or !_switchingEnabled ) {
             // strategic goto to save undue additional
             // expansion of inline restoreRegisters()
             goto exit;
@@ -571,7 +571,7 @@ bool Thread::tryAllocateSignal( const uint16_t signalNumber )
 {
     if ( signalNumber >= SIGNAL_BITS ) return false;
 
-    const SignalField m = 1L << signalNumber;
+    const SignalField m{ 1U << signalNumber };
 
     if ( !( _allocatedSignals & m ) ) {
         _allocatedSignals |= m;
@@ -591,14 +591,14 @@ SignalField Thread::allocateSignal( const uint16_t reqdSignalNumber )
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         if ( reqdSignalNumber < SIGNAL_BITS ) {
             if ( tryAllocateSignal( reqdSignalNumber ) ) {
-                return 1L << reqdSignalNumber;
+                return 1U << reqdSignalNumber;
             }
         }
         else {
             // start checking after the reserved signals, for speed
             for ( auto i = RESERVED_SIGS; i < SIGNAL_BITS; i++ ) {
                 if ( tryAllocateSignal( i ) ) {
-                    return 1L << i;
+                    return 1U << i;
                 }
             }
         }
@@ -654,7 +654,7 @@ SignalField Thread::clearSignals( const SignalField sigs )
 // representing which of those signals woke the Thread up
 SignalField Thread::wait( const SignalField sigs, const uint32_t timeoutMs )
 {
-    SignalField rc = 0;
+    SignalField rc{ 0U };
 
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // A Thread can wait only on it's own signals.
@@ -706,7 +706,7 @@ SignalField Thread::wait( const SignalField sigs, const uint32_t timeoutMs )
         clearSignals( rc );
 
         // make sure that the timeout is disabled
-        _currentThread->_timeoutOffset = 0ULL;
+        _currentThread->_timeoutOffset = 0UL;
 
         // return the signals that woke us
         return rc;
@@ -724,15 +724,15 @@ void Thread::signal( const SignalField sigs )
         _currentSignals |= ( sigs & _allocatedSignals );
 
         // do we need to wake the Thread?
-        if ( _currentThread != this &&                  // if we're not signalling ourselves and,
-             !alreadySignalled &&                       // this thread isn't already in the active list, and,
+        if ( _currentThread != this and                 // if we're not signalling ourselves and,
+             !alreadySignalled and                      // this thread isn't already in the active list, and,
              getActiveSignals() )                       // it now has signals that would wake it up, ...
         {
             // ... then move it to the active list ready to run
 
             // if it's on the timeout list, take it off
             if ( _timeoutOffset ) {
-                this->_timeoutOffset = 0ULL;
+                this->_timeoutOffset = 0UL;
                 _timeoutList.remove( *this );
             }
 
