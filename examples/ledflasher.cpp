@@ -18,9 +18,9 @@ LedFlasher::LedFlasher(
     const char* const name,
     const PinField ledPins,
     const uint32_t delayMs,
-    const int count)
+    const int count )
 :
-    LedFlasher( name, ledPins, delayMs, delayMs, count )
+    LedFlasher{ name, ledPins, delayMs, delayMs, count }
 {
     // empty
 }
@@ -35,10 +35,10 @@ LedFlasher::LedFlasher(
 :
     // call parent ctor, with entryPoint as a lambda.
     // This is a stub that just calls ::main()
-    Thread( name, 0, []()
+    Thread{ name, 0, []()
     {
-        return ((LedFlasher&) me).main();
-    }),
+        return ( ( LedFlasher& ) me ).main();
+    } },
 
     // other init
     _ledPins{ ledPins },
@@ -53,7 +53,7 @@ LedFlasher::LedFlasher(
 // the main body of the Thread
 int LedFlasher::main()
 {
-    Gpio led( _ledPins );
+    Gpio led{ _ledPins };
 
     if ( !led ) {
         return 20;

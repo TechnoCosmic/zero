@@ -69,13 +69,12 @@ Once the transfer has begun, control wil return to your code. Once the transfer 
 
 int spiMemoryDemo
 {
-    Gpio csPin( ZERO_PINB4 );                           // CS for the SPI memory chip
+    Gpio csPin{ ZERO_PINB4 };                           // CS for the SPI memory chip
     Synapse sramReadySig;                               // to learn when the xfer is done
-    SpiMemory extSram(
+    SpiMemory extSram{
         131072UL,                                       // I'm using a 23LCV1024 (1Mbit)
         csPin,
-        sramReadySig
-    );
+        sramReadySig };
 
     // wait for the SRAM to be ready (immediately after init, thankfully!)
     sramReadySig.wait();
@@ -87,7 +86,7 @@ int spiMemoryDemo
     // ...
 
     // allocate somewhere to put the incoming data
-    auto buffer = (char*) memory::allocate(19);
+    auto buffer{ (char*) memory::allocate( 19 ) };
 
     // wait for it to be done, then read it back
     sramReadySig.wait();

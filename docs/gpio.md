@@ -50,7 +50,7 @@ See ```examples/pinchangedemo``` and ```examples/ledflasher``` for more informat
 
 int myThread
 {
-    Gpio arduinoUnoLed( ZERO_PINB5 );
+    Gpio arduinoUnoLed{ ZERO_PINB5 };
 
     // check to see if it allocated correctly
     if (arduinoUnoLed) {
@@ -58,7 +58,7 @@ int myThread
         arduinoUnoLed.switchOff();
 
         // flash 25 times and then exit
-        for (auto i = 0; i < 50; i++) {
+        for ( auto i{ 0U }; i < 50; i++ ) {
             arduinoUnoLed.toggle();
             me.wait( 0, 500 );
         }

@@ -76,7 +76,7 @@ namespace {
     const uint16_t EXTRAS_COUNT{ 1 };
 #endif
 
-    const uint16_t MIN_STACK_BYTES = 128;
+    const uint16_t MIN_STACK_BYTES{ 128U };
 
     // the offsets from the stack top (as seen AFTER all the registers have been pushed onto
     // the stack already) of each of the nine (9) parameters that are register-passed by GCC
@@ -596,7 +596,7 @@ SignalField Thread::allocateSignal( const uint16_t reqdSignalNumber )
         }
         else {
             // start checking after the reserved signals, for speed
-            for ( auto i = RESERVED_SIGS; i < SIGNAL_BITS; i++ ) {
+            for ( auto i{ RESERVED_SIGS }; i < SIGNAL_BITS; i++ ) {
                 if ( tryAllocateSignal( i ) ) {
                     return 1U << i;
                 }
@@ -613,7 +613,7 @@ void Thread::freeSignals( const SignalField signals )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // can't free the reserved signals
-        const SignalField sigsTofree = signals & ~SIG_ALL_RESERVED;
+        const SignalField sigsTofree{ signals & ~SIG_ALL_RESERVED };
 
         _allocatedSignals &= ~sigsTofree;
         _waitingSignals &= ~sigsTofree;
@@ -718,7 +718,7 @@ SignalField Thread::wait( const SignalField sigs, const uint32_t timeoutMs )
 void Thread::signal( const SignalField sigs )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        const bool alreadySignalled = getActiveSignals();
+        const bool alreadySignalled{ getActiveSignals() };
 
         // set the signals
         _currentSignals |= ( sigs & _allocatedSignals );
@@ -762,7 +762,7 @@ int main()
     debug::init();
 
     // create the idle Thread
-    _idleThread = new Thread( PSTR( "idle" ), 0, idleThreadEntry, TF_NONE );
+    _idleThread = new Thread{ PSTR( "idle" ), 0, idleThreadEntry, TF_NONE };
 
     // start Timer0 (does not enable global ints)
     initTimer0();

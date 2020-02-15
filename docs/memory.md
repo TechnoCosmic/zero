@@ -41,7 +41,7 @@ Allocates SRAM for use by the caller.
 int memoryDemo()
 {
     uint16_t allocatedBytes = 0U;
-    auto myBuffer = (char*) memory::allocate( 35, &allocatedBytes, memory::SearchStrategy::TopDown );
+    auto myBuffer{ (char*) memory::allocate( 35, &allocatedBytes, memory::SearchStrategy::TopDown ) };
 
     // do stuff with the memory here...
 

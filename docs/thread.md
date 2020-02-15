@@ -62,19 +62,19 @@ int startup_sequence()
     // from here to do some asynchronous work
 
     // this is where the child Thread will store it's return code
-    int asyncReturnCode = 0;
+    int asyncReturnCode{ 0 };
 
     // this Synapse will be used to learn when the child Thread terminates
     Synapse asyncTermSyn;
 
     // define and launch the Thread
-    new Thread(
+    new Thread{
         PSTR( "asyncDemo" ),
         192,
         myAsyncThread,
         TF_READY,
         &asyncTermSyn,
-        &asyncReturnCode);
+        &asyncReturnCode };
 
     // do other work while that's going
     // ...
@@ -246,7 +246,7 @@ This can be used to optionally provide a timeout for the call. If you only want 
 ```
     SignalField wokeSigs = me.wait( SIG_TIMEOUT, 500 );
 
-    if (wokeSigs & SIG_TIMEOUT) {
+    if ( wokeSigs & SIG_TIMEOUT ) {
         // ...
     }
 ```

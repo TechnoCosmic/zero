@@ -20,10 +20,10 @@ PinChangeDemo::PinChangeDemo(
 :
     // call parent ctor, with entryPoint as a lambda.
     // This is a stub that just calls ::main()
-    Thread( name, 0, []()
+    Thread{ name, 0, []()
     {
-        return ((PinChangeDemo&) me).main();
-    }),
+        return ( ( PinChangeDemo& ) me ).main();
+    } },
 
     // other init
     _pins{ pins }
@@ -35,7 +35,7 @@ PinChangeDemo::PinChangeDemo(
 int PinChangeDemo::main()
 {
     Synapse listenSyn;
-    Gpio listenPins( _pins, listenSyn );
+    Gpio listenPins{ _pins, listenSyn };
 
     if ( !listenPins ) {
         return 20;

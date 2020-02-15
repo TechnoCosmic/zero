@@ -38,8 +38,8 @@ SoftwareTx::SoftwareTx(
 int SoftwareTx::main()
 {
     SuartTx tx;
-    Gpio txPins( _txPins );
     Synapse txReadySyn;    // to learn when we can transmit again
+    Gpio txPins{ _txPins };
 
     // make sure they all claimed their resources
     if ( txPins and txReadySyn and tx ) {
