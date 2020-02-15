@@ -244,13 +244,13 @@ Also be aware that a call to ```wait()``` does not necessarily block - if any of
 #### ```timeoutMs```
 This can be used to optionally provide a timeout for the call. If you only want a thread-friendly blocking delay (without waiting on any other signals), just use...
 ```
-    SignalField wokeSigs = me.wait( SIG_TIMEOUT, 500 );
+    auto wokeSigs{ me.wait( SIG_TIMEOUT, 500 ) };
 
     if ( wokeSigs & SIG_TIMEOUT ) {
         // ...
     }
 ```
-... replacing ```500``` with your desired delay. ```SIG_TIMEOUT``` is the reserved ```SignalField``` for timeouts.
+... replacing ```500``` with your desired delay. ```SIG_TIMEOUT``` is the reserved ```SignalField``` for timeouts. Alternatively, you can use ```::delay()``` (see below).
 
 If you are waiting on other signals and want a timeout as well, you do not need to specify the ```SIG_TIMEOUT``` flag, but you can if you want to, for clarity.
 
