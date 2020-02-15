@@ -254,6 +254,22 @@ This can be used to optionally provide a timeout for the call. If you only want 
 
 If you are waiting on other signals and want a timeout as well, you do not need to specify the ```SIG_TIMEOUT``` flag, but you can if you want to, for clarity.
 
+## delay()
+Blocks for a given number of milliseconds.
+```
+    void Thread::delay(
+        const uint32_t ms
+        )
+```
+
+### Parameters
+|Param|Description|
+|-----|-----------|
+|```ms```|The amount of time to block for, in milliseconds.|
+
+### Notes
+Equivalent to calling ```::wait( 0, ms )```.
+
 ## signal()
 Signals a Thread, potentially waking it up.
 ```
