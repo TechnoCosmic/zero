@@ -122,12 +122,6 @@ bool Pipe::write( const uint8_t data )
             cli();
         }
 
-        uint16_t index = _startIndex + _length;
-
-        if ( index >= _bufferSize ) {
-            index -= _bufferSize;
-        }
-
         // invoke the filter
         bool doIt{ true };
         uint8_t dataToWrite{ data };
@@ -137,6 +131,13 @@ bool Pipe::write( const uint8_t data )
         }
 
         if ( doIt ) {
+            // work out where to put the incoming byte
+            uint16_t index { _startIndex + _length };
+
+            if ( index >= _bufferSize ) {
+                index -= _bufferSize;
+            }
+
             _buffer[ index ] = dataToWrite;
             _length++;
 
