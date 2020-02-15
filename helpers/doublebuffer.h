@@ -20,6 +20,8 @@ namespace zero {
         DoubleBuffer( const uint16_t size );
         ~DoubleBuffer();
 
+        explicit operator bool() const;
+
         bool write( const uint8_t d );
         uint8_t* getCurrentBuffer( uint16_t& numBytes );
         void flush();

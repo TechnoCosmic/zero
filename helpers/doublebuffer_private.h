@@ -7,8 +7,8 @@
 
 
 private:
-    uint8_t* _buffer{ nullptr };
-    uint16_t _bufferSize{ 0 };
-    uint16_t _pivot{ 0 };
-    uint16_t _writeOffset{ 0 };
-    uint16_t _usedBytes{ 0 };
+    uint8_t* const _buffer;
+    uint16_t _bufferSize;
+    const uint16_t _pivot;
+    uint16_t _writeOffset;
+    uint16_t _usedBytes;

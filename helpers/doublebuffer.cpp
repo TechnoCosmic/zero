@@ -20,12 +20,13 @@ using namespace zero;
 
 // ctor
 DoubleBuffer::DoubleBuffer( const uint16_t size )
+:
+    _buffer{ (uint8_t*) memory::allocate( size, &_bufferSize ) },
+    _pivot{ _bufferSize / 2 },
+    _writeOffset{ 0 },
+    _usedBytes{ 0 }
 {
-    if ( ( _buffer = (uint8_t*) memory::allocate( size, &_bufferSize ) ) ) {
-        _pivot = _bufferSize / 2;
-        _writeOffset = 0;
-        _usedBytes = 0;
-    }
+    // empty
 }
 
 
@@ -36,11 +37,17 @@ DoubleBuffer::~DoubleBuffer()
 }
 
 
+DoubleBuffer::operator bool() const
+{
+    return _buffer;
+}
+
+
 // Writes a byte to the active buffer.
 bool DoubleBuffer::write( const uint8_t d )
 {
-    bool rc = false;
-    const uint8_t oldSreg = SREG;
+    bool rc{ false };
+    const uint8_t oldSreg{ SREG };
     cli();
 
     if ( _usedBytes < _pivot ) {
@@ -60,10 +67,10 @@ bool DoubleBuffer::write( const uint8_t d )
 // there's any data in it), and swaps buffers.
 uint8_t* DoubleBuffer::getCurrentBuffer( uint16_t& numBytes )
 {
-    const uint8_t oldSreg = SREG;
+    const uint8_t oldSreg{ SREG };
     cli();
 
-    uint8_t* rc = nullptr;
+    uint8_t* rc{ nullptr };
 
     // tell the caller how many bytes we have
     numBytes = _usedBytes;
@@ -89,7 +96,7 @@ uint8_t* DoubleBuffer::getCurrentBuffer( uint16_t& numBytes )
 // Clears the buffer
 void DoubleBuffer::flush()
 {
-    const uint8_t oldSreg = SREG;
+    const uint8_t oldSreg{ SREG };
     cli();
 
     _writeOffset = 0;
