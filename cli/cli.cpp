@@ -111,18 +111,18 @@ int Shell::main()
     Synapse rxDataSyn;
     CliRx rx{ _usartNumber };
 
-    if (!rxDataSyn || !rx) {
+    if (!rxDataSyn or !rx) {
         return 20;
     }
 
     rx.setCommsParams( _baud );
-    rx.enable( CLI_RX_BYTES, rxDataSyn, 0UL );
+    rx.enable( CLI_RX_BYTES, rxDataSyn, nullptr );
 
     // set up the transmitter
     Synapse txReadySyn;
     CliTx tx{ _usartNumber };
     
-    if (!txReadySyn || !tx) {
+    if (!txReadySyn or !tx) {
         return 20;
     }
 

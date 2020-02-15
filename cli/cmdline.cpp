@@ -90,14 +90,14 @@ uint8_t CommandLine::tokenize( char* s, char* argv[] )
     bool lastWasSeparator = true;
     bool inQuotes = false;
 
-    while ( *s && tokenCount < 16 ) {
+    while ( *s and tokenCount < 16 ) {
         if ( *s == '\"' ) {
             inQuotes = !inQuotes;
             *s = 0;
             lastWasSeparator = true;
         }
         else {
-            if ( inQuotes || !isspace( *s ) ) {
+            if ( inQuotes or !isspace( *s ) ) {
                 if ( lastWasSeparator ) {
                     argv[ tokenCount++ ] = s;
                 }
