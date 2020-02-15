@@ -140,7 +140,7 @@ bool SuartTx::transmit(
     const uint16_t sz,
     const bool allowBlock )
 {
-    if ( allowBlock && _txReadySyn ) {
+    if ( allowBlock and _txReadySyn ) {
         _txReadySyn->wait();
     }
 

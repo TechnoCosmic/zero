@@ -168,7 +168,7 @@ bool UsartTx::transmit(
     const uint16_t sz,
     const bool allowBlock )
 {
-    if ( allowBlock && _txReadySyn ) {
+    if ( allowBlock and _txReadySyn ) {
         _txReadySyn->wait();
     }
 
@@ -212,7 +212,7 @@ bool UsartTx::getNextTxByte( uint8_t& data )
 
 void UsartTx::byteTxComplete()
 {
-    if ( !_txBytesRemaining && _txBuffer ) {
+    if ( !_txBytesRemaining and _txBuffer ) {
         _txBuffer = nullptr;
 
         if ( _txReadySyn ) {

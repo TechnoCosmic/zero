@@ -42,7 +42,7 @@ int SoftwareTx::main()
     Synapse txReadySyn;    // to learn when we can transmit again
 
     // make sure they all claimed their resources
-    if ( txPins && txReadySyn && tx ) {
+    if ( txPins and txReadySyn and tx ) {
         // set up the communications
         tx.setCommsParams( 9600, txPins );
         tx.enable( txReadySyn );
