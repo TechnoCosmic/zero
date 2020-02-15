@@ -283,12 +283,14 @@ bool UsartRx::enable( const uint16_t bufferSize, Synapse& rxSyn, Synapse* ovfSyn
         _rxBuffer = nullptr;
 
         if ( ( _rxBuffer = new DoubleBuffer( bufferSize ) ) ) {
-            rc = true;
+            if ( *_rxBuffer) {
+                rc = true;
 
-            _rxDataReceivedSyn = &rxSyn;
-            _rxOverflowSyn = ovfSyn;
+                _rxDataReceivedSyn = &rxSyn;
+                _rxOverflowSyn = ovfSyn;
 
-            UCSRB( _deviceNum ) |= RX_BITS;
+                UCSRB( _deviceNum ) |= RX_BITS;
+            }
         }
 
         return rc;
