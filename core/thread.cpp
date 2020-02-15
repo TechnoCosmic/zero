@@ -33,12 +33,12 @@ using namespace zero;
 
 
 // Ready list helpers, to make list accessing and swapping easy and QUICK
-#define ACTIVE_LIST_NUM ( _activeListNum )
-#define EXPIRED_LIST_NUM ( _activeListNum ^ 1 )
-#define SWAP_LISTS _activeListNum ^= 1;
+#define ACTIVE_LIST_NUM     ( _activeListNum )
+#define EXPIRED_LIST_NUM    ( _activeListNum ^ 1 )
+#define SWAP_LISTS          _activeListNum ^= 1;
 
-#define ACTIVE_LIST _readyLists[ ACTIVE_LIST_NUM ]
-#define EXPIRED_LIST _readyLists[ EXPIRED_LIST_NUM ]
+#define ACTIVE_LIST         _readyLists[ ACTIVE_LIST_NUM ]
+#define EXPIRED_LIST        _readyLists[ EXPIRED_LIST_NUM ]
 
 
 // main() is naked because we don't care for the setup upon
