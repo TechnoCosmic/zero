@@ -29,7 +29,7 @@ namespace zero {
     private:
         uint8_t tokenize( char* s, char* argv[] );
 
-        char* _buffer;
+        char* const _buffer;
         uint16_t _bufferSize;
         uint16_t _cursor;
     };
