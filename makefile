@@ -91,7 +91,7 @@ FLAGS += -Idrivers/
 FLAGS += -Ihelpers/
 
 # #define pass-throughs
-FLAGS += -DF_CPU=$(F_CPU_MHZ)'000'000ULL
+FLAGS += -DF_CPU=$(F_CPU_MHZ)'000'000UL
 FLAGS += -DF_CPU_MHZ=$(F_CPU_MHZ)U
 FLAGS += -DPC_COUNT=$(PC_COUNT)
 FLAGS += -DPAGE_BYTES=$(PAGE_BYTES)
@@ -102,7 +102,9 @@ FLAGS += -DSPI_CFG=$(SPI_CFG)
 
 # warnings control
 FLAGS += -Wall
+FLAGS += -Wextra
 FLAGS += -Wno-return-type
+FLAGS += -Wno-sized-deallocation
 
 # drivers
 ifeq ($(ZERO_DRIVERS_SPIMEM),1)
