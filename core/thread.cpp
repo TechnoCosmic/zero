@@ -76,7 +76,7 @@ namespace {
     const uint16_t EXTRAS_COUNT{ 1 };
 #endif
 
-    const uint16_t MIN_STACK_BYTES{ 128U };
+    const uint16_t MIN_STACK_BYTES{ 128 };
 
     // the offsets from the stack top (as seen AFTER all the registers have been pushed onto
     // the stack already) of each of the nine (9) parameters that are register-passed by GCC
@@ -126,7 +126,7 @@ namespace {
     // zero's heartbeat
     void initTimer0()
     {
-        #define SCALE( x ) ( ( F_CPU_MHZ * ( x ) ) / 16U )
+        #define SCALE( x )      ( ( F_CPU_MHZ * ( x ) ) / 16U )
 
         #ifndef TIMSK0
             #define TIMSK0 TIMSK
@@ -156,7 +156,7 @@ namespace {
 static void globalThreadEntry(
     Thread& t,
     const uint32_t entry,
-    const ThreadFlags flags,
+    const ThreadFlags,
     Synapse* const notifySyn,
     int* const exitCode )
 {
@@ -165,6 +165,20 @@ static void globalThreadEntry(
 
     // we don't want to be disturbed while cleaning up
     cli();
+
+    // Thread should NOT have signals still allocated,
+    // other than reserved signals. This is a check to
+    // ensure the Thread was well-behaved. If a Thread
+    // doesn't deallocate all of it's signals, it means
+    // there's a reference out there somewhere, via a
+    // Synapse, to this Thread (if there wasn't, the
+    // Synapses would have deallocated all the signals).
+    // If there's a reference to this Thread somewhere,
+    // then this Thread cannot be recycled in a Thread
+    // pool, since any new Thread occupying this object
+    // may be signalled in error via that old Synapse,
+    // and that's bad, m'kay?
+    dbg_assert( !t.getAllocatedSignals( true ), "Signals remain" );
 
     // return the exit code if someone wants it
     if ( exitCode ) {
@@ -232,7 +246,7 @@ bool Thread::isSwitchingEnabled()
 
 // ctor
 Thread::Thread(
-    const char* const name,
+    const char* const name,                             // name of Thread, points to Flash memory
     const uint16_t stackSize,                           // size of the stack, in bytes
     const ThreadEntry entry,                            // the Thread's entry function
     const ThreadFlags flags,                            // Optional flags
@@ -241,7 +255,8 @@ Thread::Thread(
 :
     _stackBottom{ (uint8_t*) memory::allocate(
         MAX( stackSize, MIN_STACK_BYTES ),
-        &_stackSize, memory::SearchStrategy::TopDown ) },
+        &_stackSize,
+        memory::SearchStrategy::TopDown ) },
     _id{ getNewThreadId() },
     _name{ name }
 {
@@ -618,6 +633,20 @@ void Thread::freeSignals( const SignalField signals )
         _allocatedSignals &= ~sigsTofree;
         _waitingSignals &= ~sigsTofree;
         _currentSignals &= ~sigsTofree;
+    }
+}
+
+
+// Returns the currently allocated signals
+SignalField Thread::getAllocatedSignals( const bool userOnly ) const
+{
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+        if ( userOnly ) {
+            return _allocatedSignals & ~SIG_ALL_RESERVED;
+        }
+        else {
+            return _allocatedSignals;
+        }
     }
 }
 

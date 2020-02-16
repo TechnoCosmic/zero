@@ -64,6 +64,7 @@ namespace zero {
         // Signals Management
         SignalField allocateSignal( const uint16_t reqdSignalNumber = -1 );
         void freeSignals( const SignalField signals );
+        SignalField getAllocatedSignals( const bool userOnly = false ) const;
 
         SignalField getCurrentSignals() const;
         SignalField clearSignals( const SignalField sigs );
