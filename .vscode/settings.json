@@ -5,9 +5,9 @@
     "window.zoomLevel": 0,
 
     "workbench.colorCustomizations": {
-        "editor.background": "#010101",
+        "editor.background": "#000000",
         "editorRuler.foreground": "#181818",
-        "sideBar.background": "#060606",
+        "sideBar.background": "#080808",
     },
 
     "terminal.integrated.rendererType": "dom",
@@ -19,7 +19,7 @@
     "editor.highlightActiveIndentGuide": false,
     
     "editor.minimap.enabled": false,
-    "editor.minimap.maxColumn": 80,
+    "editor.minimap.maxColumn": 90,
     
     "editor.rulers": [56, 90, 120],
 }
