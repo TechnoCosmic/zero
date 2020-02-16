@@ -94,7 +94,7 @@ static uint16_t getPageForSearchStep_BottomUp( const uint16_t step, const uint16
 // search strategy - BottomUp starts searching the allocation table at the bottom and works up
 static uint16_t getPageForSearchStep_BottomUp(
     const uint16_t step,
-    const uint16_t totalPages )
+    const uint16_t )
 {
     return step;
 }
