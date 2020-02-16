@@ -24,15 +24,32 @@ namespace {
 
 
 CommandLine::CommandLine( const uint16_t size )
+:
+    _buffer{ (char*) memory::allocate( size, &_bufferSize ) }
 {
-    _buffer = (char*) memory::allocate( size, &_bufferSize );
-    clear();
+    if ( *this ) {
+        clear();
+    }
 }
 
 
 CommandLine::~CommandLine()
 {
     memory::free( _buffer, _bufferSize );
+}
+
+
+// validity checking
+CommandLine::operator bool() const
+{
+    return _buffer;
+}
+
+
+void CommandLine::clear()
+{
+    _cursor = 0;
+    _buffer[ 0 ] = 0;
 }
 
 
@@ -67,20 +84,6 @@ void CommandLine::process()
     if ( argc ) {
         // dispatch here
     }
-}
-
-
-void CommandLine::clear()
-{
-    _cursor = 0;
-    _buffer[ 0 ] = 0;
-}
-
-
-// validity checking
-CommandLine::operator bool() const
-{
-    return _buffer;
 }
 
 
