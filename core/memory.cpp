@@ -62,28 +62,30 @@ void* memory::allocate(
         *allocatedBytes = 0;
     }
 
-    // critical section - one Thread allocating at a time, thank you
-    ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
-        const uint16_t numPages{ getNumPagesForBytes( bytesReqd ) };
-        const int16_t startPage{ _sram.findFreePages( numPages, strategy ) };
+    if ( bytesReqd ) {
+        // critical section - one Thread allocating at a time, thank you
+        ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
+            const uint16_t numPages{ getNumPagesForBytes( bytesReqd ) };
+            const int16_t startPage{ _sram.findFreePages( numPages, strategy ) };
 
-        // if there was a chunk the size we wanted
-        if ( startPage >= 0 ) {
-            // mark the pages as no longer available
-            for ( uint16_t curPageNumber = startPage;
-                curPageNumber < startPage + numPages;
-                curPageNumber++ )
-            {
-                _sram.markAsUsed( curPageNumber );
+            // if there was a chunk the size we wanted
+            if ( startPage >= 0 ) {
+                // mark the pages as no longer available
+                for ( uint16_t curPageNumber = startPage;
+                    curPageNumber < startPage + numPages;
+                    curPageNumber++ )
+                {
+                    _sram.markAsUsed( curPageNumber );
+                }
+
+                // tell the caller how much we gave them
+                if ( allocatedBytes ) {
+                    *allocatedBytes = numPages * PAGE_BYTES;
+                }
+
+                // outta here
+                rc = (void*) getAddressForPage( startPage );
             }
-
-            // tell the caller how much we gave them
-            if ( allocatedBytes ) {
-                *allocatedBytes = numPages * PAGE_BYTES;
-            }
-
-            // outta here
-            rc = (void*) getAddressForPage( startPage );
         }
     }
 
@@ -97,7 +99,7 @@ void* memory::allocate(
 // first place.
 void memory::free( const void* const address, const uint16_t numBytes )
 {
-    if ( address == nullptr ) return;
+    if ( !address or !numBytes ) return;
 
     const uint16_t numPages{ getNumPagesForBytes( numBytes ) };
     const uint16_t startPage{ getPageForAddress( (uint16_t) address ) };
@@ -143,7 +145,7 @@ void __cxa_guard_release( __guard* g )
 }
 
 
-void __cxa_guard_abort( __guard* g )
+void __cxa_guard_abort( __guard* )
 {
     ;
 }
