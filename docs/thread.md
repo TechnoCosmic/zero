@@ -156,6 +156,8 @@ Returns a pointer into Flash memory that contains the name of the Thread.
 ```
 
 ## allocateSignal()
+*** NOTE: *** You cannot use ```allocateSignal()``` and ```freeSignals()``` directly - use ```Synapse``` to manage signals instead. These methods are private to the ```Thread``` and are presented for documentation purposes only.
+
 Allocates a signal for use.
 ```
     SignalField Thread::allocateSignal(
@@ -178,6 +180,8 @@ This function returns a ```SignalField``` that represents the allocated signal. 
 ***NOTE:*** Do not call ```allocateSignal()``` or ```freeSignals()``` directly. Instead, create a ```Synapse``` on the stack and use it wherever a ```Synapse``` or ```SignalField``` would be expected. See the example code throughout the documentation for usage.
 
 ## freeSignals()
+*** NOTE: *** You cannot use ```allocateSignal()``` and ```freeSignals()``` directly - use ```Synapse``` to manage signals instead. These methods are private to the ```Thread``` and are presented for documentation purposes only.
+
 Frees a previously allocated signal(s) for re-use.
 ```
     void Thread::freeSignals(

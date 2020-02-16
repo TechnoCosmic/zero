@@ -17,18 +17,18 @@ namespace zero {
 
     // class decl because chicken/egg
     class Synapse;
-
+    
     typedef int ( *ThreadEntry )();
 
     typedef uint16_t SignalField;
     typedef uint16_t ThreadFlags;
 
     const ThreadFlags TF_NONE = 0;
-    const ThreadFlags TF_READY = ( 1L << 0 );
+    const ThreadFlags TF_READY = ( 1 << 0 );
 
     // reserved signals
     const auto RESERVED_SIGS = 1;
-    const SignalField SIG_TIMEOUT = ( 1L << 0 );
+    const SignalField SIG_TIMEOUT = ( 1 << 0 );
     const SignalField SIG_ALL_RESERVED = SIG_TIMEOUT;
 
     // Thread class
@@ -61,11 +61,7 @@ namespace zero {
         // Stack information
         uint16_t getPeakStackUsage() const;
 
-        // Signals Management
-        SignalField allocateSignal( const uint16_t reqdSignalNumber = -1 );
-        void freeSignals( const SignalField signals );
         SignalField getAllocatedSignals( const bool userOnly = false ) const;
-
         SignalField getCurrentSignals() const;
         SignalField clearSignals( const SignalField sigs );
 

@@ -19,12 +19,19 @@ public:
     Thread* _next;
 
 private:
+    friend class Synapse;
+
     Thread( const Thread& t ) = delete;
     void operator=( const Thread& t ) = delete;
+
+    // Signals Management
+    SignalField allocateSignal( const uint16_t reqdSignalNumber = -1 );
+    void freeSignals( const SignalField signals );
 
     SignalField getActiveSignals() const;
     bool tryAllocateSignal( const uint16_t signalNumber );
 
+    // more TCB
     uint8_t* const _stackBottom;
     uint16_t _stackSize;
 
