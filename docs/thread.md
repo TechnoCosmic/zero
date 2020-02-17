@@ -3,9 +3,15 @@
 
 The ```Thread``` class handles the management of individual Threads within the zero kernel.
 
+# startup_sequence()
+```
+    int startup_sequence()
+```
+
+Because zero has hijacked ```main()``` for it's own initialization purposes, your program will use ```startup_sequence()``` to initialize itself and spawn your initial threads. Code inside ```startup_sequence()``` does NOT run in the context of a Thread, so don't block, don't do anything complicated. Set up you initial state and spawn your initial ```Threads```.
+
 ## Constructor
 Constructs a new Thread object, and begins executing it.
-
 ```
     Thread::Thread(
         const char* const name,
@@ -16,6 +22,7 @@ Constructs a new Thread object, and begins executing it.
         int* exitCode
         )
 ```
+
 ### Parameters
 |Param|Description|
 |-----|-----------|
@@ -93,6 +100,30 @@ int startup_sequence()
     return 0;
 }
 ```
+
+## fromPool()
+This static method returns a ```Thread``` from the system thread pool, if one is available. The total number of pool threads is set in the ```makefile``` - search for ```NUM_POOL_THREADS```. Right next to that setting is ```POOL_THREAD_STACK_BYTES```, which sets the size of the stack for pool threads.
+```
+    static Thread* Thread::fromPool(
+        const char* const name,
+        const ThreadEntry entryPoint,
+        const Synapse* const termSyn,
+        int* exitCode
+        )
+```
+
+### Parameters
+|Param|Description|
+|-----|-----------|
+|```name```|Name of the Thread. May be null. If non-null, points to a string in Flash memory.|
+|```entryPoint```|The function that contains the main body of the Thread's code.|
+|```termSyn```|A ```Synapse``` to signal when this ```Thread``` terminates. Optional.|
+|```exitCode```|A pointer to an ```int``` to store the return code from the Thread's ```entry``` function. Optional.|
+
+### Notes
+If no ```Threads``` are currently available in the thread pool, this method will return ```nullptr```. Otherwise, a pointer to the ```Thread``` will be returned and it will immediately begin executing.
+
+Pool threads are not intended to tasks that never exit - use a dedicated thread for those cases. Pool threads are best used for asychronous functions (as pool threads are faster to spin up) and in situations where you don't necessarily have the SRAM available for more dedicated threads.
 
 ## getCurrent()
 Returns the currently executing ```Thread``` object.
@@ -319,10 +350,3 @@ ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
 }
 ```
 There is also a zero equivalent of ```ATOMIC_FORCEON```, called ```ZERO_ATOMIC_FORCEON```, that behaves as you would expect.
-
-# startup_sequence()
-```
-    int startup_sequence()
-```
-
-Because zero has hijacked ```main()``` for it's own initialization purposes, your program will use ```startup_sequence()``` to initialize itself and spawn your initial threads.
