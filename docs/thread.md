@@ -1,14 +1,14 @@
-# Thread
-```zero/core/thread.h```
-
-The ```Thread``` class handles the management of individual Threads within the zero kernel.
-
 # startup_sequence()
 ```
     int startup_sequence()
 ```
 
 Because zero has hijacked ```main()``` for it's own initialization purposes, your program will use ```startup_sequence()``` to initialize itself and spawn your initial threads. Code inside ```startup_sequence()``` does NOT run in the context of a Thread, so don't block, don't do anything complicated. Set up you initial state and spawn your initial ```Threads```.
+
+# Thread
+```zero/core/thread.h```
+
+The ```Thread``` class handles the management of individual Threads within the zero kernel.
 
 ## Constructor
 Constructs a new Thread object, and begins executing it.
