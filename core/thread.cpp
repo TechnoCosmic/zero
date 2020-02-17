@@ -57,7 +57,8 @@ static void INLINE restoreInitialRegisters();
 
 namespace {
     // globals
-    List<Thread> _readyLists[ 2 ];                      // the threads that will run
+    List<Thread> _readyLists[ 2 ];                      // the Threads that will run
+    List<Thread> _poolThreadList;                       // the Threads waiting for code to run
     OffsetList<Thread> _timeoutList;                    // the list of Threads wanting to sleep for a time
     Thread* _currentThread{ nullptr };                  // the currently executing thread
     Thread* _idleThread{ nullptr };                     // to run when there's nothing else to do, and only then
@@ -156,7 +157,7 @@ namespace {
 static void globalThreadEntry(
     Thread& t,
     const uint32_t entry,
-    const ThreadFlags,
+    const ThreadFlags flags,
     Synapse* const notifySyn,
     int* const exitCode )
 {
@@ -198,8 +199,15 @@ static void globalThreadEntry(
     // superfluously in the yield() below
     _currentThread = nullptr;
 
-    // The stack will be deallocated in the Thread's dtor
-    delete &t;
+    // Pool Threads get returned to the pool, and
+    // other Threads get cleaned up
+    if ( flags & TF_POOL_THREAD ) {
+        _poolThreadList.append( t );
+    }
+    else {
+        // The stack will be deallocated in the Thread's dtor
+        delete &t;
+    }
 
     // NEXT!
     yield();
@@ -244,33 +252,22 @@ bool Thread::isSwitchingEnabled()
 }
 
 
-// ctor
-Thread::Thread(
+void Thread::reanimate(
     const char* const name,                             // name of Thread, points to Flash memory
-    const uint16_t stackSize,                           // size of the stack, in bytes
     const ThreadEntry entry,                            // the Thread's entry function
     const ThreadFlags flags,                            // Optional flags
     const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
     int* const exitCode )                               // Place to put Thread's return code
-:
-    _stackBottom{ (uint8_t*) memory::allocate(
-        MAX( stackSize, MIN_STACK_BYTES ),
-        &_stackSize,
-        memory::SearchStrategy::TopDown ) },
-    _id{ getNewThreadId() },
-    _name{ name }
 {
     const uint16_t stackTop{ (uint16_t) _stackBottom + _stackSize - 1 };
     const uint16_t newStackTop{ stackTop - ( PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT ) };
 
+    _id = getNewThreadId();
+    _name = name;
+
     // little helper for stack manipulation - yes, we're
     // going to deliberately index through a null pointer!
     #define SRAM ( (uint8_t*) 0 )
-
-    // clear the stack
-    for ( auto i{ (uint16_t) _stackBottom }; i <= stackTop; i++ ) {
-        SRAM[ i ] = 0;
-    }
 
     // 'push' the program counter onto the stack
     SRAM[ stackTop - 0 ] = ( ( (uint32_t) globalThreadEntry ) >> 0 ) & 0xFF;
@@ -294,7 +291,7 @@ Thread::Thread(
     SRAM[ newStackTop + getOffsetForParameter( 1 ) - 0 ] = ( ( (uint32_t) entry ) >> 16 ) & 0xFF;
     SRAM[ newStackTop + getOffsetForParameter( 1 ) - 1 ] = ( ( (uint32_t) entry ) >> 24 ) & 0xFF;
 
-    // set the flags
+    // Flags
     SRAM[ newStackTop + getOffsetForParameter( 3 ) - 0 ] = ( ( (uint16_t) flags ) >> 0 ) & 0xFF;
     SRAM[ newStackTop + getOffsetForParameter( 3 ) - 1 ] = ( ( (uint16_t) flags ) >> 8 ) & 0xFF;
 
@@ -318,11 +315,67 @@ Thread::Thread(
 
     // sleeping time
     _timeoutOffset = 0UL;
+}
 
-    // ready to run?
-    if ( flags & TF_READY ) {
-        // add the Thread into the ready list
-        ACTIVE_LIST.append( *this );
+
+// Removes a Thread from the pool (if one is available), and re-animates it.
+Thread* Thread::fromPool(
+    const char* const name,                             // name of the Thread (pointer to Flash, not SRAM)
+    const ThreadEntry entry,                            // the Thread's entry function
+    const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
+    int* const exitCode )                               // Place to put Thread's return code
+{
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+        Thread* rc{ nullptr };
+        
+        if ( ( rc = _poolThreadList.getHead() ) ) {
+            // make sure it doesn't get used by someone else
+            _poolThreadList.remove( *rc );
+
+            // insert new code into it
+            rc->reanimate(
+                name,
+                entry,
+                TF_READY | TF_POOL_THREAD,
+                termSyn,
+                exitCode );
+
+            // make sure it gets to run
+            ACTIVE_LIST.prepend( *rc );
+        }
+
+        return rc;
+    }
+}
+
+
+// ctor
+Thread::Thread(
+    const char* const name,                             // name of Thread, points to Flash memory
+    const uint16_t stackSize,                           // size of the stack, in bytes
+    const ThreadEntry entry,                            // the Thread's entry function
+    const ThreadFlags flags,                            // Optional flags
+    const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
+    int* const exitCode )                               // Place to put Thread's return code
+:
+    _stackBottom{ (uint8_t*) memory::allocate(
+        MAX( stackSize, MIN_STACK_BYTES ),
+        &_stackSize,
+        memory::SearchStrategy::TopDown ) }
+{
+    // Pool Threads get pooled immediately, ready for use
+    if ( flags & TF_POOL_THREAD ) {
+        _poolThreadList.append( *this );
+    }
+    else {
+        // 'normal' Threads get 'reanimated' immediately
+        reanimate( name, entry, flags, termSyn, exitCode );
+
+        // ready to run?
+        if ( flags & TF_READY ) {
+            // add the Thread into the ready list
+            ACTIVE_LIST.append( *this );
+        }
     }
 }
 
@@ -780,6 +833,21 @@ void Thread::signal( const SignalField sigs )
 }
 
 
+// Creates the Thread pool
+static void createPoolThreads()
+{
+    for ( auto i = 0; i < NUM_POOL_THREADS; i++ ) {
+        new Thread{
+            nullptr,                                    // no name yet
+            POOL_THREAD_STACK_BYTES,                    // one stack size to rule them all
+            nullptr,                                    // no entry point yet
+            TF_POOL_THREAD,                             // flags
+            nullptr,                                    // no term Synapse yet
+            nullptr };                                  // no place to put exit code yet
+    }
+}
+
+
 // Kickstart the system
 int main()
 {
@@ -797,8 +865,9 @@ int main()
     // initialize the debug serial TX first so that anything can use it
     debug::init();
 
-    // create the idle Thread
+    // create the system Threads
     _idleThread = new Thread{ PSTR( "idle" ), 0, idleThreadEntry, TF_NONE };
+    createPoolThreads();
 
     // start Timer0 (does not enable global ints)
     initTimer0();

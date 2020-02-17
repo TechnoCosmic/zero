@@ -25,6 +25,7 @@ namespace zero {
 
     const ThreadFlags TF_NONE = 0;
     const ThreadFlags TF_READY = ( 1 << 0 );
+    const ThreadFlags TF_POOL_THREAD = ( 1 << 1 );
 
     // reserved signals
     const auto RESERVED_SIGS = 1;
@@ -42,6 +43,12 @@ namespace zero {
         static void permit();                           // Enable context switching
         static bool isSwitchingEnabled();               // Determines if switching is on
 
+        static Thread* fromPool(
+            const char* const name,                     // name of the Thread (pointer to Flash, not SRAM)
+            const ThreadEntry entry,                    // the Thread's entry function
+            const Synapse* const termSyn = nullptr,     // Synapse to signal when Thread terminates
+            int* const exitCode = nullptr );            // Place to put Thread's return code
+        
         // constructor
         Thread(
             const char* const name,                     // name of the Thread (pointer to Flash, not SRAM)

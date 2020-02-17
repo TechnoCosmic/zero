@@ -24,6 +24,13 @@ private:
     Thread( const Thread& t ) = delete;
     void operator=( const Thread& t ) = delete;
 
+    void reanimate(
+        const char* const newName,                      // name of Thread, points to Flash memory
+        const ThreadEntry newEntry,                     // the Thread's entry function
+        const ThreadFlags newFlags,                     // Optional flags
+        const Synapse* const newTermSyn,                // Synapse to signal when Thread terminates
+        int* const newExitCode );                       // Place to put Thread's return code
+
     // Signals Management
     SignalField allocateSignal( const uint16_t reqdSignalNumber = -1 );
     void freeSignals( const SignalField signals );
@@ -39,5 +46,5 @@ private:
     SignalField _waitingSignals;
     SignalField _currentSignals;
 
-    const uint16_t _id;
-    const char* const _name;
+    uint16_t _id{ 0 };
+    const char* _name{ nullptr };
