@@ -327,7 +327,7 @@ Thread* Thread::fromPool(
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         Thread* rc{ nullptr };
-        
+
         if ( ( rc = _poolThreadList.getHead() ) ) {
             // make sure it doesn't get used by someone else
             _poolThreadList.remove( *rc );
@@ -363,19 +363,21 @@ Thread::Thread(
         &_stackSize,
         memory::SearchStrategy::TopDown ) }
 {
-    // Pool Threads get pooled immediately, ready for use
-    if ( flags & TF_POOL_THREAD ) {
-        _poolThreadList.append( *this );
-    }
-    else {
-        // 'normal' Threads get 'reanimated' immediately
-        reanimate( name, entry, flags, termSyn, exitCode );
-
-        // ready to run?
-        if ( flags & TF_READY ) {
-            // add the Thread into the ready list
-            ACTIVE_LIST.append( *this );
+    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+        // Pool Threads get pooled immediately, ready for use
+        if ( flags & TF_POOL_THREAD ) {
+            _poolThreadList.append( *this );
         }
+        else {
+            // normal Threads become 'animated' immediately
+            reanimate( name, entry, flags, termSyn, exitCode );
+
+            // ready to run?
+            if ( flags & TF_READY ) {
+                // add the Thread into the ready list
+                ACTIVE_LIST.append( *this );
+            }
+        }        
     }
 }
 
