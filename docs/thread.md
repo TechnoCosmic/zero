@@ -102,7 +102,7 @@ int startup_sequence()
 ```
 
 ## fromPool()
-This static method returns a ```Thread``` from the system thread pool, if one is available. The total number of pool threads is set in the ```makefile``` - search for ```NUM_POOL_THREADS```. Right next to that setting is ```POOL_THREAD_STACK_BYTES```, which sets the size of the stack for pool threads.
+This static method returns a ```Thread``` from the system thread pool, if one is available. The total number of pool threads is set in the ```makefile``` - search for ```NUM_POOL_THREADS```. Right next to that setting is ```POOL_THREAD_STACK_BYTES```, which sets the size of the stack for pool threads. By default, the ```makefile``` has pool threads switched OFF (```NUM_POOL_THREADS``` is 0).
 ```
     static Thread* Thread::fromPool(
         const char* const name,
