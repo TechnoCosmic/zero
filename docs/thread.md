@@ -144,6 +144,7 @@ Prevents context switching.
 This is a static method of the ```Thread``` class. Use this sparingly, for critical sections where context switching needs to be prevented temporarily.
 
 **NOTE:** This only suspends context switching (multi-tasking) - it does NOT disable interrupts.
+
 **NOTE:** ```forbid()``` and ```permit()``` do NOT nest - calling ```forbid()``` once will prevent context switching no matter how many times ```permit()``` was called prior. For a nested mechanism, see the ```ZERO_ATOMIC_BLOCK``` macro.
 
 ## permit()
