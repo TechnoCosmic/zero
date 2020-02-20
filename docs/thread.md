@@ -41,7 +41,7 @@ Constructs a new Thread object, and begins executing it.
 |Flag|Description|
 |----|-----------|
 |```TF_NONE```|No flags specified.|
-|```TF_READY```|Makes the Thread immediately available to execute|
+|```TF_READY```|Makes the Thread immediately available to execute.|
 
 - If you want to know when a child Thread terminates, allocate a signal via a ```Synapse``` and pass that as ```termSyn```. When the child Thread terminates, that ```Synapse``` will be signalled, and can be checked by calling ```getCurrentSignals()``` or by ```wait()```ing on it.
 
