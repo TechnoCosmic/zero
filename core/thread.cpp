@@ -56,6 +56,7 @@ static void INLINE restoreInitialRegisters();
 
 
 namespace {
+
     // globals
     List<Thread> _readyLists[ 2 ];                      // the Threads that will run
     List<Thread> _poolThreadList;                       // the Threads waiting for code to run
@@ -179,7 +180,12 @@ static void globalThreadEntry(
     // pool, since any new Thread occupying this object
     // may be signalled in error via that old Synapse,
     // and that's bad, m'kay?
-    dbg_assert( !t.getAllocatedSignals( true ), "Signals remain" );
+    if ( flags & TF_POOL_THREAD ) {
+        dbg_assert( !t.getAllocatedSignals( true ), "Signals remain" );
+
+        // TODO: Log the offending code, by storing its name
+        // in EEPROM.
+    }
 
     // return the exit code if someone wants it
     if ( exitCode ) {
@@ -844,7 +850,7 @@ static void createPoolThreads()
             POOL_THREAD_STACK_BYTES,                    // one stack size to rule them all
             nullptr,                                    // no entry point yet
             TF_POOL_THREAD,                             // flags
-            nullptr,                                    // no term Synapse yet
+            nullptr,                                    // no termination Synapse yet
             nullptr };                                  // no place to put exit code yet
     }
 }
