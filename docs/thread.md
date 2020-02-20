@@ -123,7 +123,7 @@ This static method returns a ```Thread``` from the system thread pool, if one is
 ### Notes
 If no ```Threads``` are currently available in the thread pool, this method will return ```nullptr```. Otherwise, a pointer to the ```Thread``` will be returned and it will immediately begin executing.
 
-Pool threads are not intended to tasks that never exit - use a dedicated thread for those cases. Pool threads are best used for asychronous functions (as pool threads are faster to spin up) and in situations where you don't necessarily have the SRAM available for more dedicated threads.
+Pool threads are not intended to tasks that never exit - use a dedicated thread for those cases. Pool threads are best used for asychronous functions (as pool threads are *significantly* faster to spin up) and in situations where you don't necessarily have the SRAM available for more dedicated threads.
 
 ## getCurrent()
 Returns the currently executing ```Thread``` object.
@@ -285,6 +285,7 @@ This can be used to optionally provide a timeout for the call. If you only want 
         // ...
     }
 ```
+
 ... replacing ```500``` with your desired delay. ```SIG_TIMEOUT``` is the reserved ```SignalField``` for timeouts. Alternatively, you can use ```::delay()``` (see below).
 
 If you are waiting on other signals and want a timeout as well, you do not need to specify the ```SIG_TIMEOUT``` flag, but you can if you want to, for clarity.
