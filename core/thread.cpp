@@ -829,8 +829,8 @@ void Thread::signal( const SignalField sigs )
 
             // if it's on the timeout list, take it off
             if ( _timeoutOffset ) {
-                this->_timeoutOffset = 0UL;
                 _timeoutList.remove( *this );
+                this->_timeoutOffset = 0UL;
             }
 
             // put it at the top of the active list, ready to go
