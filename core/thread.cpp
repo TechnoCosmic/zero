@@ -69,7 +69,7 @@ namespace {
     volatile bool _switchingEnabled{ true };            // context switching ISR enabled?
 
     // constants
-    const uint8_t SIGNAL_BITS{ sizeof( SignalField ) * 8 };
+    const uint8_t SIGNAL_BITS{ sizeof( SignalBitField ) * 8 };
     const uint16_t REGISTER_COUNT{ 32 };
 
 #ifdef RAMPZ
@@ -647,7 +647,7 @@ bool Thread::tryAllocateSignal( const uint16_t signalNumber )
 {
     if ( signalNumber >= SIGNAL_BITS ) return false;
 
-    const SignalField m{ 1U << signalNumber };
+    const SignalBitField m{ 1U << signalNumber };
 
     if ( !( _allocatedSignals & m ) ) {
         _allocatedSignals |= m;
@@ -662,7 +662,7 @@ bool Thread::tryAllocateSignal( const uint16_t signalNumber )
 // If you supply a specific signal number, only that signal will be
 // allocated, and only if it is currently free. Supplying -1 here
 // will let the kernel find a free signal number for you.
-SignalField Thread::allocateSignal( const uint16_t reqdSignalNumber )
+SignalBitField Thread::allocateSignal( const uint16_t reqdSignalNumber )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         if ( reqdSignalNumber < SIGNAL_BITS ) {
@@ -685,11 +685,11 @@ SignalField Thread::allocateSignal( const uint16_t reqdSignalNumber )
 
 
 // Frees a signal number and allows its re-use by the Thread
-void Thread::freeSignals( const SignalField signals )
+void Thread::freeSignals( const SignalBitField signals )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // can't free the reserved signals
-        const SignalField sigsTofree{ signals & ~SIG_ALL_RESERVED };
+        const SignalBitField sigsTofree{ signals & ~SIG_ALL_RESERVED };
 
         _allocatedSignals &= ~sigsTofree;
         _waitingSignals &= ~sigsTofree;
@@ -699,7 +699,7 @@ void Thread::freeSignals( const SignalField signals )
 
 
 // Returns the currently allocated signals
-SignalField Thread::getAllocatedSignals( const bool userOnly ) const
+SignalBitField Thread::getAllocatedSignals( const bool userOnly ) const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         if ( userOnly ) {
@@ -712,9 +712,9 @@ SignalField Thread::getAllocatedSignals( const bool userOnly ) const
 }
 
 
-// Returns a SignalField showing which signals are currently active,
+// Returns a SignalBitField showing which signals are currently active,
 // where "active" means that the Thread will wake up because of them
-SignalField Thread::getActiveSignals() const
+SignalBitField Thread::getActiveSignals() const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         return _currentSignals & _waitingSignals;
@@ -722,8 +722,8 @@ SignalField Thread::getActiveSignals() const
 }
 
 
-// Returns a SignalField showing which signals are currently set
-SignalField Thread::getCurrentSignals() const
+// Returns a SignalBitField showing which signals are currently set
+SignalBitField Thread::getCurrentSignals() const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         return _currentSignals;
@@ -732,7 +732,7 @@ SignalField Thread::getCurrentSignals() const
 
 
 // Clears a set of signals and returns the remaining ones
-SignalField Thread::clearSignals( const SignalField sigs )
+SignalBitField Thread::clearSignals( const SignalBitField sigs )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         return ( _currentSignals &= ~sigs );
@@ -747,11 +747,11 @@ void Thread::delay( const uint32_t ms )
 }
 
 
-// Waits for any of a set of signals, returning a SignalField
+// Waits for any of a set of signals, returning a SignalBitField
 // representing which of those signals woke the Thread up
-SignalField Thread::wait( const SignalField sigs, const uint32_t timeoutMs )
+SignalBitField Thread::wait( const SignalBitField sigs, const uint32_t timeoutMs )
 {
-    SignalField rc{ 0 };
+    SignalBitField rc{ 0 };
 
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // A Thread can wait only on it's own signals.
@@ -812,7 +812,7 @@ SignalField Thread::wait( const SignalField sigs, const uint32_t timeoutMs )
 
 
 // Send signals to a Thread, potentially waking it up
-void Thread::signal( const SignalField sigs )
+void Thread::signal( const SignalBitField sigs )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         const bool alreadySignalled{ getActiveSignals() };

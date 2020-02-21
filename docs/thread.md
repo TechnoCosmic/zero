@@ -192,7 +192,7 @@ Returns a pointer into Flash memory that contains the name of the Thread.
 
 Allocates a signal for use.
 ```
-    SignalField Thread::allocateSignal(
+    SignalBitField Thread::allocateSignal(
         const uint16_t reqdSignalNumber = -1
         )
 ```
@@ -203,13 +203,12 @@ Allocates a signal for use.
 |```reqdSignalNumber```|If you require a specific signal number for any reason, specify it here (1-15). Omit this parameter to let zero allocate the first available signal number. Optional.|
 
 ### Notes
-This function returns a ```SignalField``` that represents the allocated signal. Returns ```0``` if all signals are currently allocated.
+This function returns a ```SignalBitField``` that represents the allocated signal. Returns ```0``` if all signals are currently allocated.
 
-- A ```SignalField``` is just a ```uint16_t``` used as a bitfield for signals.
 - Free the signal when no longer needed by calling ```freeSignals()```.
 - ```SIG_TIMEOUT``` is a reserved signal. The remaining 15 are available for program use.
 
-***NOTE:*** Do not call ```allocateSignal()``` or ```freeSignals()``` directly. Instead, create a ```Synapse``` on the stack and use it wherever a ```Synapse``` or ```SignalField``` would be expected. See the example code throughout the documentation for usage.
+***NOTE:*** Do not call ```allocateSignal()``` or ```freeSignals()``` directly. Instead, create a ```Synapse``` on the stack and use it wherever a ```Synapse``` or ```SignalBitField``` would be expected. See the example code throughout the documentation and in ```examples/``` for usage.
 
 ## freeSignals()
 *** NOTE: *** You cannot use ```allocateSignal()``` and ```freeSignals()``` directly - use ```Synapse``` to manage signals instead. These methods are private to the ```Thread``` and are presented for documentation purposes only.
@@ -217,38 +216,38 @@ This function returns a ```SignalField``` that represents the allocated signal. 
 Frees a previously allocated signal(s) for re-use.
 ```
     void Thread::freeSignals(
-        const SignalField signals
+        const SignalBitField signals
         )
 ```
 
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```signals```|The ```SignalField``` of the signal(s) you want to deallocate. Can free multiple signals at once.|
+|```signals```|The ```SignalBitField``` of the signal(s) you want to deallocate. Can free multiple signals at once.|
 
-***NOTE:*** Do not call ```allocateSignal()``` or ```freeSignals()``` directly. Instead, create a ```Synapse``` on the stack and use it wherever a ```Synapse``` or ```SignalField``` would be expected. See the example code throughout the documentation for usage.
+***NOTE:*** Do not call ```allocateSignal()``` or ```freeSignals()``` directly. Instead, create a ```Synapse``` on the stack and use it wherever a ```Synapse``` or ```SignalBitField``` would be expected. See the example code throughout the documentation for usage.
 
 ## getCurrentSignals()
 Returns the signals currently set for the Thread.
 ```
-    SignalField Thread::getCurrentSignals()
+    SignalBitField Thread::getCurrentSignals()
 ```
 
 ### Notes
-While it is expected that a Thread will usually ```wait()``` on one or more signals, it occasionally may be necessary to opportunistically check the state of one or more signals. This is the function that will do that, returning a ```SignalField``` that contains the signals that are currently set.
+While it is expected that a Thread will usually ```wait()``` on one or more signals, it occasionally may be necessary to opportunistically check the state of one or more signals. This is the function that will do that, returning a ```SignalBitField``` that contains the signals that are currently set.
 
 ## clearSignals()
 Clears one or more signals, returning the remaining set signals.
 ```
-    SignalField Thread::clearSignals(
-        const SignalField sigs
+    SignalBitField Thread::clearSignals(
+        const SignalBitField sigs
         )
 ```
 
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```sigs```|The ```SignalField``` containing the signal(s) to be cleared.|
+|```sigs```|The ```SignalBitField``` containing the signal(s) to be cleared.|
 
 ### Notes
 If a signal occurs while your Thread is awake, and you check it with ```getCurrentSignals()```, you will usually want to clear those signals after you have acted on them, to prevent your code from erroneously acting on them again. Use this function to tell zero that you've addressed some signals outside of the normal ```wait()``` process. If you do not do this, and you ```wait()``` on these signals again, your Thread will NOT block as those signals are still set.
@@ -258,8 +257,8 @@ You do NOT need to call ```clearSignals()``` after your Thread wakes from ```wai
 ## wait()
 Waits for one or more signals to occur, blocking if necessary.
 ```
-    SignalField Thread::wait(
-        const SignalField sigs,
+    SignalBitField Thread::wait(
+        const SignalBitField sigs,
         const uint32_t timeoutMs = 0UL
         )
 ```
@@ -267,11 +266,11 @@ Waits for one or more signals to occur, blocking if necessary.
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```sigs```|The signal(s) to wait for. You may specify multiple signals in the one ```SignalField``` by using bitwise-OR.|
+|```sigs```|The signal(s) to wait for. You may specify multiple signals in the one ```SignalBitField``` by using bitwise-OR.|
 |```timeoutMs```|An optional timeout for the call, in milliseconds.|
 
 ### Notes
-Returns a ```SignalField``` specifying which signals woke the Thread up. May be more than one if more than one signal was ```wait()```ed on and multiple occurred, so be sure to check for all signals when the Thread wakes.
+Returns a ```SignalBitField``` specifying which signals woke the Thread up. May be more than one if more than one signal was ```wait()```ed on and multiple occurred, so be sure to check for all signals when the Thread wakes.
 
 You do NOT need to call ```clearSignals()``` on any signal that you ```wait()```ed on, as they will be cleared automatically when your Thread wakes up.
 
@@ -287,7 +286,7 @@ This can be used to optionally provide a timeout for the call. If you only want 
     }
 ```
 
-... replacing ```500``` with your desired delay. ```SIG_TIMEOUT``` is the reserved ```SignalField``` for timeouts. Alternatively, you can use ```::delay()``` (see below).
+... replacing ```500``` with your desired delay. ```SIG_TIMEOUT``` is the reserved ```SignalBitField``` for timeouts. Alternatively, you can use ```::delay()``` (see below).
 
 If you are waiting on other signals and want a timeout as well, you do not need to specify the ```SIG_TIMEOUT``` flag, but you can if you want to, for clarity.
 
@@ -311,7 +310,7 @@ Equivalent to calling ```::wait( 0, ms )```.
 Signals a Thread, potentially waking it up.
 ```
     void Thread::signal(
-        const SignalField sigs
+        const SignalBitField sigs
         )
 ```
 

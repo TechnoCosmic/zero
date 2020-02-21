@@ -11,4 +11,4 @@ private:
     void operator=( const Synapse& s ) = delete;
 
     Thread* const _thread;
-    const SignalField _signals;
+    const SignalBitField _signals;

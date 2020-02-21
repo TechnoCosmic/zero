@@ -1,7 +1,7 @@
 # Synapse
 ```zero/core/thread.h```
 
-```Synapse``` is a guard class for allocating and freeing signals. It pairs a ```Thread*``` with a ```SignalField```, and provides RAII/SBRM allocation of signals.
+```Synapse``` is a guard class for allocating and freeing signals. It pairs a ```Thread*``` with a ```SignalBitField```, and provides RAII/SBRM allocation of signals.
 
 ## Constructor
 ```
@@ -34,7 +34,7 @@ Calls ```Thread::clearSignals()``` with the signals associated with the ```Synap
 ## wait()
 Waits for the signal(s) represented by the ```Synapse```, blocking if required. 
 ```
-    SignalField Synapse::wait(
+    SignalBitField Synapse::wait(
         const uint32_t timeoutMs = 0UL
         )
 ```

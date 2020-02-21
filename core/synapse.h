@@ -22,11 +22,11 @@ namespace zero {
         ~Synapse();
 
         explicit operator bool() const;
-        operator zero::SignalField() const;
+        operator zero::SignalBitField() const;
 
         void signal() const;
         void clearSignals() const;
-        SignalField wait( const uint32_t timeoutMs = 0UL ) const;
+        SignalBitField wait( const uint32_t timeoutMs = 0UL ) const;
 
         #include "synapse_private.h"
     };

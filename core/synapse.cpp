@@ -37,8 +37,8 @@ Synapse::operator bool() const
 }
 
 
-// For use as a simple SignalField
-Synapse::operator SignalField() const
+// For use as a simple SignalBitField
+Synapse::operator SignalBitField() const
 {
     return _signals;
 }
@@ -63,7 +63,7 @@ void Synapse::clearSignals() const
 
 
 // Waits for the signals to be set, blocking if necessary
-SignalField Synapse::wait( const uint32_t timeoutMs ) const
+SignalBitField Synapse::wait( const uint32_t timeoutMs ) const
 {
     if ( *this and &me == _thread ) {
         return me.wait( _signals, timeoutMs );

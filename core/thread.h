@@ -20,7 +20,7 @@ namespace zero {
     
     typedef int ( *ThreadEntry )();
 
-    typedef uint16_t SignalField;
+    typedef uint16_t SignalBitField;
     typedef uint16_t ThreadFlags;
 
     const ThreadFlags TF_NONE = 0;
@@ -29,8 +29,8 @@ namespace zero {
 
     // reserved signals
     const auto NUM_RESERVED_SIGS = 1;
-    const SignalField SIG_TIMEOUT = ( 1 << 0 );
-    const SignalField SIG_ALL_RESERVED = SIG_TIMEOUT;
+    const SignalBitField SIG_TIMEOUT = ( 1 << 0 );
+    const SignalBitField SIG_ALL_RESERVED = SIG_TIMEOUT;
 
     // Thread class
     class Thread {
@@ -68,13 +68,13 @@ namespace zero {
         // Stack information
         uint16_t getPeakStackUsage() const;
 
-        SignalField getAllocatedSignals( const bool userOnly = false ) const;
-        SignalField getCurrentSignals() const;
-        SignalField clearSignals( const SignalField sigs );
+        SignalBitField getAllocatedSignals( const bool userOnly = false ) const;
+        SignalBitField getCurrentSignals() const;
+        SignalBitField clearSignals( const SignalBitField sigs );
 
         void delay( const uint32_t ms );
-        SignalField wait( const SignalField sigs, const uint32_t timeoutMs = 0UL );
-        void signal( const SignalField sigs );
+        SignalBitField wait( const SignalBitField sigs, const uint32_t timeoutMs = 0UL );
+        void signal( const SignalBitField sigs );
 
         // Don't touch! That means you! :)
         #include "thread_private.h"

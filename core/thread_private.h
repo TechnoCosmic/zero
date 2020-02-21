@@ -32,19 +32,19 @@ private:
         int* const newExitCode );                       // Place to put Thread's return code
 
     // Signals Management
-    SignalField allocateSignal( const uint16_t reqdSignalNumber = -1 );
-    void freeSignals( const SignalField signals );
+    SignalBitField allocateSignal( const uint16_t reqdSignalNumber = -1 );
+    void freeSignals( const SignalBitField signals );
 
-    SignalField getActiveSignals() const;
+    SignalBitField getActiveSignals() const;
     bool tryAllocateSignal( const uint16_t signalNumber );
 
     // more TCB
     uint8_t* const _stackBottom;
     uint16_t _stackSize;
 
-    SignalField _allocatedSignals;
-    SignalField _waitingSignals;
-    SignalField _currentSignals;
+    SignalBitField _allocatedSignals;
+    SignalBitField _waitingSignals;
+    SignalBitField _currentSignals;
 
     uint16_t _id{ 0 };
     const char* _name{ nullptr };
