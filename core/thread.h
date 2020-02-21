@@ -28,7 +28,7 @@ namespace zero {
     const ThreadFlags TF_POOL_THREAD = ( 1 << 1 );
 
     // reserved signals
-    const auto RESERVED_SIGS = 1;
+    const auto NUM_RESERVED_SIGS = 1;
     const SignalField SIG_TIMEOUT = ( 1 << 0 );
     const SignalField SIG_ALL_RESERVED = SIG_TIMEOUT;
 

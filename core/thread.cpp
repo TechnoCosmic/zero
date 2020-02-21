@@ -672,7 +672,7 @@ SignalField Thread::allocateSignal( const uint16_t reqdSignalNumber )
         }
         else {
             // start checking after the reserved signals, for speed
-            for ( auto i{ RESERVED_SIGS }; i < SIGNAL_BITS; i++ ) {
+            for ( auto i = NUM_RESERVED_SIGS; i < SIGNAL_BITS; i++ ) {
                 if ( tryAllocateSignal( i ) ) {
                     return 1U << i;
                 }
@@ -845,13 +845,19 @@ void Thread::signal( const SignalField sigs )
 static void createPoolThreads()
 {
     for ( auto i = 0; i < NUM_POOL_THREADS; i++ ) {
-        new Thread{
+        Thread* poolGuy = new Thread{
             nullptr,                                    // no name yet
             POOL_THREAD_STACK_BYTES,                    // one stack size to rule them all
             nullptr,                                    // no entry point yet
             TF_POOL_THREAD,                             // flags
             nullptr,                                    // no termination Synapse yet
             nullptr };                                  // no place to put exit code yet
+
+        dbg_assert( poolGuy, "Pool thread init fail" );
+
+        if ( poolGuy == nullptr ) {
+            break;
+        }
     }
 }
 
