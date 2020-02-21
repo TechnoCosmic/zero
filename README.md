@@ -4,6 +4,7 @@ zero is a tiny pre-emptive multitasking kernel for AVR microcontrollers. Specifi
 ## Features
 - Small footprint - core multitasking kernel and memory manager (sans communications drivers) is 3.2KB, and uses 64 bytes of SRAM
 - O(1) scheduler
+- Pool threads
 - Dynamic memory allocation
 - Drivers for on-chip hardware USART peripherals
 - Driver for software interrupt-driven UART
@@ -19,7 +20,7 @@ zero's threading model is a simple one...
  - Active/Expired thread ready lists for O(1) selection of the next thread to run
  - Idle thread is implied lowest-priority, running only when no other thread wants to run
  - Signals implement the blocking system - a Thread that is ```wait()```ing is not in either ready list and will not run
- - System Thread pool for fast Thread spin-up
+ - System Thread pool for fast thread spin-up
 
  The ```Thread``` class is very data-lean (27 bytes per ```Thread```). ```SREG``` is stored on the Thread's stack (as is ```RAMPZ``` on those MCUs that use it).
 
