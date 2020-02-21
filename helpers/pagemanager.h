@@ -24,7 +24,7 @@ namespace zero {
 
     namespace memory {
 
-        enum SearchStrategy {
+        enum class SearchStrategy {
             TopDown = 0,
             BottomUp,
         };
