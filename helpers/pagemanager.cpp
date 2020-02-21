@@ -125,15 +125,14 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
     const uint16_t numPagesRequired,
     const memory::SearchStrategy strat ) const
 {
-    uint16_t startPage{ (uint16_t) - 1 };
+    uint16_t startPage{ (uint16_t) -1 };
     uint16_t pageCount{ 0 };
 
     for ( uint16_t curStep = 0; curStep < PAGE_COUNT; curStep++ ) {
-        const uint16_t curPage{ _strategies[ strat ]( curStep, PAGE_COUNT ) };
+        const uint16_t curPage{ _strategies[ (int) strat ]( curStep, PAGE_COUNT ) };
 
-        // But if that page was free..
+        // If that page was free..
         if ( isPageAvailable( curPage ) ) {
-            // we have one more page than we had before
             pageCount++;
 
             // if we didn't have a startPage, we do now
@@ -143,6 +142,7 @@ int16_t PageManager<PAGE_COUNT>::findFreePages(
 
             // if we've found the right number of pages, stop looking
             if ( pageCount == numPagesRequired ) {
+                // MIN in case we searched backwards
                 startPage = MIN( startPage, curPage );
                 break;
             }
