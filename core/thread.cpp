@@ -605,7 +605,7 @@ ISR( TIMER0_COMPB_vect, ISR_NAKED )
         // if the Thread has more time to run, or switching is disabled, bail
         if ( _currentThread->_ticksRemaining or !_switchingEnabled ) {
             // strategic goto to save undue additional
-            // expansion of inline restoreRegisters()
+            // expansion of inline restoreInitialRegisters()
             goto exit;
         }
 
