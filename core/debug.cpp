@@ -91,7 +91,7 @@ void debug::print( const char* s, const bool fromFlash )
             break;
         }
 
-        debug::print( (char) c );
+        debug::print( c );
         s++;
     }
 #endif
