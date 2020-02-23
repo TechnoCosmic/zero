@@ -22,10 +22,12 @@ using namespace zero;
 
 // ctor
 Pipe::Pipe( const uint16_t size )
+:
+    _buffer{ (uint8_t*) memory::allocate( size, &_bufferSize ) }
 {
-    // storage and tracking
-    _buffer = (uint8_t*) memory::allocate( size, &_bufferSize );
-    flush();
+    if ( *this ) {
+        flush();
+    }
 }
 
 
