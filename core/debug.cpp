@@ -20,6 +20,14 @@
 using namespace zero;
 
 
+// Because of the conditional nature of the debug functions,
+// we will suppress obvious unused-parameter warnings when
+// debug is disabled
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
+
 namespace {
 
 #ifdef DEBUG_ENABLED
@@ -128,3 +136,6 @@ void debug::assert( const bool v, const char* const msg, const int lineNumber )
     }
 #endif
 }
+
+
+#pragma GCC diagnostic pop
