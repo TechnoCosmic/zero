@@ -134,6 +134,10 @@ namespace {
             #define TIMSK0 TIMSK
         #endif
 
+        static_assert( QUANTUM_TICKS > 1, "QUANTUM_TICKS must be two (2) or more" );
+        static_assert( F_CPU >=  4'000'000, "Must use a 4MHz clock or faster" );
+        static_assert( F_CPU <= 24'000'000, "Must use a 24MHz clock or slower" );
+
         // claim the main timer before anyone else does
         resource::obtain( resource::ResourceId::Timer0 );
 
@@ -844,6 +848,14 @@ void Thread::signal( const SignalBitField sigs )
 // Creates the Thread pool
 static void createPoolThreads()
 {
+    #if ( NUM_POOL_THREADS * POOL_THREAD_STACK_BYTES ) >= ( DYNAMIC_BYTES / 2 )
+        #warning "Thread pool consumes over half of heap memory"
+    #endif
+
+    static_assert(
+        ( NUM_POOL_THREADS * POOL_THREAD_STACK_BYTES ) < DYNAMIC_BYTES,
+        "Thread pool consumes entire heap" );
+
     for ( auto i = 0; i < NUM_POOL_THREADS; i++ ) {
         Thread* poolGuy = new Thread{
             nullptr,                                    // no name yet

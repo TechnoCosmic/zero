@@ -32,6 +32,9 @@ namespace zero {
 
     template <uint16_t PAGE_COUNT>
     class PageManager {
+        
+        static_assert( PAGE_COUNT > 0, "Pages for heap allocator must be more than zero (0)" );
+
     public:
         // low-level functions
         bool isPageAvailable( const uint16_t pageNumber ) const;

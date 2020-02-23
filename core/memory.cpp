@@ -20,6 +20,9 @@ using namespace zero::memory;
 
 namespace {
 
+    static_assert( PAGE_BYTES > 0, "Pages must have at least one (1) byte each" );
+    static_assert( DYNAMIC_BYTES > 0, "Heap cannot be zero (0) bytes in size" );
+
     // The SRAM that the dynamic allocator can hand out to callers
     uint8_t ALIGNED( 64 ) _memoryArea[ DYNAMIC_BYTES ];
 
@@ -46,6 +49,7 @@ namespace {
     {
         return ROUND_UP( bytes, PAGE_BYTES ) / PAGE_BYTES;
     }
+    
 }    // namespace
 
 
