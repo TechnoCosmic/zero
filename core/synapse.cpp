@@ -63,10 +63,10 @@ void Synapse::clearSignals() const
 
 
 // Waits for the signals to be set, blocking if necessary
-SignalBitField Synapse::wait( const uint32_t timeoutMs ) const
+SignalBitField Synapse::wait( const Duration timeout ) const
 {
     if ( *this and &me == _thread ) {
-        return me.wait( _signals, timeoutMs );
+        return me.wait( _signals, timeout );
     }
     else {
         return 0;

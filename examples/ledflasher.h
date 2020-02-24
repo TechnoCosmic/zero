@@ -11,8 +11,10 @@
 
 
 #include <stdint.h>
+
 #include "thread.h"
 #include "gpio.h"
+#include "time.h"
 
 
 namespace zero {
@@ -27,22 +29,22 @@ namespace zero {
         LedFlasher(
             const char* const name,
             const PinField ledPins,
-            const uint32_t delayMs,
+            const Duration delay,
             int count = 0 );
 
         LedFlasher(
             const char* const name,
             const PinField ledPins,
-            const uint32_t timeOnMs,
-            const uint32_t timeOffMs,
+            const Duration timeOn,
+            const Duration timeOff,
             int count );
 
     private:
         int main();
 
         const PinField _ledPins;
-        const uint32_t _timeOnMs;
-        const uint32_t _timeOffMs;
+        const Duration _timeOn;
+        const Duration _timeOff;
         int _flashesRemaining;
     };
 

@@ -11,6 +11,7 @@
 
 
 #include <stdint.h>
+#include "time.h"
 
 
 namespace zero {
@@ -72,8 +73,8 @@ namespace zero {
         SignalBitField getCurrentSignals() const;
         SignalBitField clearSignals( const SignalBitField sigs );
 
-        void delay( const uint32_t ms );
-        SignalBitField wait( const SignalBitField sigs, const uint32_t timeoutMs = 0UL );
+        void delay( const Duration dur );
+        SignalBitField wait( const SignalBitField sigs, const Duration timeout = 0_ms );
         void signal( const SignalBitField sigs );
 
         // Don't touch! That means you! :)

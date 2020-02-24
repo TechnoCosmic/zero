@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include "thread.h"
+#include "time.h"
 
 
 namespace zero {
@@ -26,7 +27,7 @@ namespace zero {
 
         void signal() const;
         void clearSignals() const;
-        SignalBitField wait( const uint32_t timeoutMs = 0UL ) const;
+        SignalBitField wait( const Duration timeout = 0_ms ) const;
 
         #include "synapse_private.h"
     };

@@ -22,6 +22,7 @@
 #include "debug.h"
 #include "gpio.h"
 #include "list.h"
+#include "time.h"
 #include "util.h"
 
 
@@ -159,11 +160,11 @@ namespace {
 
 
 // All threads start and end life here
-static void globalThreadEntry(
+void Thread::globalThreadEntry(
     Thread& t,
     const uint32_t entry,
     const ThreadFlags flags,
-    Synapse* const notifySyn,
+    const Synapse* const notifySyn,
     int* const exitCode )
 {
     // run the thread and get its exit code
@@ -269,6 +270,8 @@ void Thread::reanimate(
     const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
     int* const exitCode )                               // Place to put Thread's return code
 {
+    dbg_assert( entry, "No entry point" );
+
     const uint16_t stackTop{ (uint16_t) _stackBottom + _stackSize - 1 };
     const uint16_t newStackTop{ stackTop - ( PC_COUNT + REGISTER_COUNT + EXTRAS_COUNT ) };
 
@@ -373,6 +376,8 @@ Thread::Thread(
         &_stackSize,
         memory::SearchStrategy::TopDown ) }
 {
+    dbg_assert( _stackBottom and _stackSize, "No stack memory" );
+
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
         // Pool Threads get pooled immediately, ready for use
         if ( flags & TF_POOL_THREAD ) {
@@ -745,15 +750,15 @@ SignalBitField Thread::clearSignals( const SignalBitField sigs )
 
 
 // Blocks for a given number of milliseconds
-void Thread::delay( const uint32_t ms )
+void Thread::delay( const Duration dur )
 {
-    wait( 0, ms );
+    wait( 0, dur );
 }
 
 
 // Waits for any of a set of signals, returning a SignalBitField
 // representing which of those signals woke the Thread up
-SignalBitField Thread::wait( const SignalBitField sigs, const uint32_t timeoutMs )
+SignalBitField Thread::wait( const SignalBitField sigs, const Duration timeout )
 {
     SignalBitField rc{ 0 };
 
@@ -767,7 +772,7 @@ SignalBitField Thread::wait( const SignalBitField sigs, const uint32_t timeoutMs
         _waitingSignals = sigs;
 
         // make sure the signal gets used if the Thread wants a timeout set
-        _timeoutOffset = timeoutMs;
+        _timeoutOffset = (uint32_t) timeout;
 
         if ( _timeoutOffset ) {
             _waitingSignals |= SIG_TIMEOUT;

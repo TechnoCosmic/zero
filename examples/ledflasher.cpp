@@ -17,10 +17,10 @@ using namespace zero;
 LedFlasher::LedFlasher(
     const char* const name,
     const PinField ledPins,
-    const uint32_t delayMs,
+    const Duration delay,
     const int count )
 :
-    LedFlasher{ name, ledPins, delayMs, delayMs, count }
+    LedFlasher{ name, ledPins, delay, delay, count }
 {
     // empty
 }
@@ -29,8 +29,8 @@ LedFlasher::LedFlasher(
 LedFlasher::LedFlasher(
     const char* const name,
     const PinField ledPins,
-    const uint32_t timeOnMs,
-    const uint32_t timeOffMs,
+    const Duration timeOn,
+    const Duration timeOff,
     const int count)
 :
     // call parent ctor, with entryPoint as a lambda.
@@ -42,8 +42,8 @@ LedFlasher::LedFlasher(
 
     // other init
     _ledPins{ ledPins },
-    _timeOnMs{ timeOnMs },
-    _timeOffMs{ timeOffMs },
+    _timeOn{ timeOn },
+    _timeOff{ timeOff },
     _flashesRemaining{ count }
 {
     // empty
@@ -63,10 +63,10 @@ int LedFlasher::main()
 
     while ( true ) {
         led.switchOn();
-        me.delay( _timeOnMs );
+        me.delay( _timeOn );
 
         led.switchOff();
-        me.delay( _timeOffMs );
+        me.delay( _timeOff );
 
         if ( _flashesRemaining > 0 ) {
             _flashesRemaining--;
