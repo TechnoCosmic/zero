@@ -276,7 +276,7 @@ You do NOT need to call ```clearSignals()``` on any signal that you ```wait()```
 
 Also be aware that a call to ```wait()``` does not necessarily block - if any of the signals you are waiting on are already set prior to calling ```wait()```, your code will continue executing without blocking. This means you can safely call ```wait()``` when needed and you will get the best performance in both pre-set and blocking situations.
 
-#### ```timeoutMs```
+#### ```timeout```
 This can be used to optionally provide a timeout for the call. If you only want a thread-friendly blocking delay (without waiting on any other signals), just use...
 ```
     auto wokeSigs{ me.wait( SIG_TIMEOUT, 500_ms ) };
@@ -286,7 +286,7 @@ This can be used to optionally provide a timeout for the call. If you only want 
     }
 ```
 
-... replacing ```500``` with your desired delay. ```SIG_TIMEOUT``` is the reserved ```SignalBitField``` for timeouts. Alternatively, you can use ```::delay()``` (see below).
+... replacing ```500_ms``` with your desired delay. ```SIG_TIMEOUT``` is the reserved ```SignalBitField``` for timeouts. Alternatively, you can use ```::delay()``` (see below). For more information about durations, see ```helpers/time.h```.
 
 If you are waiting on other signals and want a timeout as well, you do not need to specify the ```SIG_TIMEOUT``` flag, but you can if you want to, for clarity.
 
