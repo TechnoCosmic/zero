@@ -259,7 +259,7 @@ Waits for one or more signals to occur, blocking if necessary.
 ```
     SignalBitField Thread::wait(
         const SignalBitField sigs,
-        const uint32_t timeoutMs = 0UL
+        const Duration timeout = 0_ms
         )
 ```
 
@@ -267,7 +267,7 @@ Waits for one or more signals to occur, blocking if necessary.
 |Param|Description|
 |-----|-----------|
 |```sigs```|The signal(s) to wait for. You may specify multiple signals in the one ```SignalBitField``` by using bitwise-OR.|
-|```timeoutMs```|An optional timeout for the call, in milliseconds.|
+|```timeout```|An optional timeout for the call. See the ```Duration``` class in ```helpers/time.h```.|
 
 ### Notes
 Returns a ```SignalBitField``` specifying which signals woke the Thread up. May be more than one if more than one signal was ```wait()```ed on and multiple occurred, so be sure to check for all signals when the Thread wakes.
@@ -279,7 +279,7 @@ Also be aware that a call to ```wait()``` does not necessarily block - if any of
 #### ```timeoutMs```
 This can be used to optionally provide a timeout for the call. If you only want a thread-friendly blocking delay (without waiting on any other signals), just use...
 ```
-    auto wokeSigs{ me.wait( SIG_TIMEOUT, 500 ) };
+    auto wokeSigs{ me.wait( SIG_TIMEOUT, 500_ms ) };
 
     if ( wokeSigs & SIG_TIMEOUT ) {
         // ...
@@ -294,17 +294,17 @@ If you are waiting on other signals and want a timeout as well, you do not need 
 Blocks for a given number of milliseconds.
 ```
     void Thread::delay(
-        const uint32_t ms
+        const Duration dur
         )
 ```
 
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```ms```|The amount of time to block, in milliseconds.|
+|```dur```|The length of the delay. See the ```Duration``` class in ```helpers/time.h```.|
 
 ### Notes
-Equivalent to calling ```::wait( 0, ms )```.
+Equivalent to calling ```::wait( 0, dur )```.
 
 ## signal()
 Signals a Thread, potentially waking it up.

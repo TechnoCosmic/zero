@@ -35,17 +35,17 @@ Calls ```Thread::clearSignals()``` with the signals associated with the ```Synap
 Waits for the signal(s) represented by the ```Synapse```, blocking if required. 
 ```
     SignalBitField Synapse::wait(
-        const uint32_t timeoutMs = 0UL
+        const Duration timeoutMs = 0_ms
         )
 ```
 
 ### Parameters
 |Param|Description|
 |-----|-----------|
-|```timeoutMs```|An optional timeout for the call, in milliseconds.|
+|```timeout```|An optional timeout for the call. See the ```Duration``` class in ```helpers/time.h```.|
 
 ### Notes
-This is shorthand for ```me.wait(Synapse::signals, timeoutMs)```, and only works if the caller is the ```Thread``` represented by the ```Synapse```. If you need to wait on multiple signals/```Synapses``` simultaneously, call ```Thread::wait()``` specifying all the required signals.
+This is shorthand for ```me.wait(Synapse::signals, timeout)```, and only works if the caller is the ```Thread``` represented by the ```Synapse```. If you need to wait on multiple signals/```Synapses``` simultaneously, call ```Thread::wait()``` specifying all the required signals.
 
 ## Example
 ```
