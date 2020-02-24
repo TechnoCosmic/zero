@@ -24,6 +24,13 @@ private:
     Thread( const Thread& t ) = delete;
     void operator=( const Thread& t ) = delete;
 
+    static void globalThreadEntry(
+        Thread& t,
+        const uint32_t entry,
+        const ThreadFlags flags,
+        const Synapse* const notifySyn,
+        int* const exitCode );
+
     void reanimate(
         const char* const newName,                      // name of Thread, points to Flash memory
         const ThreadEntry newEntry,                     // the Thread's entry function
