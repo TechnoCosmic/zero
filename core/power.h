@@ -20,7 +20,7 @@ namespace zero {
         Unknown = 0,
         PowerOn = ( 1 << 0 ),
         External = ( 1 << 1 ),
-        BrownOut = ( 1 << 2 ),
+        Brownout = ( 1 << 2 ),
         Watchdog = ( 1 << 3 ),
         Jtag = ( 1 << 4 ),
     };
