@@ -3,7 +3,7 @@
     int startup_sequence()
 ```
 
-zero has now un-hijacked ```main()```. Just rename your old ```startup_sequence()``` to ```main()``` and you're done. ```main()``` must exit for the kernel to finish initializing and starts your threads.
+zero has now un-hijacked ```main()```. Just rename your old ```startup_sequence()``` to ```main()``` and you're done. ```main()``` must exit for the kernel to finish initializing and start your threads.
 
 # Thread
 ```zero/core/thread.h```
