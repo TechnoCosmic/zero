@@ -11,6 +11,7 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <avr/power.h>
+#include <avr/sleep.h>
 
 #include <util/delay.h>
 #include <util/atomic.h>
@@ -19,6 +20,7 @@
 #include "synapse.h"
 #include "resource.h"
 #include "memory.h"
+#include "power.h"
 #include "debug.h"
 #include "gpio.h"
 #include "list.h"
@@ -138,9 +140,6 @@ namespace {
         static_assert( QUANTUM_TICKS > 1, "QUANTUM_TICKS must be two (2) or more" );
         static_assert( F_CPU >=  4'000'000, "Must use a 4MHz clock or faster" );
         static_assert( F_CPU <= 24'000'000, "Must use a 24MHz clock or slower" );
-
-        // claim the main timer before anyone else does
-        resource::obtain( resource::ResourceId::Timer0 );
 
         // 8-bit Timer/Counter0
         power_timer0_enable();                          // switch it on
@@ -893,6 +892,7 @@ void __attribute__((constructor)) preMain()
     // idleThreadEntry is the "do nothing" idle thread
     int idleThreadEntry();
 
+
     #ifdef ZERO_DRIVERS_GPIO
         // initialize the GPIO - make sure everything is tri-stated
         Gpio::init();
@@ -901,17 +901,30 @@ void __attribute__((constructor)) preMain()
     // initialize the debug serial TX first so that anything can use it
     debug::init();
 
+    // initialize the power management stuff
+    if ( !Power::init() ) {
+        // failure to launch - perma-sleep now
+        dbg_pgm( "onReset() failed - sleeping\r\n" );
+
+        set_sleep_mode( SLEEP_MODE_PWR_DOWN );
+        sleep_enable();
+        sleep_cpu();
+    }
+
     // create the system Threads
     _idleThread = new Thread{ PSTR( "idle" ), 0, idleThreadEntry, TF_NONE };
     createPoolThreads();
 
-    // start Timer0 (does not enable global ints)
-    initTimer0();
+    // claim the main timer before anyone else does
+    resource::obtain( resource::ResourceId::Timer0 );
 }
 
 
 void __attribute__((destructor)) postMain()
 {
+    // start Timer0 (does not enable global ints)
+    initTimer0();
+
     // Go!
     yield();
 }
