@@ -889,10 +889,6 @@ static void createPoolThreads()
 // Kickstart the system
 void __attribute__((constructor)) preMain()
 {
-    // idleThreadEntry is the "do nothing" idle thread
-    int idleThreadEntry();
-
-
     #ifdef ZERO_DRIVERS_GPIO
         // initialize the GPIO - make sure everything is tri-stated
         Gpio::init();
@@ -906,17 +902,21 @@ void __attribute__((constructor)) preMain()
         // failure to launch - perma-sleep now
         dbg_pgm( "onReset() failed - sleeping\r\n" );
 
-        set_sleep_mode( SLEEP_MODE_PWR_DOWN );
-        sleep_enable();
-        sleep_cpu();
+        while ( true ) {
+            cli();
+            set_sleep_mode( SLEEP_MODE_PWR_DOWN );
+            sleep_enable();
+            sleep_cpu();
+        }
     }
+    else {
+        // create the system Threads
+        _idleThread = new Thread{ PSTR( "idle" ), 0, idleThreadEntry, TF_NONE };
+        createPoolThreads();
 
-    // create the system Threads
-    _idleThread = new Thread{ PSTR( "idle" ), 0, idleThreadEntry, TF_NONE };
-    createPoolThreads();
-
-    // claim the main timer before anyone else does
-    resource::obtain( resource::ResourceId::Timer0 );
+        // claim the main timer before anyone else does
+        resource::obtain( resource::ResourceId::Timer0 );
+    }
 }
 
 
