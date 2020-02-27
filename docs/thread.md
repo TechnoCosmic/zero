@@ -3,7 +3,7 @@
     int startup_sequence()
 ```
 
-Because zero has hijacked ```main()``` for it's own initialization purposes, your program will use ```startup_sequence()``` to initialize itself and spawn your initial threads. Code inside ```startup_sequence()``` does NOT run in the context of a Thread, so don't block, don't do anything complicated. Set up you initial state and spawn your initial ```Threads```.
+zero has now un-hijacked ```main()```. Just rename your old ```startup_sequence()``` to ```main()``` and you're done. ```main()``` must exit for the kernel to finish initializing and starts your threads.
 
 # Thread
 ```zero/core/thread.h```
@@ -61,7 +61,7 @@ int myAsyncThread()
     return 42;
 }
 
-int startup_sequence()
+int myDemoThread()
 {
     // do work here...
 

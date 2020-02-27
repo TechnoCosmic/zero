@@ -850,6 +850,14 @@ void Thread::signal( const SignalBitField sigs )
 }
 
 
+// Default idle thread
+int __attribute((weak)) idleThreadEntry()
+{
+    while ( true )
+        ;
+}
+
+
 // Creates the Thread pool
 static void createPoolThreads()
 {
@@ -880,12 +888,9 @@ static void createPoolThreads()
 
 
 // Kickstart the system
-int main()
+void __attribute__((constructor)) preMain()
 {
-    // startup_sequence is the developer-supplied main() replacement
-    int startup_sequence();
-
-    // idleThreadEntry is the developer-supplied "do nothing" idle thread
+    // idleThreadEntry is the "do nothing" idle thread
     int idleThreadEntry();
 
     #ifdef ZERO_DRIVERS_GPIO
@@ -902,10 +907,11 @@ int main()
 
     // start Timer0 (does not enable global ints)
     initTimer0();
+}
 
-    // bootstrap
-    startup_sequence();
 
+void __attribute__((destructor)) postMain()
+{
     // Go!
     yield();
 }
