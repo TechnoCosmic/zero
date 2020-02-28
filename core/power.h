@@ -30,8 +30,6 @@ namespace zero {
     public:
         static bool init();
         static ResetFlags getResetFlags();        
-
-    private:
     };
 
 }

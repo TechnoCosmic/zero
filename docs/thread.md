@@ -322,10 +322,10 @@ Signals a Thread, potentially waking it up.
 ### Notes
 Threads are woken from ```wait()``` with use of the ```signal()``` function. ```signal()``` is usually called by another Thread, or device driver.
 
-## getPeakStackUsage()
+## getPeakStackUsageBytes()
 Returns the peak recorded stack usage for the ```Thread```.
 ```
-    uint16_t getPeakStackUsage() const;
+    uint16_t getPeakStackUsageBytes() const;
 ```
 
 ### Notes

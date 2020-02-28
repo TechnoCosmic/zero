@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include "time.h"
+#include "attrs.h"
 
 
 namespace zero {
@@ -67,7 +68,8 @@ namespace zero {
         const char* getName() const;                    // Returns the name of the Thread
 
         // Stack information
-        uint16_t getPeakStackUsage() const;
+        uint16_t getStackSizeBytes() const;
+        uint16_t getPeakStackUsageBytes() const;
 
         SignalBitField getAllocatedSignals( const bool userOnly = false ) const;
         SignalBitField getCurrentSignals() const;
@@ -88,14 +90,14 @@ namespace zero {
 
 
 // Funky little ATOMIC_BLOCK macro clones for context switching
-static __inline__ uint8_t __iForbidRetVal()
+static inline uint8_t __iForbidRetVal()
 {
     zero::Thread::forbid();
     return 1;
 }
 
 
-static __inline__ void __iZeroRestore( const uint8_t* const __tmr_save )
+static inline void __iZeroRestore( const uint8_t* const __tmr_save )
 {
     if ( *__tmr_save ) {
         zero::Thread::permit();
@@ -104,8 +106,8 @@ static __inline__ void __iZeroRestore( const uint8_t* const __tmr_save )
 
 
 #define ZERO_ATOMIC_BLOCK( t )      for ( t, __ToDo = __iForbidRetVal(); __ToDo; __ToDo = 0 )
-#define ZERO_ATOMIC_FORCEON         uint8_t tmr_save __attribute__((__cleanup__(__iZeroRestore))) = (uint8_t) 1)
-#define ZERO_ATOMIC_RESTORESTATE    uint8_t tmr_save __attribute__( ( __cleanup__( __iZeroRestore ) ) ) = ( uint8_t )( zero::Thread::isSwitchingEnabled() )
+#define ZERO_ATOMIC_FORCEON         uint8_t tmr_save CLEANUP( __iZeroRestore ) = (uint8_t) 1
+#define ZERO_ATOMIC_RESTORESTATE    uint8_t tmr_save CLEANUP( __iZeroRestore ) = ( uint8_t )( zero::Thread::isSwitchingEnabled() )
 
 
 #endif

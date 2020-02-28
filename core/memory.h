@@ -14,9 +14,6 @@
 #include "pagemanager.h"
 
 
-#define ALIGNED( x ) __attribute__( ( __aligned__( ( x ) ) ) )
-
-
 namespace zero {
 
     namespace memory {

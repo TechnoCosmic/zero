@@ -8,6 +8,7 @@
 
 #include <avr/io.h>
 #include "power.h"
+#include "attrs.h"
 
 
 using namespace zero;
@@ -21,7 +22,7 @@ namespace {
 
 
 // default reset handler
-bool __attribute((weak)) onReset( const ResetFlags )
+bool WEAK onReset( const ResetFlags )
 {
     return true;
 }

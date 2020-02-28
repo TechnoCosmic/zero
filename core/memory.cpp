@@ -12,6 +12,7 @@
 #include "memory.h"
 #include "thread.h"
 #include "util.h"
+#include "attrs.h"
 
 
 using namespace zero;
