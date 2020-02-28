@@ -11,6 +11,7 @@ public:
 
     uint16_t _sp;
     uint16_t _lowSp;
+    uint8_t* const _stackBottom;
 
     uint8_t _ticksRemaining;
     uint32_t _timeoutOffset;
@@ -46,7 +47,6 @@ private:
     bool tryAllocateSignal( const uint16_t signalNumber );
 
     // more TCB
-    uint8_t* const _stackBottom;
     uint16_t _stackSize;
 
     SignalBitField _allocatedSignals;

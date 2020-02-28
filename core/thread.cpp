@@ -26,13 +26,10 @@
 #include "list.h"
 #include "time.h"
 #include "util.h"
+#include "attrs.h"
 
 
 using namespace zero;
-
-
-#define INLINE __attribute__( ( always_inline ) )
-#define NAKED __attribute__( ( __naked__ ) )
 
 
 // Ready list helpers, to make list accessing and swapping easy and QUICK
@@ -158,6 +155,38 @@ namespace {
 }    // namespace
 
 
+// Default Thread exit handler
+void WEAK onThrexit( Thread&, const int )
+{
+    // empty
+}
+
+
+// Default stack overflow handler
+void WEAK onStackOverflow( Thread& )
+{
+    // empty
+}
+
+
+// Default idle thread
+int WEAK idleThreadEntry()
+{
+    while ( true )
+        ;
+}
+
+
+static void callStackOverflowHandler()
+{
+    const uint16_t oldSp = SP;
+
+    SP = RAMEND;
+    onStackOverflow( *_currentThread );
+    SP = oldSp;
+}
+
+
 // All threads start and end life here
 void Thread::globalThreadEntry(
     Thread& t,
@@ -208,6 +237,9 @@ void Thread::globalThreadEntry(
     // forget us so that no context is remembered
     // superfluously in the yield() below
     _currentThread = nullptr;
+
+    // call global Thread termination handler
+    onThrexit( t, ec );
 
     // Pool Threads get returned to the pool, and
     // other Threads get cleaned up
@@ -425,8 +457,15 @@ const char* Thread::getName() const
 }
 
 
+// Returns the allocated size of the stack, in bytes
+uint16_t Thread::getStackSizeBytes() const
+{
+    return _stackSize;
+}
+
+
 // Returns the peak recorded stack usage, in bytes
-uint16_t Thread::getPeakStackUsage() const
+uint16_t Thread::getPeakStackUsageBytes() const
 {
     return ( _stackSize - ( _lowSp - (uint16_t) _stackBottom ) );
 }
@@ -437,10 +476,10 @@ static void inline saveInitialRegisters()
 {
     asm volatile( "push r0" );
 
-    asm volatile( "in r0, __SREG__" );                  // status register
+    asm volatile( "in r0, __SREG__" );
     asm volatile( "push r0" );
 #ifdef RAMPZ
-    asm volatile( "in r0, __RAMPZ__" );                 // RAMPZ
+    asm volatile( "in r0, __RAMPZ__" );
     asm volatile( "push r0" );
 #endif
     asm volatile( "push r1" );
@@ -550,6 +589,11 @@ static void yield()
         // track stack usage at switch point
         _currentThread->_lowSp = MIN( _currentThread->_lowSp, _currentThread->_sp );
 
+        // check for stack overflow
+        if ( _currentThread->_lowSp < (uint16_t) _currentThread->_stackBottom ) {
+            callStackOverflowHandler();
+        }
+
         // take it out of the running
         ACTIVE_LIST.remove( *_currentThread );
 
@@ -623,6 +667,10 @@ ISR( TIMER0_COMPB_vect, ISR_NAKED )
 
         // track peak stack usage at switch point
         _currentThread->_lowSp = MIN( _currentThread->_lowSp, _currentThread->_sp );
+
+        if ( _currentThread->_lowSp < (uint16_t) _currentThread->_stackBottom ) {
+            callStackOverflowHandler();
+        }
 
         // send it to the expired list
         if ( _currentThread != _idleThread ) {
@@ -849,14 +897,6 @@ void Thread::signal( const SignalBitField sigs )
 }
 
 
-// Default idle thread
-int __attribute((weak)) idleThreadEntry()
-{
-    while ( true )
-        ;
-}
-
-
 // Creates the Thread pool
 static void createPoolThreads()
 {
@@ -887,7 +927,7 @@ static void createPoolThreads()
 
 
 // Kickstart the system
-void __attribute__((constructor)) preMain()
+void CTOR preMain()
 {
     #ifdef ZERO_DRIVERS_GPIO
         // initialize the GPIO - make sure everything is tri-stated
@@ -904,6 +944,9 @@ void __attribute__((constructor)) preMain()
 
         while ( true ) {
             cli();
+
+            // TODO: switch off all peripherals
+
             set_sleep_mode( SLEEP_MODE_PWR_DOWN );
             sleep_enable();
             sleep_cpu();
@@ -920,7 +963,7 @@ void __attribute__((constructor)) preMain()
 }
 
 
-void __attribute__((destructor)) postMain()
+void DTOR postMain()
 {
     // start Timer0 (does not enable global ints)
     initTimer0();
