@@ -56,7 +56,7 @@ namespace {
 
 // Allocates some memory. The amount of memory actually allocated is optionally
 // returned in allocatedBytes, which will always be a multiple of the page size.
-void* memory::allocate(
+void* MALLOC memory::allocate(
     const uint16_t bytesReqd,
     uint16_t* const allocatedBytes,
     const SearchStrategy strategy )

@@ -301,6 +301,7 @@ void Thread::reanimate(
     const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
     int* const exitCode )                               // Place to put Thread's return code
 {
+    static_assert( PC_COUNT >= 2 and PC_COUNT <= 4, "PC_COUNT must be 2,3, or 4" );
     dbg_assert( entry, "No entry point" );
 
     const uint16_t stackTop{ (uint16_t) _stackBottom + _stackSize - 1 };

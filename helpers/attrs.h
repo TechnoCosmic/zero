@@ -14,6 +14,7 @@
 #define HOT __attribute__( ( hot ) )
 #define COLD __attribute__( ( cold ) )
 #define NAKED __attribute__( ( naked ) )
+#define MALLOC __attribute__( ( malloc ) )
 #define INLINE __attribute__( ( always_inline ) )
 #define CTOR __attribute__( ( constructor ) )
 #define DTOR __attribute__( ( destructor ) )

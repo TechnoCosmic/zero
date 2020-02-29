@@ -11,6 +11,8 @@ The only parameter to ```onReset()``` is a ```ResetFlags``` which is a bit field
 
 **NOTE:** If you return ```false``` from ```onReset()```, the only way to restart the MCU is by power cycling, or by external reset.
 
+**NOTE:** Do not call ```onReset()``` - this is a function you supply if you want to take any action before ```main()``` runs, such as checking battery state or other hardware conditions.
+
 ### Example
 ```
 #include "power.h"
