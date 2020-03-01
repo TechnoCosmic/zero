@@ -60,14 +60,16 @@ ResetFlags Power::getResetFlags()
 // Puts the MCU into super-coma
 void Power::shutdown()
 {
+    const auto mode = SLEEP_MODE_PWR_DOWN;
+
     cli();
-    onSleep( SLEEP_MODE_PWR_DOWN );
+    onSleep( mode );
     cli();
 
     Gpio::init();
     power_all_disable();
 
-    set_sleep_mode( SLEEP_MODE_PWR_DOWN );
+    set_sleep_mode( mode );
     sleep_enable();
     sleep_cpu();
 }
@@ -76,11 +78,13 @@ void Power::shutdown()
 // Puts the MCU into idle mode
 void Power::idle()
 {
+    const auto mode = SLEEP_MODE_IDLE;
+
     cli();
-    onSleep( SLEEP_MODE_IDLE );
+    onSleep( mode );
     cli();
 
-    set_sleep_mode( SLEEP_MODE_IDLE );
+    set_sleep_mode( mode );
     sleep_enable();
     sei();
     sleep_cpu();
