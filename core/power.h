@@ -11,6 +11,7 @@
 
 
 #include <stdint.h>
+#include <avr/sleep.h>
 
 
 namespace zero {
@@ -29,8 +30,11 @@ namespace zero {
     class Power {
     public:
         static bool init();
-        static ResetFlags getResetFlags();        
+        static ResetFlags getResetFlags();              // determines what caused the last reset
+        static void shutdown();                         // puts the MCU into deep sleep
+        static void idle();                             // puts the MCU into idle mode
     };
+
 
 }
 

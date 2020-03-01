@@ -30,6 +30,8 @@ namespace zero {
             UsartTx2,
             UsartTx3,
             Spi,
+            Adc,
+            I2c,
         };
 
         bool obtain( const ResourceId r );

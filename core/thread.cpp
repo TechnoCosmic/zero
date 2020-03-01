@@ -172,8 +172,9 @@ void WEAK onStackOverflow( Thread& )
 // Default idle thread
 int WEAK idleThreadEntry()
 {
-    while ( true )
-        ;
+    while ( true ) {
+        Power::idle();
+    }
 }
 
 
@@ -944,13 +945,7 @@ void CTOR preMain()
         dbg_pgm( "onReset() failed - sleeping\r\n" );
 
         while ( true ) {
-            cli();
-
-            // TODO: switch off all peripherals
-
-            set_sleep_mode( SLEEP_MODE_PWR_DOWN );
-            sleep_enable();
-            sleep_cpu();
+            Power::shutdown();
         }
     }
     else {
