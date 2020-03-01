@@ -54,6 +54,12 @@ namespace {
 }    // namespace
 
 
+void WEAK onOutOfMemory()
+{
+    // empty
+}
+
+
 // Allocates some memory. The amount of memory actually allocated is optionally
 // returned in allocatedBytes, which will always be a multiple of the page size.
 void* MALLOC memory::allocate(
@@ -91,6 +97,10 @@ void* MALLOC memory::allocate(
                 // outta here
                 rc = (void*) getAddressForPage( startPage );
             }
+        }
+
+        if ( !rc ) {
+            onOutOfMemory();
         }
     }
 
