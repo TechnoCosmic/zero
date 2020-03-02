@@ -18,9 +18,10 @@ namespace zero {
     namespace resource {
 
         enum class ResourceId {
-            Timer0 = 0,
+            Timer0,
             Timer1,
             Timer2,
+            Timer3,
             UsartRx0,
             UsartRx1,
             UsartRx2,
