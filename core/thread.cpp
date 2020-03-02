@@ -78,7 +78,7 @@ namespace {
     const uint16_t EXTRAS_COUNT{ 1 };
 #endif
 
-    const uint16_t MIN_STACK_BYTES{ 128 };
+    #define MIN_STACK_BYTES 128
 
     // the offsets from the stack top (as seen AFTER all the registers have been pushed onto
     // the stack already) of each of the nine (9) parameters that are register-passed by GCC
@@ -902,13 +902,21 @@ void Thread::signal( const SignalBitField sigs )
 // Creates the Thread pool
 static void createPoolThreads()
 {
-    #if ( NUM_POOL_THREADS * POOL_THREAD_STACK_BYTES ) >= ( DYNAMIC_BYTES / 2 )
-        #warning "Thread pool consumes over half of heap memory"
-    #endif
+    #define __xtxt(a) __txt(a)
+    #define __txt(a) #a
+
+    static_assert(
+        POOL_THREAD_STACK_BYTES >= MIN_STACK_BYTES,
+        "POOL_THREAD_STACK_BYTES must be " __xtxt(MIN_STACK_BYTES)
+        " or more, but is only " __xtxt(POOL_THREAD_STACK_BYTES) );
 
     static_assert(
         ( NUM_POOL_THREADS * POOL_THREAD_STACK_BYTES ) < DYNAMIC_BYTES,
         "Thread pool consumes entire heap" );
+
+    #if ( NUM_POOL_THREADS * POOL_THREAD_STACK_BYTES ) >= ( DYNAMIC_BYTES / 2 )
+        #warning "Thread pool consumes over half of heap memory."
+    #endif
 
     for ( auto i = 0; i < NUM_POOL_THREADS; i++ ) {
         Thread* poolGuy = new Thread{
