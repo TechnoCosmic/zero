@@ -65,7 +65,7 @@ namespace zero {
     }
 
 
-    inline constexpr Duration operator""_weeks( const unsigned long long int v )
+    inline constexpr Duration operator""_wks( const unsigned long long int v )
     {
         return Duration{ (uint32_t) v * 1000 * 60 * 60 * 24 * 7 };
     }
