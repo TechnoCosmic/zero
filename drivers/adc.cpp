@@ -44,10 +44,12 @@ Adc::Adc( const Synapse& syn )
 Adc::~Adc()
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        disable();
-        _currentAdc = nullptr;
-        _readySyn.clearSignals();
-        resource::release( resource::ResourceId::Adc );
+        if ( _currentAdc == this ) {
+            disable();
+            _readySyn.clearSignals();
+            resource::release( resource::ResourceId::Adc );
+            _currentAdc = nullptr;
+        }
     }
 }
 
