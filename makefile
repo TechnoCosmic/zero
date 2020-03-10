@@ -28,6 +28,7 @@ ZERO_DRIVERS_SPIMEM = 1
 ZERO_DRIVERS_USART = 1
 ZERO_DRIVERS_SUART = 1
 ZERO_DRIVERS_GPIO = 1
+ZERO_DRIVERS_ADC = 1
 ZERO_DRIVERS_PIPE = 1
 
 # comms
@@ -99,6 +100,8 @@ FLAGS += -Wall
 FLAGS += -Wextra
 FLAGS += -Wno-return-type
 FLAGS += -Wno-sized-deallocation
+FLAGS += -Wlogical-op
+FLAGS += -Wshadow
 
 # #define pass-throughs
 FLAGS += -DPROJ_NAME=\"$(OUTPUT)\"
@@ -127,6 +130,10 @@ endif
 
 ifeq ($(ZERO_DRIVERS_GPIO),1)
 	FLAGS += -DZERO_DRIVERS_GPIO
+endif
+
+ifeq ($(ZERO_DRIVERS_ADC),1)
+	FLAGS += -DZERO_DRIVERS_ADC
 endif
 
 ifeq ($(ZERO_DRIVERS_PIPE),1)
@@ -183,4 +190,5 @@ clean:
 
 
 gettools:
-	@sudo apt-get -y install gcc-avr binutils-avr gdb-avr avr-libc avrdude
+	@sudo apt-get -y install gcc-avr binutils-avr gdb-avr avr-libc avrdude cloc clang-format code
+
