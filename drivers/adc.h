@@ -35,9 +35,7 @@ namespace zero {
         void setLastConversion( const uint16_t v );
         uint16_t getLastConversion() const;
 
-    private:
-        const Synapse& _readySyn;
-        uint16_t _lastConversion;
+        #include "adc_private.h"
     };
 
 
