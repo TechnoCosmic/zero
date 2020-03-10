@@ -31,7 +31,7 @@ Adc::Adc( const Synapse& syn )
     _readySyn{ syn },
     _lastConversion{ 0 }
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         if ( !_currentAdc ) {
             if ( resource::obtain( resource::ResourceId::Adc ) ) {
                 _currentAdc = this;
@@ -43,7 +43,7 @@ Adc::Adc( const Synapse& syn )
 
 Adc::~Adc()
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         if ( _currentAdc == this ) {
             disable();
             _readySyn.clearSignals();
@@ -62,15 +62,15 @@ Adc::operator bool() const
 
 void Adc::enable()
 {
-    ADCSRA |= ( 1 << ADIE );                            // enable ADC ISR
-    ADCSRA |= ( 1 << ADEN ) | ( 7 << ADPS0);            // switch on ADC and ADC clock
+    ADCSRA |= ( 1 << ADIE );                     // enable ADC ISR
+    ADCSRA |= ( 1 << ADEN ) | ( 7 << ADPS0 );    // switch on ADC and ADC clock
 }
 
 
 void Adc::disable()
 {
-    ADCSRA &= ~( 1 << ADIE );                           // disable ADC ISR
-    ADCSRA &= ~( 1 << ADEN );                           // switch off the ADC circuitry
+    ADCSRA &= ~( 1 << ADIE );    // disable ADC ISR
+    ADCSRA &= ~( 1 << ADEN );    // switch off the ADC circuitry
 }
 
 
@@ -99,7 +99,7 @@ void Adc::setLastConversion( const uint16_t v )
 
 uint16_t Adc::getLastConversion() const
 {
-    return _lastConversion;    
+    return _lastConversion;
 }
 
 
