@@ -62,8 +62,8 @@ Adc::operator bool() const
 
 void Adc::enable()
 {
-    ADCSRA |= ( 1 << ADIE );
-    ADCSRA |= ( 1 << ADEN ) | ( 7 << ADPS0);
+    ADCSRA |= ( 1 << ADIE );                            // enable ADC ISR
+    ADCSRA |= ( 1 << ADEN ) | ( 7 << ADPS0);            // switch on ADC and ADC clock
 }
 
 
