@@ -32,10 +32,10 @@ Adc::Adc( const Synapse& syn )
     _lastConversion{ 0 }
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        if ( resource::obtain( resource::ResourceId::Adc ) ) {
-            if ( !_currentAdc ) {
+        if ( !_currentAdc ) {
+            if ( resource::obtain( resource::ResourceId::Adc ) ) {
                 _currentAdc = this;
-            }        
+            }
         }
     }
 }
