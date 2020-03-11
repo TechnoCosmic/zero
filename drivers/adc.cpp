@@ -62,31 +62,33 @@ Adc::operator bool() const
 
 void Adc::enable()
 {
-    ADCSRA |= ( 1 << ADIE );                     // enable ADC ISR
-    ADCSRA |= ( 1 << ADEN ) | ( 7 << ADPS0 );    // switch on ADC and ADC clock
+    ADCSRA |= ( 1 << ADIE );                            // enable ADC ISR
+    ADCSRA |= ( 1 << ADEN ) | ( 7 << ADPS0 );           // switch on ADC and ADC clock
 }
 
 
 void Adc::disable()
 {
-    ADCSRA &= ~( 1 << ADIE );    // disable ADC ISR
-    ADCSRA &= ~( 1 << ADEN );    // switch off the ADC circuitry
+    ADCSRA &= ~( 1 << ADIE );                           // disable ADC ISR
+    ADCSRA &= ~( 1 << ADEN );                           // switch off the ADC circuitry
 }
 
 
 void Adc::beginConversion( const uint8_t channel )
 {
-    // we're no longer ready
-    _readySyn.clearSignals();
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+        // we're no longer ready
+        _readySyn.clearSignals();
 
-    // AVcc reference
-    ADMUX = ( 1 << REFS0 );
+        // AVcc reference
+        ADMUX = ( 1 << REFS0 );
 
-    // select the correct pin
-    ADMUX = ( ADMUX & 0b11111000 ) | ( channel & 0b111 );
+        // select the correct pin
+        ADMUX = ( ADMUX & 0b11111000 ) | ( channel & 0b111 );
 
-    // start the conversion
-    ADCSRA |= ( 1 << ADSC );
+        // start the conversion
+        ADCSRA |= ( 1 << ADSC );
+    }
 }
 
 
@@ -99,7 +101,9 @@ void Adc::setLastConversion( const uint16_t v )
 
 uint16_t Adc::getLastConversion() const
 {
-    return _lastConversion;
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+        return _lastConversion;
+    }
 }
 
 

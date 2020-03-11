@@ -20,7 +20,6 @@
 
 namespace zero {
 
-
     class Adc {
     public:
         Adc( const Synapse& syn );
@@ -37,7 +36,6 @@ namespace zero {
 
         #include "adc_private.h"
     };
-
 
 }    // namespace zero
 
