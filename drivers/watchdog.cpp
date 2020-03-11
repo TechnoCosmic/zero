@@ -19,8 +19,8 @@ using namespace zero;
 
 namespace {
 
-    WatchdogFlag _allocatedFlags{ 0 };
-    WatchdogFlag _currentPats{ 0 };
+    WatchdogFlags _allocatedFlags{ 0 };
+    WatchdogFlags _currentPats{ 0 };
 
 }    // namespace
 
@@ -48,11 +48,11 @@ Watchdog::operator bool() const
 }
 
 
-WatchdogFlag Watchdog::allocateFlag()
+WatchdogFlags Watchdog::allocateFlag()
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        for ( uint16_t i = 0; i < sizeof( WatchdogFlag ) * 8; i++ ) {
-            const WatchdogFlag m{ 1U << i };
+        for ( uint16_t i = 0; i < sizeof( WatchdogFlags ) * 8; i++ ) {
+            const WatchdogFlags m{ 1U << i };
 
             if ( !( _allocatedFlags & m ) ) {
                 _allocatedFlags |= m;

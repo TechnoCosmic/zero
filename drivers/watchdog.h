@@ -18,7 +18,7 @@
 
 namespace zero {
 
-    typedef uint16_t WatchdogFlag;
+    typedef uint16_t WatchdogFlags;
 
     class Watchdog {
     public:

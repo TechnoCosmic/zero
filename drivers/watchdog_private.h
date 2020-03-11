@@ -7,5 +7,5 @@
 
 
 private:
-    static WatchdogFlag allocateFlag();
-    const WatchdogFlag _flag;
+    static WatchdogFlags allocateFlag();
+    const WatchdogFlags _flag;
