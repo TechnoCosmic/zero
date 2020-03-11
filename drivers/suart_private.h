@@ -7,7 +7,7 @@
 
 
 public:
-void onTick();
+    void onTick();
 
 private:
     SuartTx( const SuartTx& s ) = delete;
