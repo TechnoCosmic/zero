@@ -22,7 +22,7 @@ namespace zero {
         PowerOn = ( 1 << 0 ),
         External = ( 1 << 1 ),
         Brownout = ( 1 << 2 ),
-        Watchdog = ( 1 << 3 ),
+        Wdt = ( 1 << 3 ),
         Jtag = ( 1 << 4 ),
     };
 
