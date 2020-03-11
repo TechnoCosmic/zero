@@ -953,7 +953,7 @@ void CTOR preMain()
         dbg_pgm( "onReset() failed - sleeping\r\n" );
 
         while ( true ) {
-            Power::shutdown();
+            Power::shutdown( true, false );
         }
     }
     else {

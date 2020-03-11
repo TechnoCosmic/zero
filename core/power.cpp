@@ -13,6 +13,7 @@
 #include "gpio.h"
 #include "power.h"
 #include "attrs.h"
+#include "debug.h"
 
 
 using namespace zero;
@@ -21,6 +22,7 @@ using namespace zero;
 namespace {
 
     auto _resetFlags{ ResetFlags::Unknown };
+    auto _keepAwakeCount{ 0 };
 
 }
 
@@ -58,34 +60,66 @@ ResetFlags Power::getResetFlags()
 
 
 // Puts the MCU into super-coma
-void Power::shutdown()
+void Power::shutdown( const bool force, const bool silent )
 {
-    const auto mode = SLEEP_MODE_PWR_DOWN;
+    if ( force or !_keepAwakeCount ) {
+        const auto mode = SLEEP_MODE_PWR_DOWN;
 
-    cli();
-    onSleep( mode );
-    cli();
+        cli();
 
-    Gpio::init();
-    power_all_disable();
+        if ( !silent ) {
+            onSleep( mode );
+            cli();
+        }
 
-    set_sleep_mode( mode );
-    sleep_enable();
-    sleep_cpu();
+        Gpio::init();
+        power_all_disable();
+
+        set_sleep_mode( mode );
+        sleep_enable();
+        sleep_cpu();
+    }
 }
 
 
 // Puts the MCU into idle mode
-void Power::idle()
+void Power::idle( const bool force, const bool silent )
 {
-    const auto mode = SLEEP_MODE_IDLE;
+    if ( force or !_keepAwakeCount ) {
+        const auto mode = SLEEP_MODE_IDLE;
 
-    cli();
-    onSleep( mode );
-    cli();
+        cli();
 
-    set_sleep_mode( mode );
-    sleep_enable();
-    sei();
-    sleep_cpu();
+        if ( !silent ) {
+            onSleep( mode );
+            cli();
+        }
+
+        set_sleep_mode( mode );
+        sleep_enable();
+        sei();
+        sleep_cpu();
+    }
+}
+
+
+SleepInhibitor::SleepInhibitor()
+{
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+        _keepAwakeCount++;
+    }
+}
+
+
+SleepInhibitor::~SleepInhibitor()
+{
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+        _keepAwakeCount--;
+    }
+}
+
+
+SleepInhibitor::operator bool() const
+{
+    return _keepAwakeCount;
 }

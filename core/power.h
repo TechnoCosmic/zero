@@ -16,7 +16,6 @@
 
 namespace zero {
 
-
     enum ResetFlags {
         Unknown = 0,
         PowerOn = ( 1 << 0 ),
@@ -26,15 +25,27 @@ namespace zero {
         Jtag = ( 1 << 4 ),
     };
 
-
     class Power {
     public:
         static bool init();
         static ResetFlags getResetFlags();              // determines what caused the last reset
-        static void shutdown();                         // puts the MCU into deep sleep
-        static void idle();                             // puts the MCU into idle mode
+
+        static void shutdown(                           // puts the MCU into deep sleep
+            const bool force = false,                   // force the shutdown, even with SleepInhibitors present
+            const bool silent = false);                 // if true, won't call onSleep()
+
+        static void idle(                               // puts the MCU into idle mode
+            const bool force = false,                   // force the idle sleep, even with SleepInhibitors present
+            const bool silent = false );                // if true, won't call onSleep()
     };
 
+    class SleepInhibitor {
+    public:
+        SleepInhibitor();
+        ~SleepInhibitor();
+
+        explicit operator bool() const;
+    };
 
 }
 
