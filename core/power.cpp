@@ -112,7 +112,7 @@ SleepInhibitor::SleepInhibitor()
 
 SleepInhibitor::~SleepInhibitor()
 {
-    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
         _inhibitCount--;
     }
 }
