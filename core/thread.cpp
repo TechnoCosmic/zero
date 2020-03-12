@@ -80,17 +80,17 @@ namespace {
 
     #define MIN_STACK_BYTES 128
 
+
     // the offsets from the stack top (as seen AFTER all the registers have been pushed onto
     // the stack already) of each of the nine (9) parameters that are register-passed by GCC
-    const PROGMEM uint8_t _paramOffsets[] = { 24, 26, 28, 30, 2, 4, 6, 8, 10 };
-
+    constexpr uint8_t _paramOffsets[] = { 24, 26, 28, 30, 2, 4, 6, 8, 10 };
 
     // Determine where in the stack the registers are for a given parameter number
     // NOTE: This is GCC-specific. Different compilers may pass parameters differently.
-    int getOffsetForParameter( const uint8_t parameterNumber )
+    constexpr int getOffsetForParameter( const uint8_t parameterNumber )
     {
         if ( parameterNumber < 9 ) {
-            return pgm_read_byte( (uint16_t) _paramOffsets + parameterNumber );
+            return _paramOffsets[ parameterNumber ];
         }
 
         return 0;

@@ -13,7 +13,6 @@
 #include "gpio.h"
 #include "power.h"
 #include "attrs.h"
-#include "debug.h"
 
 
 using namespace zero;
@@ -22,7 +21,7 @@ using namespace zero;
 namespace {
 
     auto _resetFlags{ ResetFlags::Unknown };
-    auto _keepAwakeCount{ 0 };
+    auto _inhibitCount{ 0 };
 
 }
 
@@ -62,7 +61,7 @@ ResetFlags Power::getResetFlags()
 // Puts the MCU into super-coma
 void Power::shutdown( const bool force, const bool silent )
 {
-    if ( force or !_keepAwakeCount ) {
+    if ( force or !_inhibitCount ) {
         const auto mode = SLEEP_MODE_PWR_DOWN;
 
         cli();
@@ -85,7 +84,7 @@ void Power::shutdown( const bool force, const bool silent )
 // Puts the MCU into idle mode
 void Power::idle( const bool force, const bool silent )
 {
-    if ( force or !_keepAwakeCount ) {
+    if ( force or !_inhibitCount ) {
         const auto mode = SLEEP_MODE_IDLE;
 
         cli();
@@ -106,7 +105,7 @@ void Power::idle( const bool force, const bool silent )
 SleepInhibitor::SleepInhibitor()
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        _keepAwakeCount++;
+        _inhibitCount++;
     }
 }
 
@@ -114,12 +113,12 @@ SleepInhibitor::SleepInhibitor()
 SleepInhibitor::~SleepInhibitor()
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        _keepAwakeCount--;
+        _inhibitCount--;
     }
 }
 
 
 SleepInhibitor::operator bool() const
 {
-    return _keepAwakeCount;
+    return true;
 }
