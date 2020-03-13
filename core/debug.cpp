@@ -43,7 +43,7 @@ namespace {
 void debug::init()
 {
 #ifdef DEBUG_ENABLED
-    _debugPin = new Gpio( DEBUG_PIN );
+    _debugPin = new Gpio{ DEBUG_PIN };
     _debugPin->setAsOutput();
     _debugPin->switchOn();
 #endif
@@ -55,7 +55,7 @@ void debug::print( const char d )
 {
 #ifdef DEBUG_ENABLED
     // setup the output 'register'
-    uint16_t reg = d << 1;
+    uint16_t reg( d << 1 );
     reg &= ~( 1 << 0 );                                 // force start bit low
     reg |= ( 1 << 9 );                                  // stop bit high (so it ends high)
 
@@ -71,14 +71,12 @@ void debug::print( const char d )
             _debugPin->switchOff();
         }
 
-        // next bit please
         reg >>= 1;
 
         // 52us = 19200bps, 104us = 9600bps
         _delay_us( DEBUG_DELAY );
     }
 
-    // maybe restore interrupts
     SREG = oldSreg;
 #endif
 }
