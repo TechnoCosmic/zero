@@ -412,7 +412,7 @@ Thread::Thread(
     dbg_assert( _stackBottom and _stackSize, "No stack memory" );
 
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
-        // Pool Threads get pooled immediately, ready for use
+        // Pool Threads get stored away, ready for use
         if ( flags & TF_POOL_THREAD ) {
             _poolThreadList.append( *this );
         }
