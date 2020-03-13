@@ -30,6 +30,10 @@ namespace zero {
         static bool init();
         static ResetFlags getResetFlags();              // determines what caused the last reset
 
+        static void allowSleep();
+        static void preventSleep();
+        static bool isSleepEnabled();
+
         static void shutdown(                           // puts the MCU into deep sleep
             const bool force = false,                   // force the shutdown, even with SleepInhibitors present
             const bool silent = false);                 // if true, won't call onSleep()
@@ -39,15 +43,26 @@ namespace zero {
             const bool silent = false );                // if true, won't call onSleep()
     };
 
-    class SleepInhibitor {
-    public:
-        SleepInhibitor();
-        ~SleepInhibitor();
-
-        explicit operator bool() const;
-    };
-
 }
+
+
+// Funky little ATOMIC_BLOCK macro clones for sleeping
+static inline uint8_t __iPreventRetVal()
+{
+    zero::Power::preventSleep();
+    return 1;
+}
+
+
+static inline void __iZeroSleepRestore( const uint8_t* const __tmr_save )
+{
+    if ( *__tmr_save ) {
+        zero::Power::allowSleep();
+    }
+}
+
+
+#define ZERO_SLEEP_INHIBIT          for ( uint8_t tmr_save CLEANUP( __iZeroSleepRestore ) = ( uint8_t )( zero::Power::isSleepEnabled() ), __ToDo = __iPreventRetVal(); __ToDo; __ToDo = 0 )
 
 
 #endif

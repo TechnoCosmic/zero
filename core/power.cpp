@@ -21,7 +21,7 @@ using namespace zero;
 namespace {
 
     auto _resetFlags{ ResetFlags::Unknown };
-    auto _inhibitCount{ 0 };
+    auto _allowSleep{ true };
 
 }
 
@@ -58,10 +58,28 @@ ResetFlags Power::getResetFlags()
 }
 
 
+void Power::allowSleep()
+{
+    _allowSleep = true;
+}
+
+
+void Power::preventSleep()
+{
+    _allowSleep = false;
+}
+
+
+bool Power::isSleepEnabled()
+{
+    return _allowSleep;
+}
+
+
 // Puts the MCU into super-coma
 void Power::shutdown( const bool force, const bool silent )
 {
-    if ( force or !_inhibitCount ) {
+    if ( _allowSleep or force ) {
         const auto mode = SLEEP_MODE_PWR_DOWN;
 
         cli();
@@ -84,7 +102,7 @@ void Power::shutdown( const bool force, const bool silent )
 // Puts the MCU into idle mode
 void Power::idle( const bool force, const bool silent )
 {
-    if ( force or !_inhibitCount ) {
+    if ( _allowSleep or force ) {
         const auto mode = SLEEP_MODE_IDLE;
 
         cli();
@@ -99,26 +117,4 @@ void Power::idle( const bool force, const bool silent )
         sei();
         sleep_cpu();
     }
-}
-
-
-SleepInhibitor::SleepInhibitor()
-{
-    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        _inhibitCount++;
-    }
-}
-
-
-SleepInhibitor::~SleepInhibitor()
-{
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        _inhibitCount--;
-    }
-}
-
-
-SleepInhibitor::operator bool() const
-{
-    return true;
 }
