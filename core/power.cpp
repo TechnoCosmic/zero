@@ -43,7 +43,10 @@ void WEAK onSleep( const uint8_t )
 // set default power states, run reset handler
 bool Power::init()
 {
-    // cache then clear the reset flags
+    // because the reset flags do not automatically
+    // clear each reset (i.e. they're cumulative across
+    // resets), we cache and clear the register here to
+    // give us access to each unique reset event's info
     _resetFlags = ResetFlags( MCUSR );
     MCUSR = 0;
 
@@ -76,7 +79,7 @@ bool Power::isSleepEnabled()
 }
 
 
-// Puts the MCU into super-coma
+// Puts the MCU into unwakeable super-coma
 void Power::shutdown( const bool force, const bool silent )
 {
     if ( _allowSleep or force ) {
