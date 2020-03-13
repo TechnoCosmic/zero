@@ -67,6 +67,7 @@ ForEachMacros:
   - BOOST_FOREACH
   - ATOMIC_BLOCK
   - ZERO_ATOMIC_BLOCK
+  - ZERO_SLEEP_INHIBIT
 IncludeBlocks:   Preserve
 IncludeCategories:
   - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
