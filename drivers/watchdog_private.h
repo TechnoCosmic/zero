@@ -6,6 +6,9 @@
 //
 
 
+public:
+    static void init();
+
 private:
     static WatchdogFlags allocateFlag();
     const WatchdogFlags _flag;

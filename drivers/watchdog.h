@@ -14,6 +14,7 @@
 
 
 #include <stdint.h>
+#include <avr/wdt.h>
 
 
 namespace zero {
@@ -22,6 +23,9 @@ namespace zero {
 
     class Watchdog {
     public:
+        static void enable( const uint8_t dur );
+        static void disable();
+
         Watchdog();
         ~Watchdog();
 

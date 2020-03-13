@@ -12,6 +12,7 @@
 #include <avr/wdt.h>
 #include <util/atomic.h>
 #include "watchdog.h"
+#include "debug.h"
 
 
 using namespace zero;
@@ -25,11 +26,40 @@ namespace {
 }    // namespace
 
 
+void Watchdog::init()
+{
+    disable();
+}
+
+
+void Watchdog::enable( const uint8_t dur )
+{
+    wdt_enable( dur );
+}
+
+
+void Watchdog::disable()
+{
+    wdt_disable();
+}
+
+
 Watchdog::Watchdog()
 :
-    _flag{ allocateFlag() }
+    _flag{ []() -> WatchdogFlags
+    {
+        ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+            const auto shouldEnable{ !!!_allocatedFlags };
+            const auto rc{ allocateFlag() };
+
+            if ( shouldEnable and rc ) {
+                enable( WATCHDOG_TIMEOUT );
+            }
+
+            return rc;
+        }
+    }() }
 {
-    // pat the dog straight away, for safety's sake
     if ( *this ) {
         pat();
     }
@@ -41,6 +71,10 @@ Watchdog::~Watchdog()
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         _currentPats &= ~_flag;
         _allocatedFlags &= ~_flag;
+
+        if ( !_allocatedFlags ) {
+            disable();
+        }
     }
 }
 

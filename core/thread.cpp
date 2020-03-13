@@ -173,7 +173,7 @@ void WEAK onStackOverflow( Thread& )
 int WEAK idleThreadEntry()
 {
     while ( true ) {
-        Power::idle();
+        Power::sleep( SLEEP_MODE_IDLE );
     }
 }
 
@@ -942,10 +942,10 @@ void CTOR preMain()
     #ifdef ZERO_DRIVERS_GPIO
         // initialize the GPIO - make sure everything is tri-stated
         Gpio::init();
-    #endif
 
-    // initialize the debug serial TX first so that anything can use it
-    debug::init();
+        // initialize the debug serial TX first so that anything can use it
+        debug::init();
+    #endif
 
     // initialize the power management stuff
     if ( !Power::init() ) {
@@ -953,7 +953,7 @@ void CTOR preMain()
         dbg_pgm( "onReset() failed - sleeping\r\n" );
 
         while ( true ) {
-            Power::shutdown( true, false );
+            Power::sleep( SLEEP_MODE_PWR_DOWN, true, false );
         }
     }
     else {

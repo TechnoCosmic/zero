@@ -10,8 +10,9 @@
 #include <avr/power.h>
 #include <util/atomic.h>
 
-#include "gpio.h"
 #include "power.h"
+#include "gpio.h"
+#include "watchdog.h"
 #include "attrs.h"
 
 
@@ -50,6 +51,12 @@ bool Power::init()
     _resetFlags = ResetFlags( MCUSR );
     MCUSR = 0;
 
+    // Watchdog init must be delayed until after MCUSR is
+    // cleared (if the reset was caused by the WDT that is)
+    #ifdef ZERO_DRIVERS_WDT
+        Watchdog::init();
+    #endif
+
     return onReset( _resetFlags );
 }
 
@@ -80,11 +87,9 @@ bool Power::isSleepEnabled()
 
 
 // Puts the MCU into unwakeable super-coma
-void Power::shutdown( const bool force, const bool silent )
+void Power::sleep( const uint8_t mode, const bool force, const bool silent )
 {
     if ( _allowSleep or force ) {
-        const auto mode = SLEEP_MODE_PWR_DOWN;
-
         cli();
 
         if ( !silent ) {
@@ -92,32 +97,18 @@ void Power::shutdown( const bool force, const bool silent )
             cli();
         }
 
-        Gpio::init();
-        power_all_disable();
-
-        set_sleep_mode( mode );
-        sleep_enable();
-        sleep_cpu();
-    }
-}
-
-
-// Puts the MCU into idle mode
-void Power::idle( const bool force, const bool silent )
-{
-    if ( _allowSleep or force ) {
-        const auto mode = SLEEP_MODE_IDLE;
-
-        cli();
-
-        if ( !silent ) {
-            onSleep( mode );
-            cli();
+        if ( mode == SLEEP_MODE_PWR_DOWN ) {
+            Gpio::init();
+            power_all_disable();
         }
 
         set_sleep_mode( mode );
         sleep_enable();
-        sei();
+
+        if ( mode != SLEEP_MODE_PWR_DOWN ) {
+            sei();
+        }
+
         sleep_cpu();
     }
 }

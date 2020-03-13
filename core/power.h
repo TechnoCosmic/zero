@@ -34,13 +34,10 @@ namespace zero {
         static void preventSleep();
         static bool isSleepEnabled();
 
-        static void shutdown(                           // puts the MCU into deep sleep
+        static void sleep(                              // puts the MCU to sleep
+            const uint8_t mode,                         // sleep mode (from avr/sleep.h)
             const bool force = false,                   // force the shutdown, even with SleepInhibitors present
             const bool silent = false);                 // if true, won't call onSleep()
-
-        static void idle(                               // puts the MCU into idle mode
-            const bool force = false,                   // force the idle sleep, even with SleepInhibitors present
-            const bool silent = false );                // if true, won't call onSleep()
     };
 
 }
