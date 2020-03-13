@@ -29,7 +29,10 @@ Watchdog::Watchdog()
 :
     _flag{ allocateFlag() }
 {
-    // empty
+    // pat the dog straight away, for safety's sake
+    if ( *this ) {
+        pat();
+    }
 }
 
 
