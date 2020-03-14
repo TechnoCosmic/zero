@@ -62,6 +62,7 @@ Adc::operator bool() const
 
 void Adc::enable()
 {
+    ADMUX = ( 1 << REFS0 );                             // AVcc reference
     ADCSRA |= ( 1 << ADIE );                            // enable ADC ISR
     ADCSRA |= ( 1 << ADEN ) | ( 7 << ADPS0 );           // switch on ADC and ADC clock
 }
@@ -77,11 +78,12 @@ void Adc::disable()
 void Adc::beginConversion( const uint8_t channel )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+        // wait for previous conversion to  finish
+        while ( ADCSRA & ( 1 << ADSC ) )
+            ;
+
         // we're no longer ready
         _readySyn.clearSignals();
-
-        // AVcc reference
-        ADMUX = ( 1 << REFS0 );
 
         // select the correct pin
         ADMUX = ( ADMUX & 0b11111000 ) | ( channel & 0b111 );
