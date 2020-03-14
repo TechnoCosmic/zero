@@ -9,6 +9,10 @@ If a piece of code no longer needs to be monitored by the WDT, then just let it'
 
 ## Example
 ```
+#include "thread.h"
+#include "debug.h"
+#include "watchdog.h"
+
 int myThread()
 {
     while ( true ) {
