@@ -10,7 +10,7 @@
 
 
 #include <avr/wdt.h>
-#include <util/atomic.h>
+#include "thread.h"
 #include "watchdog.h"
 #include "debug.h"
 
@@ -48,7 +48,7 @@ Watchdog::Watchdog()
 :
     _flag{ []() -> WatchdogFlags
     {
-        ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+        ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
             const auto shouldEnable{ !!!_allocatedFlags };
             const auto rc{ allocateFlag() };
 
@@ -68,7 +68,7 @@ Watchdog::Watchdog()
 
 Watchdog::~Watchdog()
 {
-    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
         _currentPats &= ~_flag;
         _allocatedFlags &= ~_flag;
 
@@ -87,7 +87,7 @@ Watchdog::operator bool() const
 
 WatchdogFlags Watchdog::allocateFlag()
 {
-    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
         for ( uint16_t i = 0; i < sizeof( WatchdogFlags ) * 8; i++ ) {
             const WatchdogFlags m{ 1U << i };
 
@@ -104,7 +104,7 @@ WatchdogFlags Watchdog::allocateFlag()
 
 void Watchdog::pat() const
 {
-    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
         _currentPats |= _flag;
 
         if ( _currentPats == _allocatedFlags ) {
