@@ -6,9 +6,6 @@
 //
 
 
-#ifdef ZERO_DRIVERS_WDT
-
-
 #ifndef TCRI_ZERO_WATCHDOG_H
 #define TCRI_ZERO_WATCHDOG_H
 
@@ -40,6 +37,3 @@ namespace zero {
 
 
 #endif    // TCRI_ZERO_WATCHDOG_H
-
-
-#endif    // ZERO_DRIVERS_WDT

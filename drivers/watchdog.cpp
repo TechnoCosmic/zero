@@ -6,9 +6,6 @@
 //
 
 
-#ifdef ZERO_DRIVERS_WDT
-
-
 #include <avr/wdt.h>
 #include "thread.h"
 #include "watchdog.h"
@@ -20,99 +17,128 @@ using namespace zero;
 
 namespace {
 
-    WatchdogFlags _allocatedFlags{ 0 };
-    WatchdogFlags _currentPats{ 0 };
+    #ifdef ZERO_DRIVERS_WDT
+        WatchdogFlags _allocatedFlags{ 0 };
+        WatchdogFlags _currentPats{ 0 };
+    #endif
 
 }    // namespace
 
 
 void Watchdog::init()
 {
-    disable();
+    #ifdef ZERO_DRIVERS_WDT
+        disable();
+    #endif
 }
 
 
-void Watchdog::enable( const uint8_t dur )
-{
-    wdt_enable( dur );
-}
+#ifdef ZERO_DRIVERS_WDT
+    void Watchdog::enable( const uint8_t dur )
+    {
+        wdt_enable( dur );
+    }
+#else
+    void Watchdog::enable( const uint8_t )
+    {
+        // empty
+    }
+#endif
 
 
 void Watchdog::disable()
 {
-    wdt_disable();
+    #ifdef ZERO_DRIVERS_WDT
+        wdt_disable();
+    #endif
 }
 
 
-Watchdog::Watchdog()
-:
-    _flag{ []() -> WatchdogFlags
-    {
-        ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-            const auto shouldEnable{ !!!_allocatedFlags };
-            const auto rc{ allocateFlag() };
+#ifdef ZERO_DRIVERS_WDT
+    Watchdog::Watchdog()
+    :
+        _flag{ []() -> WatchdogFlags
+        {
+            ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+                const auto shouldEnable{ !!!_allocatedFlags };
+                const auto rc{ allocateFlag() };
 
-            if ( shouldEnable and rc ) {
-                enable( WATCHDOG_TIMEOUT );
+                if ( shouldEnable and rc ) {
+                    enable( WATCHDOG_TIMEOUT );
+                }
+
+                return rc;
             }
-
-            return rc;
+        }() }
+    {
+        if ( *this ) {
+            pat();
         }
-    }() }
-{
-    if ( *this ) {
-        pat();
     }
-}
+#else
+    Watchdog::Watchdog()
+    :
+        _flag{ 0 }
+    {
+        // empty
+    }
+#endif
 
 
 Watchdog::~Watchdog()
 {
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        _currentPats &= ~_flag;
-        _allocatedFlags &= ~_flag;
+    #ifdef ZERO_DRIVERS_WDT
+        ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+            _currentPats &= ~_flag;
+            _allocatedFlags &= ~_flag;
 
-        if ( !_allocatedFlags ) {
-            disable();
+            if ( !_allocatedFlags ) {
+                disable();
+            }
         }
-    }
+    #endif
 }
 
 
 Watchdog::operator bool() const
 {
-    return _flag;
+    #ifdef ZERO_DRIVERS_WDT
+        return _flag;
+    #else
+        return true;
+    #endif
 }
 
 
 WatchdogFlags Watchdog::allocateFlag()
 {
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        for ( uint16_t i = 0; i < sizeof( WatchdogFlags ) * 8; i++ ) {
-            const WatchdogFlags m{ 1U << i };
+    #ifdef ZERO_DRIVERS_WDT
+        ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+            for ( uint16_t i = 0; i < sizeof( WatchdogFlags ) * 8; i++ ) {
+                const WatchdogFlags m{ 1U << i };
 
-            if ( !( _allocatedFlags & m ) ) {
-                _allocatedFlags |= m;
-                return m;
+                if ( !( _allocatedFlags & m ) ) {
+                    _allocatedFlags |= m;
+                    return m;
+                }
             }
-        }
 
-        return 0;
-    }
+            return 0;
+        }
+    #endif
 }
 
 
 void Watchdog::pat() const
 {
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        _currentPats |= _flag;
+    #ifdef ZERO_DRIVERS_WDT
+        ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+            _currentPats |= _flag;
 
-        if ( _currentPats == _allocatedFlags ) {
-            wdt_reset();
-            _currentPats = 0;
+            if ( _currentPats == _allocatedFlags ) {
+                wdt_reset();
+                _currentPats = 0;
+            }
         }
-    }
+    #endif
 }
-
-
-#endif    // ZERO_DRIVERS_WDT
