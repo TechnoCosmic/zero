@@ -7,6 +7,7 @@
 
 
 #include "ledflasher.h"
+#include "watchdog.h"
 #include "thread.h"
 #include "gpio.h"
 
@@ -59,12 +60,20 @@ int LedFlasher::main()
         return 20;
     }
 
+    Watchdog dog;
+
+    if ( !dog ) {
+        return 20;
+    }
+
     led.setAsOutput();
 
     while ( true ) {
+        dog.pat();
         led.switchOn();
         me.delay( _timeOn );
 
+        dog.pat();
         led.switchOff();
         me.delay( _timeOff );
 
