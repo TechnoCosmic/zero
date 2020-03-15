@@ -66,7 +66,7 @@ int idleThreadEntry()
     dbg_assert( dog, "Couldn't get a Watchdog" );
 
     while ( true ) {
-        Power::idle();
+        Power::sleep( SLEEP_MODE_IDLE );
         dog.pat();
     }
 }
