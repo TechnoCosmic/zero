@@ -22,17 +22,26 @@ namespace zero {
     
     typedef int ( *ThreadEntry )();
 
+    enum class ThreadStatus {
+        Ready = 0,
+        Running,
+        Waiting,
+        Stopped,
+    };
+
     typedef uint16_t SignalBitField;
     typedef uint16_t ThreadFlags;
 
-    const ThreadFlags TF_NONE = 0;
-    const ThreadFlags TF_READY = ( 1 << 0 );
-    const ThreadFlags TF_POOL_THREAD = ( 1 << 1 );
+    const ThreadFlags TF_NONE{ 0 };
+    const ThreadFlags TF_READY{ 1 << 0 };
+    const ThreadFlags TF_POOL_THREAD{ 1 << 1 };
 
     // reserved signals
-    const auto NUM_RESERVED_SIGS = 1;
-    const SignalBitField SIG_TIMEOUT = ( 1 << 0 );
-    const SignalBitField SIG_ALL_RESERVED = SIG_TIMEOUT;
+    const auto NUM_RESERVED_SIGS = 3;
+    const SignalBitField SIG_TIMEOUT{ 1 << 0 };
+    const SignalBitField SIG_START{ 1 << 1 };
+    const SignalBitField SIG_STOP{ 1 << 2 };
+    const SignalBitField SIG_ALL_RESERVED = SIG_TIMEOUT | SIG_START | SIG_STOP;
 
     // Thread class
     class Thread {
@@ -66,6 +75,11 @@ namespace zero {
         // General
         uint16_t getThreadId() const;                   // Returns the ID of the Thread
         const char* getName() const;                    // Returns the name of the Thread
+
+        // Control
+        void restart();                                 // restarts the Thread
+        void stop();                                    // stops the Thread
+        ThreadStatus getStatus() const;                 // gets the Thread's status
 
         // Stack information
         uint16_t getStackSizeBytes() const;

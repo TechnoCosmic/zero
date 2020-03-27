@@ -119,7 +119,7 @@ namespace {
 
     uint16_t getNewThreadId()
     {
-        ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+        ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
             return _nextId++;
         }
     }
@@ -216,9 +216,6 @@ void Thread::globalThreadEntry(
     // and that's bad, m'kay?
     if ( flags & TF_POOL_THREAD ) {
         dbg_assert( !t.getAllocatedSignals( true ), "Signals remain" );
-
-        // TODO: Log the offending code, by storing its name
-        // in EEPROM.
     }
 
     // return the exit code if someone wants it
@@ -268,7 +265,7 @@ Thread& Thread::getCurrent()
 // NOTE: Wraps around after approximately 49 continuous days
 uint32_t Thread::now()
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         return _milliseconds;
     }
 }
@@ -371,7 +368,7 @@ Thread* Thread::fromPool(
     const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
     int* const exitCode )                               // Place to put Thread's return code
 {
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         Thread* rc{ nullptr };
 
         if ( ( rc = _poolThreadList.getHead() ) ) {
@@ -411,7 +408,7 @@ Thread::Thread(
 {
     dbg_assert( _stackBottom and _stackSize, "No stack memory" );
 
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         // Pool Threads get stored away, ready for use
         if ( flags & TF_POOL_THREAD ) {
             _poolThreadList.append( *this );
@@ -456,6 +453,43 @@ uint16_t Thread::getThreadId() const
 const char* Thread::getName() const
 {
     return _name;
+}
+
+
+// Restarts the Thread
+void Thread::restart()
+{
+    signal( SIG_START );
+}
+
+
+// Stops the Thread
+void Thread::stop()
+{
+    signal( SIG_START );
+}
+
+
+// Returns the Thread's status
+ThreadStatus Thread::getStatus() const
+{
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
+        auto rc{ ThreadStatus::Ready };
+
+        if ( _currentThread == this ) {
+            rc = ThreadStatus::Running;
+        }
+        else if ( _waitingSignals ) {
+            if ( _waitingSignals & SIG_START ) {
+                rc = ThreadStatus::Stopped;
+            }
+            else {
+                rc = ThreadStatus::Waiting;
+            }
+        }
+
+        return rc;
+    }
 }
 
 
@@ -820,6 +854,13 @@ SignalBitField Thread::wait( const SignalBitField sigs, const Duration timeout )
         // build the final field from scratch
         _waitingSignals = sigs;
 
+        // sneaky add the stop signal only if
+        // we're not being asked to wait on
+        // the START signal
+        if ( !( sigs & SIG_START ) ) {
+            _waitingSignals |= SIG_STOP;
+        }
+
         // make sure the signal gets used if the Thread wants a timeout set
         _timeoutOffset = (uint32_t) timeout;
 
@@ -862,6 +903,11 @@ SignalBitField Thread::wait( const SignalBitField sigs, const Duration timeout )
 
         // make sure that the timeout is disabled
         _currentThread->_timeoutOffset = 0UL;
+
+        // sneaky hidden auto-stop
+        if ( rc & SIG_STOP ) {
+            wait( SIG_START );
+        }
 
         // return the signals that woke us
         return rc;
