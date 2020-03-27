@@ -13,6 +13,10 @@ zero is a tiny pre-emptive multitasking kernel for AVR microcontrollers. Specifi
 - Asychronouus ADC
 - Hardware and software UART
 
+## Under Construction
+- Location Services
+- ESP WiFi Driver
+
 ## Documentation
 This document serves as an introduction to and conceptual description of zero. For API documentation, please see the ```docs``` folder.
 
