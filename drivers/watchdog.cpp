@@ -110,23 +110,23 @@ Watchdog::operator bool() const
 }
 
 
-WatchdogFlags Watchdog::allocateFlag()
-{
-    #ifdef ZERO_DRIVERS_WDT
-        ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-            for ( uint16_t i = 0; i < sizeof( WatchdogFlags ) * 8; i++ ) {
-                const WatchdogFlags m{ 1U << i };
+#ifdef ZERO_DRIVERS_WDT
+    WatchdogFlags Watchdog::allocateFlag()
+    {
+            ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+                for ( uint16_t i = 0; i < sizeof( WatchdogFlags ) * 8; i++ ) {
+                    const WatchdogFlags m{ 1U << i };
 
-                if ( !( _allocatedFlags & m ) ) {
-                    _allocatedFlags |= m;
-                    return m;
+                    if ( !( _allocatedFlags & m ) ) {
+                        _allocatedFlags |= m;
+                        return m;
+                    }
                 }
-            }
 
-            return 0;
-        }
-    #endif
-}
+                return 0;
+            }
+    }
+#endif
 
 
 void Watchdog::pat() const
