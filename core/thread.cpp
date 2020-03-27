@@ -72,11 +72,11 @@ namespace {
     const uint8_t SIGNAL_BITS{ sizeof( SignalBitField ) * 8 };
     const uint16_t REGISTER_COUNT{ 32 };
 
-#ifdef RAMPZ
-    const uint16_t EXTRAS_COUNT{ 2 };
-#else
-    const uint16_t EXTRAS_COUNT{ 1 };
-#endif
+    #ifdef RAMPZ
+        const uint16_t EXTRAS_COUNT{ 2 };
+    #else
+        const uint16_t EXTRAS_COUNT{ 1 };
+    #endif
 
     #define MIN_STACK_BYTES 128
 
