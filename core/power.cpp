@@ -90,11 +90,8 @@ bool Power::isSleepEnabled()
 void Power::sleep( const uint8_t mode, const bool force, const bool silent )
 {
     if ( _allowSleep or force ) {
-        cli();
-
         if ( !silent ) {
             onSleep( mode );
-            cli();
         }
 
         if ( mode == SLEEP_MODE_PWR_DOWN ) {
