@@ -466,7 +466,7 @@ void Thread::restart()
 // Stops the Thread
 void Thread::stop()
 {
-    signal( SIG_START );
+    signal( SIG_STOP );
 }
 
 
