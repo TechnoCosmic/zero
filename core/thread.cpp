@@ -273,6 +273,7 @@ uint32_t Thread::now()
 
 
 /// @brief Switches context switching off
+/// @see permit(), isSwitchingEnabled()
 void Thread::forbid()
 {
     _switchingEnabled = false;
@@ -280,6 +281,7 @@ void Thread::forbid()
 
 
 /// @brief Switches context switching on
+/// @see forbid(), isSwitchingEnabled()
 void Thread::permit()
 {
     _switchingEnabled = true;
@@ -287,6 +289,7 @@ void Thread::permit()
 
 
 /// @brief Determines if context switching is on or not.
+/// @see forbid(), permit()
 bool Thread::isSwitchingEnabled()
 {
     return _switchingEnabled;
@@ -418,6 +421,7 @@ Thread* Thread::fromPool(
 /// @param flags Optional. Default: ```TF_READY```. Flags controlling the ascpects of the Thread's behavior.
 /// @param termSyn Optional. Default: ```nullptr```. Synapse to signal when the Thread terminates.
 /// @param exitCode Optional. Default: ```nullptr```. A place to store the Thread's return code.
+/// @see fromPool()
 Thread::Thread(
     const char* const name,
     const uint16_t stackSize,
