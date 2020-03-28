@@ -98,6 +98,7 @@ namespace zero {
     const int ZERO_NUM_PORTS = ZERO_HIGH_PORT + 1;
 
 
+    /// @brief Provides protected access to GPIO pins
     class Gpio {
     public:
         // lifecycle

@@ -16,6 +16,7 @@
 
 namespace zero {
 
+    /// @brief Manages dynamic allocation of SRAM
     namespace memory {
 
         // allocate a contiguous chunk of memory

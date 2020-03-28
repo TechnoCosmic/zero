@@ -16,6 +16,7 @@
 namespace zero {
 
 
+    /// @brief Used to determine what caused a reset event
     enum ResetFlags {
         /// Unknown
         Unknown = 0,
@@ -37,12 +38,12 @@ namespace zero {
     };
 
 
+    /// @brief Provides power, reset, and sleep management services
     class Power {
     public:
         /// @private
         static bool init();
 
-        
         static ResetFlags getResetFlags();              // Determines what caused the last reset event
         static void allowSleep();                       // Allows the MCU to sleep when asked
         static void preventSleep();                     // Prevents the MCU from entering sleep mode

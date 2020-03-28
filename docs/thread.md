@@ -339,7 +339,7 @@ Similar to AVR-libc's ```ATOMIC_BLOCK``` macros, this macro lets you easily wrap
 // ...
 // ...
 
-ZERO_ATOMIC_BLOCK( ZERO_ATOMIC_RESTORESTATE ) {
+ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
 
     // do stuff here that requires context-switching
     // to be disabled in order to work correctly

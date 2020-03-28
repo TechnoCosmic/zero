@@ -18,13 +18,13 @@ namespace zero {
 
     typedef uint16_t WatchdogFlags;
 
+    /// @brief Provides multi-participant Watchdog timer services
     class Watchdog {
     public:
         static void enable( const uint8_t dur );
         static void disable();
 
         Watchdog();
-        ~Watchdog();
 
         explicit operator bool() const;
 

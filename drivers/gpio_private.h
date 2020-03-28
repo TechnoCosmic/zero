@@ -7,7 +7,7 @@
 
 
 public:
-    // meta
+    /// @privatesection
     static void init();
 
     static void handlePinChange(

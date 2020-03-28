@@ -24,8 +24,12 @@ namespace zero {
 
     namespace memory {
 
+        /// @brief Used to control how memory is found
         enum class SearchStrategy {
+            /// Search backwards from the highest address available
             TopDown = 0,
+
+            /// Search forwards from the lowest address available
             BottomUp,
         };
     }

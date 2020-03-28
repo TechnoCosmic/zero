@@ -166,7 +166,7 @@ void SpiMemory::read(
         // empty
     }
 
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         // tell the ISR who we are
         _curController = this;
 
@@ -207,7 +207,7 @@ void SpiMemory::write(
         // empty
     }
 
-    ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
+    ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         // tell the ISR who we are
         _curController = this;
 

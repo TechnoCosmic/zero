@@ -12,7 +12,7 @@
 using namespace zero;
 
 
-// ctor
+/// @brief Creates a new Synapse
 Synapse::Synapse() :
     _thread{ &me },
     _signals{ me.allocateSignal() }
@@ -44,7 +44,7 @@ Synapse::operator SignalBitField() const
 }
 
 
-/// @brief Signals the thread
+/// @brief Signals the Thread represented by the Synapse
 void Synapse::signal() const
 {
     if ( *this ) {
@@ -53,7 +53,7 @@ void Synapse::signal() const
 }
 
 
-/// @brief Clears the signals
+/// @brief Clears the signals represented by the Synapse
 void Synapse::clearSignals() const
 {
     if ( *this ) {
@@ -63,7 +63,8 @@ void Synapse::clearSignals() const
 
 
 /// @brief Waits for the signals to be set, blocking if necessary
-/// @param timeout Optional. A maximum length of time to wait to receive the signals.
+/// @param timeout Optional. Default: ```0_ms``` (no timeout). The maximum length of time
+/// to wait to receive the signals.
 SignalBitField Synapse::wait( const Duration timeout ) const
 {
     if ( *this and &me == _thread ) {

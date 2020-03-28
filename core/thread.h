@@ -72,10 +72,10 @@ namespace zero {
     class Thread;
 
 
+    /// @brief Used to provide signalling services to Threads
     class Synapse {
     public:
         Synapse();
-        ~Synapse();
 
         explicit operator bool() const;                 // Determines if the Synapse initialized correctly
         operator SignalBitField() const;                // Extracts the signal(s) represented by the Synapse
@@ -85,16 +85,11 @@ namespace zero {
         SignalBitField wait(
             const Duration timeout = 0_ms ) const;
 
-    private:
-        Synapse( const Synapse& s ) = delete;
-        void operator=( const Synapse& s ) = delete;
-
-        Thread* const _thread;
-        const SignalBitField _signals;
+        #include "synapse_private.h"
     };
 
     
-    // Thread class
+    /// @brief Provides Thread management services
     class Thread {
     public:
         // meta
@@ -144,7 +139,6 @@ namespace zero {
         SignalBitField wait( const SignalBitField sigs, const Duration timeout = 0_ms );
         void signal( const SignalBitField sigs );
 
-    // Don't touch! That means you! :)
     // PRIVATE!
     public:
         /// @privatesection

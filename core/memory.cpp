@@ -60,8 +60,12 @@ void WEAK onOutOfMemory()
 }
 
 
-// Allocates some memory. The amount of memory actually allocated is optionally
-// returned in allocatedBytes, which will always be a multiple of the page size.
+/// @brief Allocates a chunk of SRAM.
+/// @param bytesReqd The minimum number of bytes required.
+/// @param allocatedBytes Optional. Default: ```nullptr```. A place to store the number
+/// of bytes actually allocated.
+/// @param strategy Optional. Default: SearchStrategy::BottomUp. The method used to search
+/// the heap for free memory.
 void* MALLOC memory::allocate(
     const uint16_t bytesReqd,
     uint16_t* const allocatedBytes,
@@ -108,10 +112,9 @@ void* MALLOC memory::allocate(
 }
 
 
-// Frees up a chunk of previously allocated memory. In the interests of
-// performance, there is no checking that the Thread 'owns' the memory being
-// freed, nor is there a check to see if the memory was even allocated in the
-// first place.
+/// @brief Returns a chunk of previously allocated memory to the heap.
+/// @param address The address of the start of the chunk to free.
+/// @param numBytes The number of bytes to be freed.
 void memory::free( const void* const address, const uint16_t numBytes )
 {
     if ( !address or !numBytes ) return;

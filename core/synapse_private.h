@@ -8,9 +8,11 @@
 
 public:
     /// @privatesection
-    static void init();
-    ~Watchdog();
+    ~Synapse();
 
 private:
-    static WatchdogFlags allocateFlag();
-    const WatchdogFlags _flag;
+    Synapse( const Synapse& s ) = delete;
+    void operator=( const Synapse& s ) = delete;
+
+    Thread* const _thread;
+    const SignalBitField _signals;

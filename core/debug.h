@@ -15,6 +15,7 @@
 
 namespace zero {
 
+    /// @brief Provides simple debug logging services
     namespace debug {
         /// @private
         void init();

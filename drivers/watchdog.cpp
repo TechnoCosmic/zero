@@ -33,6 +33,8 @@ void Watchdog::init()
 }
 
 
+/// @brief Enables the WDT
+/// @param dur The timeout for the WDT. From ```avr/wdt.h```.
 #ifdef ZERO_DRIVERS_WDT
     void Watchdog::enable( const uint8_t dur )
     {
@@ -46,6 +48,7 @@ void Watchdog::init()
 #endif
 
 
+/// @brief Disables the WDT
 void Watchdog::disable()
 {
     #ifdef ZERO_DRIVERS_WDT
@@ -54,6 +57,7 @@ void Watchdog::disable()
 }
 
 
+/// @brief Creates a new Watchdog participant
 #ifdef ZERO_DRIVERS_WDT
     Watchdog::Watchdog()
     :
@@ -100,6 +104,8 @@ Watchdog::~Watchdog()
 }
 
 
+/// @brief Determines if the Watchdog initialized correctly
+/// @returns ```true``` if the Watchdog initialized correctly, ```false``` otherwise.
 Watchdog::operator bool() const
 {
     #ifdef ZERO_DRIVERS_WDT
@@ -129,6 +135,7 @@ Watchdog::operator bool() const
 #endif
 
 
+/// @brief Pats the Watchdog
 void Watchdog::pat() const
 {
     #ifdef ZERO_DRIVERS_WDT

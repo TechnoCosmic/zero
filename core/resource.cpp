@@ -20,6 +20,9 @@ namespace {
 }
 
 
+/// @brief Obtains exclusive access to a resource
+/// @param id The resource you wish to access.
+/// @returns ```true``` if the resource was able to be reserved, ```false``` otherwise.
 bool resource::obtain( const ResourceId id )
 {
     const uint16_t m{ 1U << (uint16_t) id };
@@ -35,6 +38,8 @@ bool resource::obtain( const ResourceId id )
 }
 
 
+/// @brief Releases a previous held resource back to the system
+/// @param id The resource to be released.
 void resource::release( const ResourceId id )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
