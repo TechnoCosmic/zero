@@ -403,6 +403,7 @@ Thread* Thread::fromPool(
 
 
 /// @brief Creates a new Thread.
+/// @par Example
 /// @code
 /// int myThread()
 /// {
@@ -823,6 +824,8 @@ void Thread::freeSignals( const SignalBitField signals )
 
 /// @brief Gets the signals currently in use by the Thread
 /// @param userOnly If ```true```, do not return any reserved signals.
+/// @returns A SignalBitField indicating the currently allocated signals.
+/// @see clearSignals(), getCurrentSignals()
 SignalBitField Thread::getAllocatedSignals( const bool userOnly ) const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -848,6 +851,7 @@ SignalBitField Thread::getActiveSignals() const
 
 /// @brief Gets the signals currently set for the Thread
 /// @returns A SignalBitField containing the currently set signals.
+/// @see clearSignals(), getAllocatedSignals()
 SignalBitField Thread::getCurrentSignals() const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -859,6 +863,7 @@ SignalBitField Thread::getCurrentSignals() const
 /// Clears a set of signals and returns the remaining ones.
 /// @param sigs The signals to clear.
 /// @returns A SignalBitField containing the remaining set signals.
+/// @see getAllocatedSignals(), getCurrentSignals()
 SignalBitField Thread::clearSignals( const SignalBitField sigs )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {

@@ -112,6 +112,7 @@ void Gpio::init()
 /// @param pins The GPIO pins for which exclusive access is required.
 /// @note Initialization of the Gpio object will fail if another Gpio is using any of the
 /// pins. Check for this before using the Gpio object.
+/// @par Example
 /// @code
 /// int gpioDemo()
 /// {
@@ -138,6 +139,7 @@ Gpio::Gpio(
 /// Gpio change state.
 /// @note Initialization of the Gpio object will fail if another Gpio is using any of the
 /// pins. Check for this before using the Gpio object.
+/// @par Example
 /// @code
 /// void myPinChangeHandler( const Gpio& pins )
 /// {
@@ -172,6 +174,7 @@ Gpio::Gpio(
 /// @param syn The Synapse to signal when any of the pins' input states change.
 /// @note Initialization of the Gpio object will fail if another Gpio is using any of the
 /// pins. Check for this before using the Gpio object.
+/// @par Example
 /// @code
 /// int gpioDemo()
 /// {
