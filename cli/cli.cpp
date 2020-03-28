@@ -11,7 +11,6 @@
 
 #include "cli.h"
 #include "thread.h"
-#include "synapse.h"
 #include "usart.h"
 
 #include "cmdline.h"

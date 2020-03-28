@@ -43,7 +43,6 @@ Discards the current input buffer.
 ## Example
 ```
 #include "thread.h"
-#include "synapse.h"
 #include "usart.h"
 
 int rxDemo()

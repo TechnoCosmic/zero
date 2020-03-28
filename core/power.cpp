@@ -7,6 +7,7 @@
 
 
 #include <avr/io.h>
+#include <avr/sleep.h>
 #include <avr/power.h>
 #include <util/atomic.h>
 
@@ -41,7 +42,7 @@ void WEAK onSleep( const uint8_t )
 }
 
 
-// set default power states, run reset handler
+/// @brief Sets default power states, runs the reset handler
 bool Power::init()
 {
     // because the reset flags do not automatically
@@ -61,32 +62,43 @@ bool Power::init()
 }
 
 
-// Returns the reset flags from the last power up
+/// @brief Gets the reset flags from the last power up
 ResetFlags Power::getResetFlags()
 {
     return _resetFlags;
 }
 
 
+/// @brief Allows the MCU to sleep when asked
+/// @see isSleepEnabled(), preventSleep()
 void Power::allowSleep()
 {
     _allowSleep = true;
 }
 
 
+/// @brief Prevents the MCU from entering a sleep mode when asked
+/// @see isSleepEnabled(), allowSleep()
 void Power::preventSleep()
 {
     _allowSleep = false;
 }
 
 
+/// @brief Determines if sleeping is currently allowed
+/// @returns ```true``` if the MCU is allowed to sleep, ```false``` otherwise.
+/// @see allowSleep(), preventSleep()
 bool Power::isSleepEnabled()
 {
     return _allowSleep;
 }
 
 
-// Puts the MCU into unwakeable super-coma
+/// @brief Puts the MCU to sleep
+/// @param mode The desired sleep mode, from ```avr/sleep.h```.
+/// @param force Optional. Default: ```false```. If ```true```, the MCU will be forced into sleep even if currently prevented from doing so.
+/// @param silent Optional. Default: ```false```. If ```true```, the onSleep() handler will not be called.
+/// @see isSleepEnabled(), allowSleep(), preventSleep()
 void Power::sleep( const uint8_t mode, const bool force, const bool silent )
 {
     if ( _allowSleep or force ) {

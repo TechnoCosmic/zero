@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 #include <avr/io.h>
-#include "synapse.h"
+#include "thread.h"
 
 
 namespace zero {

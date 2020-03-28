@@ -17,7 +17,6 @@
 #include <util/atomic.h>
 
 #include "thread.h"
-#include "synapse.h"
 #include "resource.h"
 #include "memory.h"
 #include "power.h"
@@ -254,15 +253,17 @@ void Thread::globalThreadEntry(
 }
 
 
-// Returns the currently executing Thread
+/// @brief Gets the currently executing Thread
+/// @returns A reference to the currently executing Thread
 Thread& Thread::getCurrent()
 {
     return *_currentThread;
 }
 
 
-// Returns the number of milliseconds since the MCU started.
-// NOTE: Wraps around after approximately 49 continuous days
+/// @brief Gets the number of milliseconds since the MCU started.
+/// @returns The number milliseconds since the last reset event.
+/// @note Wraps around after approximately 49 continuous days.
 uint32_t Thread::now()
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -271,27 +272,28 @@ uint32_t Thread::now()
 }
 
 
-// Prevent context switching
+/// @brief Switches context switching off
 void Thread::forbid()
 {
     _switchingEnabled = false;
 }
 
 
-// Enable context switching
+/// @brief Switches context switching on
 void Thread::permit()
 {
     _switchingEnabled = true;
 }
 
 
-// Determines if context switching is on or not
+/// @brief Determines if context switching is on or not.
 bool Thread::isSwitchingEnabled()
 {
     return _switchingEnabled;
 }
 
 
+/// @brief Re-animates an existing Thread with new execution parameters
 void Thread::reanimate(
     const char* const name,                             // name of Thread, points to Flash memory
     const ThreadEntry entry,                            // the Thread's entry function
@@ -316,13 +318,13 @@ void Thread::reanimate(
     SRAM[ stackTop - 0 ] = ( ( (uint32_t) globalThreadEntry ) >> 0 ) & 0xFF;
     SRAM[ stackTop - 1 ] = ( ( (uint32_t) globalThreadEntry ) >> 8 ) & 0xFF;
 
-#if PC_COUNT >= 3
-    SRAM[ stackTop - 2 ] = ( ( (uint32_t) globalThreadEntry ) >> 16 ) & 0xFF;
-#endif
+    #if PC_COUNT >= 3
+        SRAM[ stackTop - 2 ] = ( ( (uint32_t) globalThreadEntry ) >> 16 ) & 0xFF;
+    #endif
 
-#if PC_COUNT >= 4
-    SRAM[ stackTop - 3 ] = ( ( (uint32_t) globalThreadEntry ) >> 24 ) & 0xFF;
-#endif
+    #if PC_COUNT >= 4
+        SRAM[ stackTop - 3 ] = ( ( (uint32_t) globalThreadEntry ) >> 24 ) & 0xFF;
+    #endif
 
     // set the Thread object into parameter 0 (first parameter)
     SRAM[ newStackTop + getOffsetForParameter( 0 ) - 0 ] = ( ( (uint16_t) this ) >> 0 ) & 0xFF;
@@ -361,12 +363,17 @@ void Thread::reanimate(
 }
 
 
-// Removes a Thread from the pool (if one is available), and re-animates it.
+/// @brief Removes a Thread from the pool (if one is available) and executes the supplied code.
+/// @param name Name of the Thread (is a pointer into Flash memory, not SRAM).
+/// @param entry The Thread's entry point.
+/// @param termSyn Optional. Synapse to signal when the Thread terminates.
+/// @param exitCode Optional. Place to store the Thread's return code.
+/// @returns A pointer to the pool Thread, or ```nullptr``` if none are available.
 Thread* Thread::fromPool(
-    const char* const name,                             // name of the Thread (pointer to Flash, not SRAM)
-    const ThreadEntry entry,                            // the Thread's entry function
-    const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
-    int* const exitCode )                               // Place to put Thread's return code
+    const char* const name,
+    const ThreadEntry entry,
+    const Synapse* const termSyn,
+    int* const exitCode )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         Thread* rc{ nullptr };
@@ -392,14 +399,32 @@ Thread* Thread::fromPool(
 }
 
 
-// ctor
+/// @brief Creates a new Thread.
+/// @code
+/// int myThread()
+/// {
+///     while ( true )
+///         ;
+/// }
+///
+/// int main()
+/// {
+///     new Thread( PSTR( "my first thread" ), 256, myThread );
+/// }
+/// @endcode
+/// @param name The name of the new Thread (is a pointer to Flash memory, not SRAM).
+/// @param stackSize The desired size of the stack, in bytes.
+/// @param entry The entry point for the Thread.
+/// @param flags Optional. Default: ```TF_READY```. Flags controlling the ascpects of the Thread's behavior.
+/// @param termSyn Optional. Default: ```nullptr```. Synapse to signal when the Thread terminates.
+/// @param exitCode Optional. Default: ```nullptr```. A place to store the Thread's return code.
 Thread::Thread(
-    const char* const name,                             // name of Thread, points to Flash memory
-    const uint16_t stackSize,                           // size of the stack, in bytes
-    const ThreadEntry entry,                            // the Thread's entry function
-    const ThreadFlags flags,                            // Optional flags
-    const Synapse* const termSyn,                       // Synapse to signal when Thread terminates
-    int* const exitCode )                               // Place to put Thread's return code
+    const char* const name,
+    const uint16_t stackSize,
+    const ThreadEntry entry,
+    const ThreadFlags flags,
+    const Synapse* const termSyn,
+    int* const exitCode )
 :
     _stackBottom{ (uint8_t*) memory::allocate(
         MAX( stackSize, MIN_STACK_BYTES ),
@@ -435,42 +460,44 @@ Thread::~Thread()
 }
 
 
-// validity checking
+/// @brief Determines if the Thread initialized correctly
+/// @returns ```true``` if the Thread initialized correctly, ```false``` otherwise.
 Thread::operator bool() const
 {
     return _stackBottom;
 }
 
 
-// Returns the ID of the Thread
+/// @brief Gets the Thread's ID
 uint16_t Thread::getThreadId() const
 {
     return _id;
 }
 
 
-// Returns the name of the Thread
+/// @brief Gets the Thread's name
+/// @returns A pointer to a null-terminated character array stored in Flash memory.
 const char* Thread::getName() const
 {
     return _name;
 }
 
 
-// Restarts the Thread
+/// @brief Restarts the Thread.
 void Thread::restart()
 {
     signal( SIG_START );
 }
 
 
-// Stops the Thread
+/// @brief Stops the Thread.
 void Thread::stop()
 {
     signal( SIG_STOP );
 }
 
 
-// Returns the Thread's status
+/// @brief Gets the current status of the Thread
 ThreadStatus Thread::getStatus() const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -493,15 +520,15 @@ ThreadStatus Thread::getStatus() const
 }
 
 
-// Returns the allocated size of the stack, in bytes
+/// @brief Gets the size of the stack, in bytes
 uint16_t Thread::getStackSizeBytes() const
 {
     return _stackSize;
 }
 
 
-// Returns the peak recorded stack usage, in bytes
-uint16_t Thread::getPeakStackUsageBytes() const
+/// @brief Gets the peak recorded stack usage, in bytes
+uint16_t Thread::getStackPeakUsageBytes() const
 {
     return ( _stackSize - ( _lowSp - (uint16_t) _stackBottom ) );
 }
@@ -790,7 +817,8 @@ void Thread::freeSignals( const SignalBitField signals )
 }
 
 
-// Returns the currently allocated signals
+/// @brief Gets the signals currently in use by the Thread
+/// @param userOnly If ```true```, do not return any reserved signals.
 SignalBitField Thread::getAllocatedSignals( const bool userOnly ) const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
@@ -804,8 +832,8 @@ SignalBitField Thread::getAllocatedSignals( const bool userOnly ) const
 }
 
 
-// Returns a SignalBitField showing which signals are currently active,
-// where "active" means that the Thread will wake up because of them
+/// @brief Gets the active signals (ones that would wake the Thread up)
+/// @returns A SignalBitField containing the currently active signals.
 SignalBitField Thread::getActiveSignals() const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
@@ -814,7 +842,8 @@ SignalBitField Thread::getActiveSignals() const
 }
 
 
-// Returns a SignalBitField showing which signals are currently set
+/// @brief Gets the signals currently set for the Thread
+/// @returns A SignalBitField containing the currently set signals.
 SignalBitField Thread::getCurrentSignals() const
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
@@ -823,7 +852,9 @@ SignalBitField Thread::getCurrentSignals() const
 }
 
 
-// Clears a set of signals and returns the remaining ones
+/// Clears a set of signals and returns the remaining ones.
+/// @param sigs The signals to clear.
+/// @returns A SignalBitField containing the remaining set signals.
 SignalBitField Thread::clearSignals( const SignalBitField sigs )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {
@@ -832,15 +863,20 @@ SignalBitField Thread::clearSignals( const SignalBitField sigs )
 }
 
 
-// Blocks for a given number of milliseconds
+/// @brief Sleeps the Thread for a given number of milliseconds
+/// @param dur Duration specifying how long the Thread should sleep.
+/// @see wait()
 void Thread::delay( const Duration dur )
 {
     wait( 0, dur );
 }
 
 
-// Waits for any of a set of signals, returning a SignalBitField
-// representing which of those signals woke the Thread up
+/// @brief Waits for any of a set of signals
+/// @param sigs The signals to wait for.
+/// @param timeout Optional. A maximum length of time to wait for one of sigs to arrive.
+/// @returns A SignalBitField containing the signal(s) that woke the Thread up.
+/// @see delay()
 SignalBitField Thread::wait( const SignalBitField sigs, const Duration timeout )
 {
     SignalBitField rc{ 0 };
@@ -915,7 +951,9 @@ SignalBitField Thread::wait( const SignalBitField sigs, const Duration timeout )
 }
 
 
-// Send signals to a Thread, potentially waking it up
+/// @brief Sends signals to a Thread, potentially waking it up
+/// @param sigs The signals to send to the Thread.
+/// @note Signalling a Thread may be done from within an ISR.
 void Thread::signal( const SignalBitField sigs )
 {
     ATOMIC_BLOCK( ATOMIC_RESTORESTATE ) {

@@ -6,7 +6,6 @@
 //
 
 
-#include "synapse.h"
 #include "thread.h"
 
 
@@ -30,21 +29,22 @@ Synapse::~Synapse()
 }
 
 
-// validity checking
+/// @brief Determines if the Synapse initialized correctly
 Synapse::operator bool() const
 {
     return _thread and _signals;
 }
 
 
-// For use as a simple SignalBitField
+/// @brief Extracts the signals from the Synapse
+/// @returns A SignalBitField containing all the signals represented by the Synapse.
 Synapse::operator SignalBitField() const
 {
     return _signals;
 }
 
 
-// Signal the thread
+/// @brief Signals the thread
 void Synapse::signal() const
 {
     if ( *this ) {
@@ -53,7 +53,7 @@ void Synapse::signal() const
 }
 
 
-// Clears the signals
+/// @brief Clears the signals
 void Synapse::clearSignals() const
 {
     if ( *this ) {
@@ -62,7 +62,8 @@ void Synapse::clearSignals() const
 }
 
 
-// Waits for the signals to be set, blocking if necessary
+/// @brief Waits for the signals to be set, blocking if necessary
+/// @param timeout Optional. A maximum length of time to wait to receive the signals.
 SignalBitField Synapse::wait( const Duration timeout ) const
 {
     if ( *this and &me == _thread ) {

@@ -50,12 +50,13 @@ void debug::init()
 }
 
 
-// Transmit a single byte via software bit-banging and no ISRs
-void debug::print( const char d )
+/// @brief Transmits a single byte via software TX
+/// @param c The character to transmit.
+void debug::print( const char c )
 {
 #ifdef DEBUG_ENABLED
     // setup the output 'register'
-    uint16_t reg( d << 1 );
+    uint16_t reg( c << 1 );
     reg &= ~( 1 << 0 );                                 // force start bit low
     reg |= ( 1 << 9 );                                  // stop bit high (so it ends high)
 
@@ -82,7 +83,9 @@ void debug::print( const char d )
 }
 
 
-// Transmits a NULL-terminated string via software TX
+/// @brief Transmits a NULL-terminated character array via software TX
+/// @param s The null-terminated character array to transmit.
+/// @param fromFlash If ```true```, ```s``` points to an address in Flash memory instead of SRAM
 void debug::print( const char* s, const bool fromFlash )
 {
 #ifdef DEBUG_ENABLED
@@ -104,6 +107,9 @@ void debug::print( const char* s, const bool fromFlash )
 }
 
 
+/// @brief Transmits the ASCII representation of a 16-bit integer via software TX
+/// @param n The unsigned number to transmit.
+/// @param base Optional. Default: ```10```. The base to convert the number to.
 void debug::print( const uint16_t n, const int base )
 {
 #ifdef DEBUG_ENABLED
@@ -113,6 +119,11 @@ void debug::print( const uint16_t n, const int base )
 }
 
 
+/// @brief Tests a boolean condition and logs a message if ```false```.
+/// @param v The result of an expression to test.
+/// @param msg A null-terminated character array to transmit via software TX
+/// if ```v``` is ```false```.
+/// @param lineNumber The source code line number on which the expression was evaluated.
 void debug::assert( const bool v, const char* const msg, const int lineNumber )
 {
 #ifdef DEBUG_ENABLED

@@ -51,7 +51,6 @@ Constructs a new Thread object, and begins executing it.
 ```
 #include <avr/pgmspace.h>
 #include "thread.h"
-#include "synapse.h"
 
 int myAsyncThread()
 {
@@ -322,10 +321,10 @@ Signals a Thread, potentially waking it up.
 ### Notes
 Threads are woken from ```wait()``` with use of the ```signal()``` function. ```signal()``` is usually called by another Thread, or device driver.
 
-## getPeakStackUsageBytes()
+## getStackPeakUsageBytes()
 Returns the peak recorded stack usage for the ```Thread```.
 ```
-    uint16_t getPeakStackUsageBytes() const;
+    uint16_t getStackPeakUsageBytes() const;
 ```
 
 ### Notes

@@ -15,15 +15,14 @@
 
 namespace zero {
 
-    class debug {
-    public:
-        static void print( const char c );
-        static void print( const char* s, const bool fromFlash = false );
-        static void print( const uint16_t n, const int base = 10 );
+    namespace debug {
+        /// @private
+        void init();
 
-        static void assert( const bool v, const char* const msg, const int lineNumber = 0 );
-
-        #include "debug_private.h"
+        void print( const char c );
+        void print( const char* s, const bool fromFlash = false );
+        void print( const uint16_t n, const int base = 10 );
+        void assert( const bool v, const char* const msg, const int lineNumber = 0 );
     };
 
 }    // namespace zero

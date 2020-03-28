@@ -21,7 +21,6 @@
 
 
 #include "thread.h"
-#include "synapse.h"
 #include "doublebuffer.h"
 
 

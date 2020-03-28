@@ -16,7 +16,6 @@
 #include <stdint.h>
 
 #include "thread.h"
-#include "synapse.h"
 #include "gpio.h"
 
 

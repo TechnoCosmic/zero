@@ -53,7 +53,6 @@ Once a transmission is finished, the transmitter will signal the ```txReadySyn``
 ## Example
 ```
 #include "thread.h"
-#include "synapse.h"
 #include "gpio.h"
 #include "suart.h"
 

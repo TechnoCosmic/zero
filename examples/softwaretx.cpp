@@ -8,7 +8,6 @@
 
 #include "softwaretx.h"
 #include "thread.h"
-#include "synapse.h"
 #include "suart.h"
 
 

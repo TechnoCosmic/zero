@@ -11,33 +11,48 @@
 
 
 #include <stdint.h>
-#include <avr/sleep.h>
 
 
 namespace zero {
 
+
     enum ResetFlags {
+        /// Unknown
         Unknown = 0,
+
+        /// Normal power-on
         PowerOn = ( 1 << 0 ),
+
+        /// External power event
         External = ( 1 << 1 ),
+
+        /// Brownout reset
         Brownout = ( 1 << 2 ),
+
+        /// Watchdog timeout
         Wdt = ( 1 << 3 ),
+
+        /// JTAG debugger
         Jtag = ( 1 << 4 ),
     };
 
+
     class Power {
     public:
+        /// @private
         static bool init();
-        static ResetFlags getResetFlags();              // determines what caused the last reset
 
-        static void allowSleep();
-        static void preventSleep();
-        static bool isSleepEnabled();
+        
+        static ResetFlags getResetFlags();              // Determines what caused the last reset event
+        static void allowSleep();                       // Allows the MCU to sleep when asked
+        static void preventSleep();                     // Prevents the MCU from entering sleep mode
+        static bool isSleepEnabled();                   // Determines if sleeping is currently allowed
 
-        static void sleep(                              // puts the MCU to sleep
-            const uint8_t mode,                         // sleep mode (from avr/sleep.h)
-            const bool force = false,                   // force the shutdown, even with SleepInhibitors present
-            const bool silent = false);                 // if true, won't call onSleep()
+        // Sleeps the MCU
+        static void sleep(
+            const uint8_t mode,
+            const bool force = false,
+            const bool silent = false);
     };
 
 }
