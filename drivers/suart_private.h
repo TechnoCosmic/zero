@@ -7,6 +7,8 @@
 
 
 public:
+    /// @privatesection
+    ~SuartTx();
     void onTick();
 
 private:

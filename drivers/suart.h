@@ -21,10 +21,10 @@
 
 namespace zero {
 
+    /// @brief Provides software interrupt-driven UART transmission on any GPIO pin(s)
     class SuartTx {
     public:
         SuartTx();
-        ~SuartTx();
 
         void setCommsParams(
             const uint32_t baud,                        // the speed of the communications

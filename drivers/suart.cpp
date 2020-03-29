@@ -31,7 +31,7 @@ namespace {
 }
 
 
-// ctor
+/// @brief Creates a new SuartTx object
 SuartTx::SuartTx()
 {
     if ( resource::obtain( resource::ResourceId::Timer2 ) ) {
@@ -51,7 +51,8 @@ SuartTx::~SuartTx()
 }
 
 
-// validity checking
+/// @brief Determines if the SuartTx initialized correctly.
+/// @returns ```true``` if the SuartTx initialized correctly, ```false``` otherwise.
 SuartTx::operator bool() const
 {
     return ( _suartTx == this );
@@ -81,7 +82,10 @@ void SuartTx::stopTxTimer() const
 }
 
 
-// Sets the communications parameters for the software transmitter
+/// @brief Sets the communications parameters for the software transmitter
+/// @param baud The bitrate of the transmission.
+/// @param pin The pre-initialized Gpio object that owns the pin(s) you want the
+/// transmitter to send the data on.
 void SuartTx::setCommsParams(
     const uint32_t baud,                                // the speed of the communications
     Gpio& pin )                                         // the Gpio object to use for the TX line
@@ -95,7 +99,9 @@ void SuartTx::setCommsParams(
 }
 
 
-// Enables the software transmitter
+/// @brief Enables the software transmitter
+/// @param txReadySyn The Synapse to signal when the transmitter is ready to send new
+/// data.
 bool SuartTx::enable( Synapse& txReadySyn )
 {
     if ( !txReadySyn ) return false;
@@ -114,7 +120,7 @@ bool SuartTx::enable( Synapse& txReadySyn )
 }
 
 
-// disables the software transmitter
+/// @brief Disables the software transmitter
 void SuartTx::disable()
 {
     ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
@@ -133,7 +139,14 @@ void SuartTx::disable()
 }
 
 
-// Transmit a buffer via the software TX pin
+/// @brief Transmits a block of data
+/// @param buffer A pointer to a block of data to transmit.
+/// @param sz The number of bytes to send.
+/// @param allowBlock If ```true``` and the transmitter is currently busy, the calling
+/// Thread will block until the transmitter is ready to send again. If ```false``` and the
+/// transmitter is busy, the call will fail.
+/// @returns ```true``` if the transmission was successfully started, ```false```
+/// otherwise.
 bool SuartTx::transmit(
     const void* buffer,
     const uint16_t sz,
