@@ -16,6 +16,20 @@
 namespace zero {
 
     /// @brief Provides simple debug logging services
+    /// @details The debug functions are intended to be very lightweight methods of
+    /// outputting data to a terminal for **debugging purposes**, even on devices lacking
+    /// a hardware UART.
+    /// @details No set up or initialization is required by your code - just be sure that
+    /// the ```makefile``` has the ```DEBUG_*``` settings to your liking, and then call
+    /// these functions.
+    /// @note These are all blocking calls - control returns to the caller only after the
+    /// transmission is complete.
+    /// @note Interrupts are disabled while each character is transmitted in a tight-loop
+    /// (approximately 1ms per character at 9600bps). Interrupts are enabled between each
+    /// character.
+    /// @note For asynchronous and better performing data transmission, see
+    /// the ```UsartTx``` or ```SuartTx``` classes.
+
     namespace debug {
         /// @private
         void init();
