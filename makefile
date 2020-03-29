@@ -207,5 +207,4 @@ clean:
 
 
 gettools:
-	@sudo apt-get -y install gcc-avr binutils-avr gdb-avr avr-libc avrdude cloc clang-format doxygen graphviz
-
+	@sudo apt-get -y install gcc-avr binutils-avr gdb-avr avr-libc avrdude cloc clang-format doxygen graphviz code
