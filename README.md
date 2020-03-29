@@ -19,7 +19,7 @@ zero is a tiny pre-emptive multitasking kernel for AVR microcontrollers. Specifi
 - ESP WiFi Driver
 
 ## Documentation
-This document serves as an introduction to and conceptual description of zero. For API documentation, please go to [the zero website](http://zero.tcri.com.au). If you have Doxygen and Graphviz installed, you can generate your own documentation locally - just look for ```DOXYGEN``` in the ```makefile``` and set it to ```1``` and it will be re-built when you compile.
+This document serves as an introduction to and conceptual description of zero. For API documentation, please go to [the zero website](http://zero.tcri.com.au). If you have Doxygen and Graphviz installed, you can generate your own documentation locally - just look for ```DOXYGEN``` in the ```makefile``` and set it to ```1``` and it will be re-built when you compile, and will be placed into the ```docs/``` directory.
 
 ## Threading Model
 zero's threading model is a simple one...
