@@ -34,6 +34,7 @@ namespace zero {
         };
     }
 
+    /// @brief Provides simple page-based allocation tracking services
     template <uint16_t PAGE_COUNT>
     class PageManager {
         

@@ -20,18 +20,16 @@
 
 namespace zero {
 
+    /// @brief Provides asychronous ADC sampling services
     class Adc {
     public:
         Adc( const Synapse& syn );
-        ~Adc();
-
         explicit operator bool() const;
 
         void enable();
         void disable();
 
         void beginConversion( const uint8_t channel );
-        void setLastConversion( const uint16_t v );
         uint16_t getLastConversion() const;
 
         #include "adc_private.h"

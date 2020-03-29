@@ -6,6 +6,10 @@
 //
 
 
+public:
+    /// @privatesection
+    ~DoubleBuffer();
+
 private:
     uint8_t* const _buffer;
     uint16_t _bufferSize;

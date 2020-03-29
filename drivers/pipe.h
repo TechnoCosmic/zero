@@ -19,12 +19,14 @@
 
 namespace zero {
 
+    /// @brief Callback function for Pipe filters
+    /// @param data The byte being read from or written to the Pipe.
     typedef bool ( *PipeFilter )( uint8_t& data );
 
+    /// @brief Thread-safe FIFO buffer for IPC
     class Pipe {
     public:
         Pipe( const uint16_t size );
-        ~Pipe();
 
         explicit operator bool() const;
 

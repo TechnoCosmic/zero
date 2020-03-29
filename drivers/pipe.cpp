@@ -19,7 +19,8 @@
 using namespace zero;
 
 
-// ctor
+/// @brief Creates a new Pipe of a given size
+/// @param size The size, in bytes, of the Pipe's buffer
 Pipe::Pipe( const uint16_t size )
 :
     _buffer{ (uint8_t*) memory::allocate( size, &_bufferSize ) }
@@ -45,14 +46,16 @@ Pipe::~Pipe()
 }
 
 
-// validity checking
+/// @brief Determines if the Pipe initialized correctly
+/// @returns ```true``` if the Pipe initialized correctly, ```false``` otherwise.
 Pipe::operator bool() const
 {
     return _buffer;
 }
 
 
-// Returns true if the Pipe is empty, false otherwise
+/// @brief Determines if the Pipe is empty
+/// @returns ```true``` if the Pipe is empty, ```false``` otherwise.
 bool Pipe::isEmpty() const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -61,7 +64,8 @@ bool Pipe::isEmpty() const
 }
 
 
-// Returns true if the Pipe is full, false otherwise
+/// @brief Determines if the Pipe is full
+/// @returns ```true``` if the Pipe is full, ```false``` otherwise.
 bool Pipe::isFull() const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -70,8 +74,10 @@ bool Pipe::isFull() const
 }
 
 
-// Reads a byte from the Pipe. Returns true if data was
-// successfully read, false otherwise.
+/// @brief Reads a byte from the Pipe
+/// @param data A reference to the place to store the byte from the Pipe.
+/// @returns ```true``` if the data was successfully read (```data``` will be
+/// valid), ```false``` otherwise.
 bool Pipe::read( uint8_t& data )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -111,8 +117,9 @@ bool Pipe::read( uint8_t& data )
 }
 
 
-// Writes a byte to the Pipe. Returns true if data was
-// successfully written, false otherwise.
+/// @brief Writes a byte to the Pipe
+/// @param data The byte to write to the Pipe.
+/// @returns ```true``` if the data was successfully written, ```false``` otherwise.
 bool Pipe::write( const uint8_t data )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -154,7 +161,7 @@ bool Pipe::write( const uint8_t data )
 }
 
 
-// Empties the Pipe
+/// @brief Empties the Pipe
 void Pipe::flush()
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -171,7 +178,8 @@ void Pipe::flush()
 }
 
 
-// Assigns read filter to the Pipe
+/// @brief Assigns a read filter to the Pipe
+/// @param f The callback function to use when data is about to read from the Pipe.
 void Pipe::setReadFilter( PipeFilter f )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -180,7 +188,8 @@ void Pipe::setReadFilter( PipeFilter f )
 }
 
 
-// Assigns write filter to the Pipe
+/// @brief Assigns a write filter to the Pipe
+/// @param f The callback function to use when data is about to be written to the Pipe.
 void Pipe::setWriteFilter( PipeFilter f )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -189,8 +198,9 @@ void Pipe::setWriteFilter( PipeFilter f )
 }
 
 
-// Assigns a Synapse to signal when the Pipe has
-// room to accept more data.
+/// @brief Sets the Synapse to signal when room becomes available in the Pipe to store
+/// more data
+/// @param s The Synapse to signal.
 void Pipe::setRoomAvailSynapse( Synapse& s )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -206,8 +216,8 @@ void Pipe::setRoomAvailSynapse( Synapse& s )
 }
 
 
-// Assigns a Synapse to signal when the Pipe has
-// data waiting to be read.
+/// @brief Sets the Synapse to signal when data becomes available in the Pipe to read
+/// @param s The Synapse to signal.
 void Pipe::setDataAvailSynapse( Synapse& s )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {

@@ -18,7 +18,8 @@
 using namespace zero;
 
 
-// ctor
+/// @brief Creates a new DoubleBuffer of a given size
+/// @param size The size of the buffer, in bytes.
 DoubleBuffer::DoubleBuffer( const uint16_t size )
 :
     _buffer{ (uint8_t*) memory::allocate( size, &_bufferSize ) },
@@ -37,13 +38,18 @@ DoubleBuffer::~DoubleBuffer()
 }
 
 
+/// @brief Determines if the DoubleBuffer initialized correctly
+/// @returns ```true``` if the DoubleBuffer initialized correctly, ```false``` otherwise.
 DoubleBuffer::operator bool() const
 {
     return _buffer;
 }
 
 
-// Writes a byte to the active buffer.
+/// @brief Writes a byte to the buffer
+/// @param d The byte to write to the buffer.
+/// @returns ```true``` if the byte was successfully written, ```false``` if the buffer is
+/// full.
 bool DoubleBuffer::write( const uint8_t d )
 {
     bool rc{ false };
@@ -63,8 +69,10 @@ bool DoubleBuffer::write( const uint8_t d )
 }
 
 
-// Returns the currently active half of the buffer (if
-// there's any data in it), and swaps buffers.
+/// @brief Returns the currently active half of the buffer
+/// @param numBytes A place to store the number of valid bytes in the buffer.
+/// @returns A pointer to the active half of the buffer, or ```nullptr``` if the buffer is
+/// empty.
 uint8_t* DoubleBuffer::getCurrentBuffer( uint16_t& numBytes )
 {
     const uint8_t oldSreg{ SREG };
@@ -93,7 +101,7 @@ uint8_t* DoubleBuffer::getCurrentBuffer( uint16_t& numBytes )
 }
 
 
-// Clears the buffer
+/// @brief Clears the buffer
 void DoubleBuffer::flush()
 {
     const uint8_t oldSreg{ SREG };

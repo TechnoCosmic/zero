@@ -6,6 +6,11 @@
 //
 
 
+public:
+    /// @privatesection
+    ~Adc();
+    void setLastConversion( const uint16_t v );
+
 private:
     Adc( const Adc& s ) = delete;
     void operator=( const Adc& s ) = delete;

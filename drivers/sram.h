@@ -22,6 +22,7 @@
 namespace zero {
 
 
+    /// @brief Provdes asynchronous SPI memory services
     class SpiMemory {
     public:
         SpiMemory(

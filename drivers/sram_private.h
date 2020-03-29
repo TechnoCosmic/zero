@@ -7,9 +7,8 @@
 
 
 public:
+    /// @privatesection
     ~SpiMemory();
-
-    // fake private
     void select() const;
     void deselect() const;
 

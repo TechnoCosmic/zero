@@ -13,6 +13,7 @@
 using namespace zero;
 
 
+/// @brief Creates a new List
 template <class T>
 List<T>::List()
 {
@@ -20,6 +21,8 @@ List<T>::List()
 }
 
 
+/// @brief Gets the first item in the List
+/// @returns A pointer to the head of the List, or ```nullptr``` is the List is empty.
 template <class T>
 T* List<T>::getHead() const
 {
@@ -27,6 +30,8 @@ T* List<T>::getHead() const
 }
 
 
+/// @brief Gets the last item in the List
+/// @returns A pointer to the end of the List, or ```nullptr``` is the List is empty.
 template <class T>
 T* List<T>::getTail() const
 {
@@ -34,6 +39,8 @@ T* List<T>::getTail() const
 }
 
 
+/// @brief Adds a new item to the start of the List
+/// @param item The item to add to the List.
 template <class T>
 void List<T>::prepend( T& item )
 {
@@ -52,6 +59,8 @@ void List<T>::prepend( T& item )
 }
 
 
+/// @brief Adds a new item to the end of the List
+/// @param item The item to add to the List.
 template <class T>
 void List<T>::append( T& item )
 {
@@ -70,6 +79,8 @@ void List<T>::append( T& item )
 }
 
 
+/// @brief Removes an item from the List
+/// @param item The item to remove from the List.
 template <class T>
 void List<T>::remove( T& item )
 {
@@ -100,6 +111,9 @@ void List<T>::remove( T& item )
 }
 
 
+/// @brief Inserts an item into the List, before a specific other item
+/// @param item The item to add to the List.
+/// @param before The existing item before which the new item will be added.
 template <class T>
 void List<T>::insertBefore( T& item, T& before )
 {
@@ -120,6 +134,9 @@ void List<T>::insertBefore( T& item, T& before )
 }
 
 
+
+/// @brief Removes an item from the List
+/// @param item The item to remove from the List.
 template <class T>
 void OffsetList<T>::remove( T& item )
 {
@@ -133,6 +150,10 @@ void OffsetList<T>::remove( T& item )
 }
 
 
+/// @brief Inserts an item into the List, in time order
+/// @param item The item to add to the List.
+/// @param intendedOffsetFromNow The offset, relative to now, for the position of the new
+/// item.
 template <class T>
 void OffsetList<T>::insertByOffset( T& item, const uint32_t intendedOffsetFromNow )
 {

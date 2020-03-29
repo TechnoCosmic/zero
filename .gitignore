@@ -3,4 +3,4 @@
 *.elf
 *.gch
 *_pvt.*
-gendocs/*
+docs/*

@@ -26,6 +26,8 @@ namespace {
 }    // namespace
 
 
+/// @brief Creates a new Adc object
+/// @param syn A Synapse to signal when each conversion is complete.
 Adc::Adc( const Synapse& syn )
 :
     _readySyn{ syn },
@@ -41,6 +43,7 @@ Adc::Adc( const Synapse& syn )
 }
 
 
+// dtor
 Adc::~Adc()
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -54,12 +57,15 @@ Adc::~Adc()
 }
 
 
+/// @brief Determines if the Adc initialized correctly
+/// @returns ```true``` if the Adc resource was successfully acquired, ```false``` otherwise.
 Adc::operator bool() const
 {
     return _currentAdc == this;
 }
 
 
+/// @brief Enables the ADC sampling peripheral
 void Adc::enable()
 {
     ADMUX = ( 1 << REFS0 );                             // AVcc reference
@@ -68,6 +74,7 @@ void Adc::enable()
 }
 
 
+/// @brief Disables the ADC sampling peripheral
 void Adc::disable()
 {
     ADCSRA &= ~( 1 << ADIE );                           // disable ADC ISR
@@ -75,6 +82,8 @@ void Adc::disable()
 }
 
 
+/// @brief Begins an ADC conversion on a given channel
+/// @param channel The channel number to sample.
 void Adc::beginConversion( const uint8_t channel )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -94,6 +103,8 @@ void Adc::beginConversion( const uint8_t channel )
 }
 
 
+/// @brief Sets the value of the last conversion
+/// @param v The value to store for the last conversion.
 void Adc::setLastConversion( const uint16_t v )
 {
     _lastConversion = v;
@@ -101,6 +112,8 @@ void Adc::setLastConversion( const uint16_t v )
 }
 
 
+/// @brief Gets the value of the last conversion
+/// @returns A ```uint16_t``` that holds the 10-bit value of the last conversion.
 uint16_t Adc::getLastConversion() const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {

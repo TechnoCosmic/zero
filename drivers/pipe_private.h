@@ -6,6 +6,10 @@
 //
 
 
+public:
+    /// @privatesection
+    ~Pipe();
+
 private:
     Pipe( const Pipe& p ) = delete;
     void operator=( const Pipe& p ) = delete;

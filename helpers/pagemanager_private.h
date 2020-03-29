@@ -7,6 +7,7 @@
 
 
 public:
+    /// @privatesection
     // higher level operations
     int16_t findFreePages(
         const uint16_t numPagesRequired,

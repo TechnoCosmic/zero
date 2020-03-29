@@ -15,11 +15,10 @@
 
 namespace zero {
 
+    /// @brief Provides a simple thread-safe double buffer
     class DoubleBuffer {
     public:
         DoubleBuffer( const uint16_t size );
-        ~DoubleBuffer();
-
         explicit operator bool() const;
 
         bool write( const uint8_t d );

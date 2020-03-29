@@ -12,6 +12,7 @@
 
 namespace zero {
 
+    /// @brief A template class for doubly-linked lists
     template <class T>
     class List {
     public:
@@ -31,6 +32,7 @@ namespace zero {
     };
 
 
+    /// @brief A template class for time ordered doubly-linked lists
     template <class T>
     class OffsetList : public List<T> {
     public:

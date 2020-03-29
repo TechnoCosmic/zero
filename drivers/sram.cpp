@@ -70,7 +70,10 @@ namespace {
 }    // namespace
 
 
-// ctor
+/// @brief Creates a new SpiMemory object
+/// @param capacityBytes The total size of the external memory chip, in bytes.
+/// @param chipSelect A Gpio object representing the chip select line of the memory chip.
+/// @param readySyn The Synapse to signal when a memory transfer is complete.
 SpiMemory::SpiMemory(
     const uint32_t capacityBytes,                       // how many bytes does the chip hold?
     const Gpio& chipSelect,                             // Gpio object for the CS line
@@ -134,7 +137,8 @@ SpiMemory::~SpiMemory()
 }
 
 
-// validity checking
+/// @brief Determines if the SpiMemory initialized correctly
+/// @returns ```true``` if the SpiMemory correctly initialized, ```false``` otherwise.
 SpiMemory::operator bool() const
 {
     return _chipSelectPin;
@@ -155,7 +159,10 @@ void SpiMemory::deselect() const
 }
 
 
-// Reads data from the external memory into the local SRAM
+/// @brief Reads data from external memory into the local SRAM
+/// @param dest A pointer to local SRAM where the incoming should be placed.
+/// @param srcAddr The address in external memory for the source of the copy.
+/// @param numBytes The total number of bytes to transfer.
 void SpiMemory::read(
     void* dest,                                         // destination address, in local SRAM
     const uint32_t srcAddr,                             // source address for the data, in external SPI memory
@@ -196,10 +203,13 @@ void SpiMemory::read(
 }
 
 
-// Writes data from the local SRAM to the external memory chip
+/// @brief Write data to external memory from local SRAM
+/// @param src A pointer to local SRAM for the source of the copy.
+/// @param destAddr The address in external memory to which the data should be copied.
+/// @param numBytes The total number of bytes to transfer.
 void SpiMemory::write(
     const void* src,                                    // source data address, in local SRAM
-    const uint32_t destAddress,                         // destination address, in external SPI memory
+    const uint32_t destAddr,                            // destination address, in external SPI memory
     const uint32_t numBytes )                           // number of the bytes to write
 {
     // wait until there's no controller using the SPI
@@ -226,7 +236,7 @@ void SpiMemory::write(
         select();
 
         // tell it that we want to write data to destAddress
-        sendWriteCommand( destAddress );
+        sendWriteCommand( destAddr );
 
         // enable the ISR
         setSpiIsrEnable( true );
