@@ -5,7 +5,6 @@
 // Catchpole Robotics                  Christian Catchpole    christian@catchpole.net
 //
 
-
 #include "thread.h"
 
 using namespace zero;
