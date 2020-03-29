@@ -419,7 +419,7 @@ Thread* Thread::fromPool(
 /// @param name The name of the new Thread (is a pointer to Flash memory, not SRAM).
 /// @param stackSize The desired size of the stack, in bytes.
 /// @param entry The entry point for the Thread.
-/// @param flags Optional. Default: ```TF_READY```. Flags controlling the ascpects of the Thread's behavior.
+/// @param flags Optional. Default: ```TF_READY```. Flags controlling the aspects of the Thread's behavior.
 /// @param termSyn Optional. Default: ```nullptr```. Synapse to signal when the Thread terminates.
 /// @param exitCode Optional. Default: ```nullptr```. A place to store the Thread's return code.
 /// @see fromPool()
