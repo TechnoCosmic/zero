@@ -875,7 +875,6 @@ RECURSIVE              = YES
 
 EXCLUDE                = main.cpp \
                          docs/ \
-                         old_docs/ \
                          examples/ \
                          cli/
 
