@@ -12,14 +12,14 @@ zero is a tiny pre-emptive multitasking kernel for AVR microcontrollers. Specifi
 - Asynchronous external SPI SRAM driver
 - Asychronouus ADC
 - Hardware and software UART
-- [Documentation](zero.tcri.com.au)
+- [Documentation](http://zero.tcri.com.au)
 
 ## Under Construction
 - Location Services
 - ESP WiFi Driver
 
 ## Documentation
-This document serves as an introduction to and conceptual description of zero. For API documentation, please go to [the zero website](zero.tcri.com.au). If you have Doxygen and Graphviz installed, you can generate your own documentation locally - just look for ```DOXYGEN``` in the ```makefile``` and set it to ```1``` and it will be re-built when you compile.
+This document serves as an introduction to and conceptual description of zero. For API documentation, please go to [the zero website](http://zero.tcri.com.au). If you have Doxygen and Graphviz installed, you can generate your own documentation locally - just look for ```DOXYGEN``` in the ```makefile``` and set it to ```1``` and it will be re-built when you compile.
 
 ## Threading Model
 zero's threading model is a simple one...
