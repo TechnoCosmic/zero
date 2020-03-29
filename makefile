@@ -14,6 +14,9 @@
 # output file and project name
 OUTPUT = zero
 
+# generate Doxygen documentation (requires Doxygen and Graphviz)
+DOXYGEN = 0
+
 # flashing settings
 AVRDUDE_PART = m328p
 AVRDUDE_CFG = pi
@@ -175,7 +178,12 @@ $(OUTPUT).elf: $(SRC)
 	@echo " done"
 	@avr-size -A -x --mcu=$(MCU) $@
 	@avr-size -C -x --mcu=$(MCU) $@
-
+ifeq ($(DOXYGEN),1)
+	@echo -n "Documenting..."
+	@rm -rf docs/*
+	@doxygen > /dev/null
+	@echo " done"
+endif
 
 upload: $(OUTPUT).elf
 	@sudo avrdude -p $(AVRDUDE_PART) -c $(AVRDUDE_CFG) -U flash:w:$(OUTPUT).elf
@@ -199,5 +207,5 @@ clean:
 
 
 gettools:
-	@sudo apt-get -y install gcc-avr binutils-avr gdb-avr avr-libc avrdude cloc clang-format code
+	@sudo apt-get -y install gcc-avr binutils-avr gdb-avr avr-libc avrdude cloc clang-format code doxygen graphviz
 
