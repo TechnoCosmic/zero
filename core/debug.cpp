@@ -6,6 +6,10 @@
 //
 
 
+/// @file
+/// @brief Contains functions for debugging purposes
+
+
 #include <stdlib.h>
 
 #include <avr/io.h>

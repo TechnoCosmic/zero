@@ -6,6 +6,10 @@
 //
 
 
+/// @file
+/// @brief Contains classes and functions for manipulating dates and times
+
+
 #ifndef TCRI_ZERO_TIME_H
 #define TCRI_ZERO_TIME_H
 

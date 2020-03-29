@@ -6,6 +6,10 @@
 //
 
 
+/// @file
+/// @brief Contains classes and functions for manipulating Threads
+
+
 #include <stdint.h>
 
 #include <avr/interrupt.h>

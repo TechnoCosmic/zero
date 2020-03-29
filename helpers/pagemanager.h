@@ -35,6 +35,7 @@ namespace zero {
     }
 
     /// @brief Provides simple page-based allocation tracking services
+    /// @tparam PAGE_COUNT The number of pages to be tracked by the PageManager.
     template <uint16_t PAGE_COUNT>
     class PageManager {
         

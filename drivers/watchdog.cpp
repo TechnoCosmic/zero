@@ -6,6 +6,10 @@
 //
 
 
+/// @file
+/// @brief Contains classes for managing the Watchdog Timer
+
+
 #include <avr/wdt.h>
 #include "thread.h"
 #include "watchdog.h"

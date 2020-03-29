@@ -33,6 +33,7 @@ using namespace zero;
 /// @brief Determines if a given page is available for use
 /// @param pageNumber The page number to check.
 /// @returns ```true``` if the specified page is available, ```false``` otherwise.
+/// @see markAsFree(), markAsUsed()
 template <uint16_t PAGE_COUNT>
 bool PageManager<PAGE_COUNT>::isPageAvailable( const uint16_t pageNumber ) const
 {
@@ -42,6 +43,7 @@ bool PageManager<PAGE_COUNT>::isPageAvailable( const uint16_t pageNumber ) const
 
 /// @brief Marks the given page as free
 /// @param pageNumber The page number to mark as available.
+/// @see markAsUsed(), isPageAvailable()
 template <uint16_t PAGE_COUNT>
 void PageManager<PAGE_COUNT>::markAsFree( const uint16_t pageNumber )
 {
@@ -51,6 +53,7 @@ void PageManager<PAGE_COUNT>::markAsFree( const uint16_t pageNumber )
 
 /// @brief Marks the supplied page as used
 /// @param pageNumber The page number to mark as unavailable.
+/// @see markAsFree(), isPageAvailable()
 template <uint16_t PAGE_COUNT>
 void PageManager<PAGE_COUNT>::markAsUsed( const uint16_t pageNumber )
 {
@@ -60,6 +63,7 @@ void PageManager<PAGE_COUNT>::markAsUsed( const uint16_t pageNumber )
 
 /// @brief Gets the total number of pages being managed
 /// @returns The total number of pages being tracked by the PageManager.
+/// @see getFreePageCount(), getUsedPageCount()
 template <uint16_t PAGE_COUNT>
 uint16_t PageManager<PAGE_COUNT>::getTotalPageCount() const
 {
@@ -69,6 +73,7 @@ uint16_t PageManager<PAGE_COUNT>::getTotalPageCount() const
 
 /// @brief Gets the number of currently available pages
 /// @returns The number of free pages.
+/// @see getTotalPageCount(), getUsedPageCount()
 template <uint16_t PAGE_COUNT>
 uint16_t PageManager<PAGE_COUNT>::getFreePageCount() const
 {
@@ -86,6 +91,7 @@ uint16_t PageManager<PAGE_COUNT>::getFreePageCount() const
 
 /// @brief Gets the number of currently allocated pages
 /// @returns The number of pages currently in use.
+/// @see getFreePageCount(), getTotalPageCount()
 template <uint16_t PAGE_COUNT>
 uint16_t PageManager<PAGE_COUNT>::getUsedPageCount() const
 {

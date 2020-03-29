@@ -6,6 +6,10 @@
 //
 
 
+/// @file
+/// @brief Contains functions for controlling resource access
+
+
 #include <util/atomic.h>
 #include "resource.h"
 

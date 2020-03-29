@@ -6,6 +6,10 @@
 //
 
 
+/// @file
+/// @brief Contains functions for allocating and freeing heap memory
+
+
 #include <stdint.h>
 #include <string.h>
 

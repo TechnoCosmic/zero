@@ -6,6 +6,10 @@
 //
 
 
+/// @file
+/// @brief Contains classes and functions related to power, sleeping, and device reset
+
+
 #include <avr/io.h>
 #include <avr/sleep.h>
 #include <avr/power.h>

@@ -6,6 +6,10 @@
 //
 
 
+/// @file
+/// @brief Contains macros for simplifying applying attributes to functions and variables
+
+
 #ifndef TCRI_ZERO_ATTRS_H
 #define TCRI_ZERO_ATTRS_H
 

@@ -38,6 +38,13 @@
 		],
 	},
 
+	"Doxygen @see": {
+		"prefix": "@see",
+		"body": [
+			"/// @see ",
+		],
+	},
+
 	"Source file beginning": {
 		"prefix": "begin",
 		"body": [
