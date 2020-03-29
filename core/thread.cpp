@@ -34,7 +34,6 @@
 
 using namespace zero;
 
-
 // Ready list helpers, to make list accessing and swapping easy and QUICK
 #define ACTIVE_LIST_NUM     ( _activeListNum )
 #define EXPIRED_LIST_NUM    ( _activeListNum ^ 1 )
@@ -44,9 +43,6 @@ using namespace zero;
 #define EXPIRED_LIST        _readyLists[ EXPIRED_LIST_NUM ]
 
 
-// main() is naked because we don't care for the setup upon
-// entry, and we use reti at the end of main() to start everything
-int NAKED main();
 static void yield();
 
 // these ones are inline because we specifically don't want
@@ -158,21 +154,27 @@ namespace {
 }    // namespace
 
 
-// Default Thread exit handler
+/// @brief Default Thread exit handler. Called when a Thread terminates.
 void WEAK onThrexit( Thread&, const int )
 {
     // empty
 }
 
 
-// Default stack overflow handler
+/// @brief Default stack overflow handler. Called when a Thread uses more stack space than
+/// is available.
 void WEAK onStackOverflow( Thread& )
 {
     // empty
 }
 
 
-// Default idle thread
+/// @brief Default idle thread. Called when there are no Threads wanting to run.
+/// @details You can implement your own idle thread by providing your own replacement for
+/// this function.
+/// @note Do **not** block in the idle Thread. That means do not call any function that
+/// directly or indirectly calls Thread::wait() or Thread::delay(). Always be busy, or
+/// send the MCU to sleep.
 int WEAK idleThreadEntry()
 {
     while ( true ) {
@@ -258,14 +260,14 @@ void Thread::globalThreadEntry(
 
 
 /// @brief Gets the currently executing Thread
-/// @returns A reference to the currently executing Thread
+/// @returns A reference to the currently executing Thread.
 Thread& Thread::getCurrent()
 {
     return *_currentThread;
 }
 
 
-/// @brief Gets the number of milliseconds since the MCU started.
+/// @brief Gets the number of milliseconds since the MCU started
 /// @returns The number milliseconds since the last reset event.
 /// @note Wraps around after approximately 49 continuous days.
 uint32_t Thread::now()
@@ -292,7 +294,7 @@ void Thread::permit()
 }
 
 
-/// @brief Determines if context switching is on or not.
+/// @brief Determines if context switching is enabled
 /// @see forbid(), permit()
 bool Thread::isSwitchingEnabled()
 {
@@ -370,12 +372,18 @@ void Thread::reanimate(
 }
 
 
-/// @brief Removes a Thread from the pool (if one is available) and executes the supplied code.
+/// @brief Removes a Thread from the pool (if one is available) and executes the supplied
+/// code.
 /// @param name Name of the Thread (is a pointer into Flash memory, not SRAM).
 /// @param entry The Thread's entry point.
-/// @param termSyn Optional. Synapse to signal when the Thread terminates.
-/// @param exitCode Optional. Place to store the Thread's return code.
+/// @param termSyn Optional. Default: ```nullptr```. A pointer to the Synapse to signal
+/// when the Thread terminates.
+/// @param exitCode Optional. Default: ```nullptr```. A pointer to a ```uint16_t```
+/// to store the Thread's return code.
 /// @returns A pointer to the pool Thread, or ```nullptr``` if none are available.
+/// @note To change the number of pool threads available, search for ```NUM_POOL_THREADS```
+/// in the ```makefile```. The stack size for all pool threads is controlled by
+/// the ```POOL_THREAD_STACK_BYTES``` in the same file.
 Thread* Thread::fromPool(
     const char* const name,
     const ThreadEntry entry,
@@ -686,7 +694,8 @@ static void yield()
 }
 
 
-// Millisecond timer and timeout controller
+/// @private
+/// @brief Millisecond timer and timeout controller
 ISR( TIMER0_COMPA_vect )
 {
     _milliseconds++;
@@ -707,7 +716,8 @@ ISR( TIMER0_COMPA_vect )
 }
 
 
-// Pre-emptive context switch
+/// @private
+/// @brief Pre-emptive context switch
 ISR( TIMER0_COMPB_vect, ISR_NAKED )
 {
     // save registers enough to do basic checking
@@ -1033,7 +1043,8 @@ static void createPoolThreads()
 }
 
 
-// Kickstart the system
+/// @private
+/// @brief Kickstart the system
 void CTOR preMain()
 {
     #ifdef ZERO_DRIVERS_GPIO
@@ -1064,6 +1075,7 @@ void CTOR preMain()
 }
 
 
+/// @private
 void DTOR postMain()
 {
     // start Timer0 (does not enable global ints)

@@ -17,6 +17,10 @@
 namespace zero {
 
     /// @brief Manages dynamic allocation of SRAM
+    /// @details The amount of SRAM available to zero's allocator is defined in
+    /// the ```makefile```. Search for ```DYNAMIC_BYTES```, making sure you're adjusting
+    /// the correct one for your chosen target MCU.
+
     namespace memory {
 
         // allocate a contiguous chunk of memory

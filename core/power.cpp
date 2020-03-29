@@ -32,14 +32,24 @@ namespace {
 }
 
 
-// default reset handler
+/// @brief Default reset handler
+/// @details Implement your own version of this function to run code at start up, before
+/// zero has initialized itself. You can see the reason(s) for the reset by inspecting the
+/// supplied ResetFlags, and take action as appropriate.
+/// @note Make sure you return ```true``` from this function. If you return ```false```,
+/// zero will NOT continue initialization and will put the MCU into a deep sleep,
+/// requiring a hardware reset to wake up.
 bool WEAK onReset( const ResetFlags )
 {
     return true;
 }
 
 
-// default sleep handler
+/// @brief Default sleep handler
+/// @details This function is called before any attempt to sleep MCU using the Power
+/// class. The exception to this is when ```silent``` is ```true``` in the call to
+/// Power::sleep(). Implement your own version of this function to learn when the MCU is
+/// about to have a nap.
 void WEAK onSleep( const uint8_t )
 {
     // empty

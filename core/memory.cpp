@@ -70,6 +70,12 @@ void WEAK onOutOfMemory()
 /// of bytes actually allocated.
 /// @param strategy Optional. Default: SearchStrategy::BottomUp. The method used to search
 /// the heap for free memory.
+/// @note Because zero uses a page-based memory allocator, the number of bytes actually
+/// allocated by any call to allocate() will always be a multiple of the page size
+/// (default is 16 bytes, adjustable in the ```makefile```, search for ```PAGE_BYTES```).
+/// If your program can make use of any 'extra' bytes assigned, you may pass a pointer to
+/// a ```uint16_t``` as the second argument to learn how many bytes you can actually use.
+
 void* MALLOC memory::allocate(
     const uint16_t bytesReqd,
     uint16_t* const allocatedBytes,
