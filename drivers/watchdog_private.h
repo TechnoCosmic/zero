@@ -9,6 +9,8 @@
 public:
     /// @privatesection
     static void init();
+    static void enable( const uint8_t dur );
+    static void disable();
     ~Watchdog();
 
 private:
