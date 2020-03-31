@@ -83,16 +83,43 @@ namespace {
 }    // namespace
 
 
-// ctor
-UsartTx::UsartTx( const uint8_t deviceNum )
+/// @brief Creates a new UsartTx for transmitting data using one of the hardware USART
+/// peripherals
+/// @param deviceNum The hardware USART peripheral device number to use.
+/// @param baud The baud rate for the transmitter.
+/// @param txReadySyn The Synapse to signal when the transmitter is ready to send new
+/// data.
+UsartTx::UsartTx(
+    const uint8_t deviceNum,
+    const uint32_t baud,
+    Synapse& txReadySyn )
 {
-    if ( deviceNum < NUM_DEVICES ) {
-        // obtain the resource
-        auto resId = (resource::ResourceId)( (uint16_t) resource::ResourceId::UsartTx0 + deviceNum );
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        if ( deviceNum < NUM_DEVICES ) {
+            // obtain the resource
+            auto resId = (resource::ResourceId)( (uint16_t) resource::ResourceId::UsartTx0 + deviceNum );
 
-        if ( resource::obtain( resId ) ) {
-            _deviceNum = deviceNum;
-            _usartTx[ deviceNum ] = this;
+            if ( resource::obtain( resId ) ) {
+                _deviceNum = deviceNum;
+                _usartTx[ deviceNum ] = this;
+
+                // configure the tx hardware
+                const uint16_t scaledMs{ (uint16_t) ( F_CPU / ( 16UL * baud ) ) - 1 };
+
+                // 8-none-1
+                UCSRC( _deviceNum ) |= ( 1 << UCSZ01 ) | ( 1 << UCSZ00 );
+
+                // speed
+                UBRRH( _deviceNum ) = (uint8_t) scaledMs >> 8;
+                UBRRL( _deviceNum ) = (uint8_t) scaledMs;
+
+                // switch on the hardware
+                UCSRB( _deviceNum ) |= TX_BITS;
+
+                // ready to go
+                _txReadySyn = &txReadySyn;
+                _txReadySyn->signal();
+            }
         }
     }
 }
@@ -101,71 +128,42 @@ UsartTx::UsartTx( const uint8_t deviceNum )
 // dtor
 UsartTx::~UsartTx()
 {
-    if ( _usartTx[ _deviceNum ] == this ) {
-        disable();
-        _usartTx[ _deviceNum ] = nullptr;
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        if ( _usartTx[ _deviceNum ] == this ) {
+            if ( _txReadySyn ) {
+                _txReadySyn->clearSignals();
+                _txReadySyn = nullptr;
+            }
 
-        // free the resource
-        auto resId = (resource::ResourceId)( (uint16_t) resource::ResourceId::UsartTx0 + _deviceNum );
-        resource::release( resId );
+            UCSRB( _deviceNum ) &= ~TX_BITS;
+            _usartTx[ _deviceNum ] = nullptr;
+
+            // free the resource
+            auto resId = (resource::ResourceId)( (uint16_t) resource::ResourceId::UsartTx0 + _deviceNum );
+            resource::release( resId );
+        }
     }
 }
 
 
-// validity checking
+/// @brief Determines if the UsartTx initialized correctly
+/// @returns ```true``` if the UsartTx initialized correctly, ```false``` otherwise.
 UsartTx::operator bool() const
 {
     return ( _usartTx[ _deviceNum ] == this );
 }
 
 
-// Sets the communications parameters
-void UsartTx::setCommsParams( const uint32_t baud )
-{
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        const uint16_t scaledMs{ (uint16_t) ( F_CPU / ( 16UL * baud ) ) - 1 };
-
-        // 8-none-1
-        UCSRC( _deviceNum ) |= ( 1 << UCSZ01 ) | ( 1 << UCSZ00 );
-
-        // speed
-        UBRRH( _deviceNum ) = (uint8_t) scaledMs >> 8;
-        UBRRL( _deviceNum ) = (uint8_t) scaledMs;
-    }
-}
-
-
-bool UsartTx::enable( Synapse& txReadySyn )
-{
-    if ( !txReadySyn ) return false;
-
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        UCSRB( _deviceNum ) |= TX_BITS;
-
-        _txReadySyn = &txReadySyn;
-        _txReadySyn->signal();
-
-        return true;
-    }
-}
-
-
-void UsartTx::disable()
-{
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        if ( _txReadySyn ) {
-            _txReadySyn->clearSignals();
-            _txReadySyn = nullptr;
-        }
-
-        UCSRB( _deviceNum ) &= ~TX_BITS;
-    }
-}
-
-
+/// @brief Begins the asynchronous transmission of a buffer of data
+/// @param buffer A pointer to the buffer to transmit.
+/// @param numBytes The number of bytes to transmit.
+/// @param allowBlock When this parameter is ```true``` and a previous transmission is
+/// still underway, the call will block until that transmission has completed. If this
+/// parameter is ```false``` when a previous transmission is underway, the call will fail.
+/// @returns ```true``` if the transmission began successfully, ```false``` otherwise.
 bool UsartTx::transmit(
     const void* buffer,
-    const uint16_t sz,
+    const uint16_t numBytes,
     const bool allowBlock )
 {
     if ( allowBlock and _txReadySyn ) {
@@ -175,7 +173,7 @@ bool UsartTx::transmit(
     ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
         if ( _txBuffer ) return false;
         if ( !buffer ) return false;
-        if ( !sz ) return false;
+        if ( !numBytes ) return false;
 
         if ( _txReadySyn ) {
             _txReadySyn->clearSignals();
@@ -183,7 +181,7 @@ bool UsartTx::transmit(
 
         // prime the buffer data
         _txBuffer = (uint8_t*) buffer;
-        _txBytesRemaining = sz;
+        _txBytesRemaining = numBytes;
 
         // enable the ISR that starts the transmission
         UCSRB( _deviceNum ) |= ( 1 << UDRIE0 );
@@ -222,6 +220,9 @@ void UsartTx::byteTxComplete()
 }
 
 
+/// @brief Creates a new UsartRx object for receiving data using the hardware USART
+/// peripherals
+/// @param deviceNum The hardware USART peripheral device number to use.
 UsartRx::UsartRx( const uint8_t deviceNum )
 {
     if ( deviceNum < NUM_DEVICES ) {
@@ -249,13 +250,18 @@ UsartRx::~UsartRx()
 }
 
 
-// validity checking
+/// @brief Determines if the UsartRx initialized correctly
+/// @returns ```true``` if the UsartRx initialized correctly, ```false``` otherwise.
 UsartRx::operator bool() const
 {
     return ( _usartRx[ _deviceNum ] == this );
 }
 
 
+/// @brief Sets the communications parameters
+/// @param baud The baud rate for transmission.
+/// @note The baud rate is set on a per-USART basis, so is shared with the corresponding
+/// UsartTx object for the same device number.
 void UsartRx::setCommsParams( const uint32_t baud )
 {
     ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
@@ -271,6 +277,11 @@ void UsartRx::setCommsParams( const uint32_t baud )
 }
 
 
+/// @brief Enables the USART receiver hardware
+/// @param bufferSize The size of the buffer used to cache incoming data.
+/// @param rxSyn The Synapse to signal when new data has arrived.
+/// @param ovfSyn Optional. Default: ```nullptr```. The Synapse to signal when the receive
+/// buffer is full and bytes are being lost.
 bool UsartRx::enable( const uint16_t bufferSize, Synapse& rxSyn, Synapse* ovfSyn )
 {
     ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
@@ -298,6 +309,7 @@ bool UsartRx::enable( const uint16_t bufferSize, Synapse& rxSyn, Synapse* ovfSyn
 }
 
 
+/// @brief Disables the USART receiver hardware
 void UsartRx::disable()
 {
     ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
@@ -319,12 +331,18 @@ void UsartRx::disable()
 }
 
 
+/// @brief Gets the current receive buffer
+/// @param numBytes A reference to a ```uint16_t``` to store the number of valid bytes in
+/// the buffer.
+/// @returns A pointer to the current receive buffer, or ```nullptr``` is the buffer is
+/// currently empty.
 uint8_t* UsartRx::getCurrentBuffer( uint16_t& numBytes )
 {
     return _rxBuffer->getCurrentBuffer( numBytes );
 }
 
 
+/// @brief Discards the current contents of the receive buffer
 void UsartRx::flush()
 {
     _rxBuffer->flush();

@@ -118,14 +118,11 @@ int Shell::main()
 
     // set up the transmitter
     Synapse txReadySyn;
-    CliTx tx{ _usartNumber };
+    CliTx tx{ _usartNumber, _baud, txReadySyn };
 
     if ( !txReadySyn or !tx ) {
         return 20;
     }
-
-    tx.setCommsParams( _baud );
-    tx.enable( txReadySyn );
 
     // command line storage
     CommandLine cmdLine( CLI_CMD_BYTES );

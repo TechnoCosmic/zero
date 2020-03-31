@@ -26,14 +26,27 @@
 
 namespace zero {
 
+    /// @brief Provides a driver for accessing the hardware USART transmitters
+    /// @code
+    /// int hardwareTxDemoThread()
+    /// {
+    ///     Synapse txReadySyn;
+    ///     UsartTx tx{ 0, 9600, txReadySyn };
+    ///
+    ///     if ( tx ) {
+    ///         while ( true ) {
+    ///             tx.transmit( "Hello Beaker\r\n", 14, true );
+    ///             me.delay( 1_secs );
+    ///         }
+    ///     }
+    /// }
+    /// @endcode
     class UsartTx {
     public:
-        UsartTx( const uint8_t deviceNum );
-        ~UsartTx();
-
-        void setCommsParams( const uint32_t baud );
-        bool enable( Synapse& txReadySyn );
-        void disable();
+        UsartTx(
+            const uint8_t deviceNum,
+            const uint32_t baud,
+            Synapse& txReadySyn );
 
         bool transmit(
             const void* buffer,
@@ -45,10 +58,10 @@ namespace zero {
         #include "usarttx_private.h"
     };
 
+    /// @brief Provides a driver for accessing the hardware USART receivers
     class UsartRx {
     public:
         UsartRx( const uint8_t deviceNum );
-        ~UsartRx();
 
         void setCommsParams( const uint32_t baud );
 

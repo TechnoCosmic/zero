@@ -2108,7 +2108,8 @@ PREDEFINED             = \
     ZERO_DRIVERS_SUART = 1 \
     ZERO_DRIVERS_GPIO = 1 \
     ZERO_DRIVERS_ADC = 1 \
-    ZERO_DRIVERS_PIPE = 1
+    ZERO_DRIVERS_PIPE = 1 \
+    UCSR0B = 1
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

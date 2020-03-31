@@ -7,6 +7,8 @@
 
 
 public:
+    /// @privatesection
+    ~UsartRx();
     static void onRx( const uint8_t deviceNum, const uint8_t data );
 
     Synapse* _rxDataReceivedSyn{ nullptr };

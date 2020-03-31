@@ -7,6 +7,8 @@
 
 
 public:
+    /// @privatesection
+    ~UsartTx();
     void byteTxComplete();
     bool getNextTxByte( uint8_t& data );
 

@@ -382,8 +382,8 @@ void Thread::reanimate(
 /// to store the Thread's return code.
 /// @returns A pointer to the pool Thread, or ```nullptr``` if none are available.
 /// @note To change the number of pool threads available, search for ```NUM_POOL_THREADS```
-/// in the ```makefile```. The stack size for all pool threads is controlled by
-/// the ```POOL_THREAD_STACK_BYTES``` in the same file.
+/// in the ```makefile```. The stack size for all pool threads is controlled
+/// by ```POOL_THREAD_STACK_BYTES``` in the same file.
 Thread* Thread::fromPool(
     const char* const name,
     const ThreadEntry entry,
