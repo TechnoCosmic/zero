@@ -32,10 +32,31 @@ namespace {
 
 
 /// @brief Creates a new SuartTx object
-SuartTx::SuartTx()
+/// @param baud The bitrate of the transmission.
+/// @param pin The pre-initialized Gpio object that owns the pin(s) you want the
+/// transmitter to send the data on.
+/// @param txReadySyn The Synapse to signal when the transmitter is ready to send new
+/// data.
+SuartTx::SuartTx(
+    const uint32_t baud,
+    Gpio& pin,
+    Synapse& txReadySyn )
 {
-    if ( resource::obtain( resource::ResourceId::Timer2 ) ) {
-        _suartTx = this;
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        if ( resource::obtain( resource::ResourceId::Timer2 ) ) {
+            _baud = baud;
+            _gpio = &pin;
+
+            _gpio->setAsOutput();
+            _gpio->switchOn();
+
+            power_timer2_enable();
+
+            _txReadySyn = &txReadySyn;
+            _txReadySyn->signal();
+
+            _suartTx = this;
+        }
     }
 }
 
@@ -43,10 +64,19 @@ SuartTx::SuartTx()
 // dtor
 SuartTx::~SuartTx()
 {
-    if ( *this ) {
-        disable();
-        _suartTx = nullptr;
-        resource::release( resource::ResourceId::Timer2 );
+    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
+        if ( *this ) {
+            stopTxTimer();
+            power_timer2_disable();
+
+            _gpio->reset();
+
+            _txReadySyn->clearSignals();
+            _txReadySyn = nullptr;
+
+            _suartTx = nullptr;
+            resource::release( resource::ResourceId::Timer2 );
+        }
     }
 }
 
@@ -82,66 +112,9 @@ void SuartTx::stopTxTimer() const
 }
 
 
-/// @brief Sets the communications parameters for the software transmitter
-/// @param baud The bitrate of the transmission.
-/// @param pin The pre-initialized Gpio object that owns the pin(s) you want the
-/// transmitter to send the data on.
-void SuartTx::setCommsParams(
-    const uint32_t baud,                                // the speed of the communications
-    Gpio& pin )                                         // the Gpio object to use for the TX line
-{
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        disable();
-
-        _baud = baud;
-        _gpio = &pin;
-    }
-}
-
-
-/// @brief Enables the software transmitter
-/// @param txReadySyn The Synapse to signal when the transmitter is ready to send new
-/// data.
-bool SuartTx::enable( Synapse& txReadySyn )
-{
-    if ( !txReadySyn ) return false;
-
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        _gpio->setAsOutput();
-        _gpio->switchOn();
-
-        power_timer2_enable();                          // power the Timer
-
-        _txReadySyn = &txReadySyn;
-        _txReadySyn->signal();
-
-        return true;
-    }
-}
-
-
-/// @brief Disables the software transmitter
-void SuartTx::disable()
-{
-    ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
-        stopTxTimer();
-        power_timer2_disable();                         // depower the Timer
-
-        if ( _gpio ) {
-            _gpio->reset();
-        }
-
-        if ( _txReadySyn ) {
-            _txReadySyn->clearSignals();
-            _txReadySyn = nullptr;
-        }
-    }
-}
-
-
 /// @brief Transmits a block of data
 /// @param buffer A pointer to a block of data to transmit.
-/// @param sz The number of bytes to send.
+/// @param numBytes The number of bytes to send.
 /// @param allowBlock If ```true``` and the transmitter is currently busy, the calling
 /// Thread will block until the transmitter is ready to send again. If ```false``` and the
 /// transmitter is busy, the call will fail.
@@ -149,7 +122,7 @@ void SuartTx::disable()
 /// otherwise.
 bool SuartTx::transmit(
     const void* buffer,
-    const uint16_t sz,
+    const uint16_t numBytes,
     const bool allowBlock )
 {
     if ( allowBlock and _txReadySyn ) {
@@ -159,7 +132,7 @@ bool SuartTx::transmit(
     ZERO_ATOMIC_BLOCK ( ZERO_ATOMIC_RESTORESTATE ) {
         if ( _txBuffer ) return false;
         if ( !buffer ) return false;
-        if ( !sz ) return false;
+        if ( !numBytes ) return false;
 
         if ( _txReadySyn ) {
             _txReadySyn->clearSignals();
@@ -167,7 +140,7 @@ bool SuartTx::transmit(
 
         // remember the buffer data
         _txBuffer = (uint8_t*) buffer;
-        _txBytesRemaining = sz;
+        _txBytesRemaining = numBytes;
 
         // enable the ISR that starts the transmission
         startTxTimer();

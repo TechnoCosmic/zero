@@ -24,14 +24,10 @@ namespace zero {
     /// @brief Provides software interrupt-driven UART transmission on any GPIO pin(s)
     class SuartTx {
     public:
-        SuartTx();
-
-        void setCommsParams(
+        SuartTx(
             const uint32_t baud,                        // the speed of the communications
-            Gpio& pin );                                // Gpio object to use for the TX line
-
-        bool enable( Synapse& txReadySyn );
-        void disable();
+            Gpio& pin,                                  // Gpio object to use for the TX line
+            Synapse& txReadySyn );                      // Synapse to signal when ready to send
 
         bool transmit(
             const void* buffer,

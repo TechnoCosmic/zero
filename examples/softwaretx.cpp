@@ -36,16 +36,12 @@ SoftwareTx::SoftwareTx(
 // the main body of the Thread
 int SoftwareTx::main()
 {
-    SuartTx tx;
-    Synapse txReadySyn;    // to learn when we can transmit again
     Gpio txPins{ _txPins };
+    Synapse txReadySyn;
+    SuartTx tx{ 9600, txPins, txReadySyn };
 
     // make sure they all claimed their resources
     if ( txPins and txReadySyn and tx ) {
-        // set up the communications
-        tx.setCommsParams( 9600, txPins );
-        tx.enable( txReadySyn );
-
         // main loop
         while ( true ) {
             txReadySyn.wait();                          // wait for transmitter to be ready
