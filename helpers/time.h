@@ -39,7 +39,7 @@ namespace zero {
         }
 
     private:
-        const uint32_t _v;
+        uint32_t _v;
     };
 
 
