@@ -79,30 +79,30 @@ namespace {
 }    // namespace
 
 
-// tri-state all pins and get the initial input state
+/// @brief Tri-state all pins and get the initial input state
 void Gpio::init()
 {
     #ifdef DDRA
-        DDRA = 0;
         PORTA = 0;
+        DDRA = 0;
         _lastKnownInputs[ 0 ] = PINA;
     #endif
 
     #ifdef DDRB
-        DDRB = 0;
         PORTB = 0;
+        DDRB = 0;
         _lastKnownInputs[ 1 ] = PINB;
     #endif
 
     #ifdef DDRC
-        DDRC = 0;
         PORTC = 0;
+        DDRC = 0;
         _lastKnownInputs[ 2 ] = PINC;
     #endif
 
     #ifdef DDRD
-        DDRD = 0;
         PORTD = 0;
+        DDRD = 0;
         _lastKnownInputs[ 3 ] = PIND;
     #endif
 }
@@ -127,7 +127,7 @@ void Gpio::init()
 Gpio::Gpio(
     const PinField pins)
 :
-    Gpio( pins, nullptr, nullptr )
+    Gpio{ pins, nullptr, nullptr }
 {
     // empty
 }
@@ -163,7 +163,7 @@ Gpio::Gpio(
     const PinField pins,
     const InputCallback c)
 :
-    Gpio( pins, c, nullptr )
+    Gpio{ pins, c, nullptr }
 {
     // empty
 }
@@ -199,7 +199,7 @@ Gpio::Gpio(
     const PinField pins,
     const Synapse& syn)
 :
-    Gpio( pins, nullptr, &syn )
+    Gpio{ pins, nullptr, &syn }
 {
     // empty
 }
@@ -227,7 +227,9 @@ Gpio::Gpio(
                 return pins;                            // return valid pins to the ctor
             }
         }
-    }() }
+    }() },
+    _directionControl{ PinControl::Free },
+    _outputControl{ PinControl::Free }
 {
     // empty
 }
@@ -237,7 +239,7 @@ Gpio::Gpio(
 Gpio::~Gpio()
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        _allocatedPins &= ~_pins;                       // free the pins
+        _allocatedPins &= ~_pins;
         _gpioList.remove( *this );
     }
 }
@@ -267,7 +269,7 @@ inline PinField Gpio::sanitize( const PinField pins ) const
 
 
 /// @brief Tristates all owned pins
-void Gpio::reset() const
+void Gpio::reset()
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         switchOff();
@@ -277,30 +279,42 @@ void Gpio::reset() const
 
 
 /// @brief Sets all of the owned pins to input
-void Gpio::setAsInput() const
+/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
+/// changes to the direction of any/all pins represented by this Gpio object will be
+/// prohibited.
+void Gpio::setAsInput( const PinControl lock )
 {
-    setAsInput( _pins );
+    setAsInput( _pins, lock );
 }
 
 
 /// @brief Sets all of the owned pins to output
-void Gpio::setAsOutput() const
+/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
+/// changes to the direction of any/all pins represented by this Gpio object will be
+/// prohibited.
+void Gpio::setAsOutput( const PinControl lock )
 {
-    setAsOutput( _pins );
+    setAsOutput( _pins, lock );
 }
 
 
 /// @brief Sets all owned pins to high/on
-void Gpio::switchOn() const
+/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
+/// changes to the high/low state of any/all pins represented by this Gpio object will be
+/// prohibited.
+void Gpio::switchOn( const PinControl lock )
 {
-    switchOn( _pins );
+    switchOn( _pins, lock );
 }
 
 
 /// @brief Sets all owned pins to low/off
-void Gpio::switchOff() const
+/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
+/// changes to the high/low state of any/all pins represented by this Gpio object will be
+/// prohibited.
+void Gpio::switchOff( const PinControl lock )
 {
-    switchOff( _pins );
+    switchOff( _pins, lock );
 }
 
 
@@ -313,110 +327,138 @@ void Gpio::toggle() const
 
 /// @brief Sets a given subset of owned pins to input
 /// @param pins A PinField specifing the subset of pins to set as inputs.
-void Gpio::setAsInput( const PinField pins ) const
+/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
+/// changes to the direction of any/all pins represented by this Gpio object will be
+/// prohibited.
+void Gpio::setAsInput( const PinField pins, const PinControl lock )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        const auto cleanPins{ ~sanitize( pins ) };
+        if ( _directionControl  == PinControl::Free ) {
+            _directionControl = lock;
 
-        #ifdef DDRA
-            DDRA &= ( ( cleanPins >> 0 ) & 0xFF );
-        #endif
+            const auto cleanPins{ ~sanitize( pins ) };
 
-        #ifdef DDRB
-            DDRB &= ( ( cleanPins >> 8 ) & 0xFF );
-        #endif
+            #ifdef DDRA
+                DDRA &= ( ( cleanPins >> 0 ) & 0xFF );
+            #endif
 
-        #ifdef DDRC
-            DDRC &= ( ( cleanPins >> 16 ) & 0xFF );
-        #endif
+            #ifdef DDRB
+                DDRB &= ( ( cleanPins >> 8 ) & 0xFF );
+            #endif
 
-        #ifdef DDRD
-            DDRD &= ( ( cleanPins >> 24 ) & 0xFF );
-        #endif
+            #ifdef DDRC
+                DDRC &= ( ( cleanPins >> 16 ) & 0xFF );
+            #endif
 
-        // re-assess which pins are subject to PCINTs
-        Gpio::setInterrupts( Gpio::gatherAllInputPins() );
+            #ifdef DDRD
+                DDRD &= ( ( cleanPins >> 24 ) & 0xFF );
+            #endif
+
+            // re-assess which pins are subject to PCINTs
+            Gpio::setInterrupts( Gpio::gatherAllInputPins() );
+        }
     }
 }
 
 
 /// @brief Sets a given subset of owned pins to output
 /// @param pins A PinField specifing the subset of pins to set as outputs.
-void Gpio::setAsOutput( const PinField pins ) const
+/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
+/// changes to the direction of any/all pins represented by this Gpio object will be
+/// prohibited.
+void Gpio::setAsOutput( const PinField pins, const PinControl lock )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        const auto cleanPins{ sanitize( pins ) };
+        if ( _directionControl == PinControl::Free ) {
+            _directionControl = lock;
 
-        #ifdef DDRA
-            DDRA |= ( ( cleanPins >> 0 ) & 0xFF );
-        #endif
+            const auto cleanPins{ sanitize( pins ) };
 
-        #ifdef DDRB
-            DDRB |= ( ( cleanPins >> 8 ) & 0xFF );
-        #endif
+            #ifdef DDRA
+                DDRA |= ( ( cleanPins >> 0 ) & 0xFF );
+            #endif
 
-        #ifdef DDRC
-            DDRC |= ( ( cleanPins >> 16 ) & 0xFF );
-        #endif
+            #ifdef DDRB
+                DDRB |= ( ( cleanPins >> 8 ) & 0xFF );
+            #endif
 
-        #ifdef DDRD
-            DDRD |= ( ( cleanPins >> 24 ) & 0xFF );
-        #endif
+            #ifdef DDRC
+                DDRC |= ( ( cleanPins >> 16 ) & 0xFF );
+            #endif
 
-        // re-assess which pins are subject to PCINTs
-        Gpio::setInterrupts( Gpio::gatherAllInputPins() );
+            #ifdef DDRD
+                DDRD |= ( ( cleanPins >> 24 ) & 0xFF );
+            #endif
+
+            // re-assess which pins are subject to PCINTs
+            Gpio::setInterrupts( Gpio::gatherAllInputPins() );
+        }
     }
 }
 
 
 /// @brief Sets a given subset of owned pins to high/on
 /// @param pins A PinField specifing the subset of pins to switch on.
-void Gpio::switchOn( const PinField pins ) const
+/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
+/// changes to the high/low state of any/all pins represented by this Gpio object will be
+/// prohibited.
+void Gpio::switchOn( const PinField pins, const PinControl lock )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        const auto cleanPins{ sanitize( pins ) };
+        if ( _outputControl == PinControl::Free ) {
+            _outputControl = lock;
 
-        #ifdef PORTA
-            PORTA |= ( ( cleanPins >> 0 ) & 0xFF );
-        #endif
+            const auto cleanPins{ sanitize( pins ) };
 
-        #ifdef PORTB
-            PORTB |= ( ( cleanPins >> 8 ) & 0xFF );
-        #endif
+            #ifdef PORTA
+                PORTA |= ( ( cleanPins >> 0 ) & 0xFF );
+            #endif
 
-        #ifdef PORTC
-            PORTC |= ( ( cleanPins >> 16 ) & 0xFF );
-        #endif
+            #ifdef PORTB
+                PORTB |= ( ( cleanPins >> 8 ) & 0xFF );
+            #endif
 
-        #ifdef PORTD
-            PORTD |= ( ( cleanPins >> 24 ) & 0xFF );
-        #endif
+            #ifdef PORTC
+                PORTC |= ( ( cleanPins >> 16 ) & 0xFF );
+            #endif
+
+            #ifdef PORTD
+                PORTD |= ( ( cleanPins >> 24 ) & 0xFF );
+            #endif
+        }
     }
 }
 
 
 /// @brief Sets a given subset of owned pins to low/off
 /// @param pins A PinField specifing the subset of pins to switch off.
-void Gpio::switchOff( const PinField pins ) const
+/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
+/// changes to the high/low state of any/all pins represented by this Gpio object will be
+/// prohibited.
+void Gpio::switchOff( const PinField pins, const PinControl lock )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        const auto cleanPins{ ~sanitize( pins ) };
+        if ( _outputControl == PinControl::Free ) {
+            _outputControl = lock;
 
-        #ifdef PORTA
-            PORTA &= ( ( cleanPins >> 0 ) & 0xFF );
-        #endif
+            const auto cleanPins{ ~sanitize( pins ) };
 
-        #ifdef PORTB
-            PORTB &= ( ( cleanPins >> 8 ) & 0xFF );
-        #endif
+            #ifdef PORTA
+                PORTA &= ( ( cleanPins >> 0 ) & 0xFF );
+            #endif
 
-        #ifdef PORTC
-            PORTC &= ( ( cleanPins >> 16 ) & 0xFF );
-        #endif
+            #ifdef PORTB
+                PORTB &= ( ( cleanPins >> 8 ) & 0xFF );
+            #endif
 
-        #ifdef PORTD
-            PORTD &= ( ( cleanPins >> 24 ) & 0xFF );
-        #endif
+            #ifdef PORTC
+                PORTC &= ( ( cleanPins >> 16 ) & 0xFF );
+            #endif
+
+            #ifdef PORTD
+                PORTD &= ( ( cleanPins >> 24 ) & 0xFF );
+            #endif
+        }
     }
 }
 
@@ -426,23 +468,25 @@ void Gpio::switchOff( const PinField pins ) const
 void Gpio::toggle( const PinField pins ) const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        const auto cleanPins{ sanitize( pins ) };
+        if ( _outputControl == PinControl::Free ) {
+            const auto cleanPins{ sanitize( pins ) };
 
-        #ifdef PORTA
-            PORTA ^= ( ( cleanPins >> 0 ) & 0xFF );
-        #endif
+            #ifdef PORTA
+                PORTA ^= ( ( cleanPins >> 0 ) & 0xFF );
+            #endif
 
-        #ifdef PORTB
-            PORTB ^= ( ( cleanPins >> 8 ) & 0xFF );
-        #endif
+            #ifdef PORTB
+                PORTB ^= ( ( cleanPins >> 8 ) & 0xFF );
+            #endif
 
-        #ifdef PORTC
-            PORTC ^= ( ( cleanPins >> 16 ) & 0xFF );
-        #endif
+            #ifdef PORTC
+                PORTC ^= ( ( cleanPins >> 16 ) & 0xFF );
+            #endif
 
-        #ifdef PORTD
-            PORTD ^= ( ( cleanPins >> 24 ) & 0xFF );
-        #endif
+            #ifdef PORTD
+                PORTD ^= ( ( cleanPins >> 24 ) & 0xFF );
+            #endif
+        }
     }
 }
 
@@ -529,37 +573,44 @@ uint32_t Gpio::getOutputState() const
 
 /// @brief Sets the output state of all owned pins
 /// @param v A ```uint32_t``` representing the desired output states of all owned pins.
+/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
+/// changes to the high/low state of any/all pins represented by this Gpio object will be
+/// prohibited.
 /// @note For each pin owned by the Gpio object, the state of that pin will be switched
 /// off where it's corresponding bit is zero (0), and switched on where it's
 /// corresponding bit is one (1). Unowned pins are not affected.
-void Gpio::setOutputState( const uint32_t v ) const
+void Gpio::setOutputState( const uint32_t v, const PinControl lock )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
-        const PinField cleanPins{ sanitize( v ) };
+        if ( _outputControl == PinControl::Free ) {
+            _outputControl = lock;
 
-        #ifdef PORTA
-            const uint8_t allocA = ( _pins >> 0 ) & 0xFF;
-            const uint8_t incomingA = ( cleanPins >> 0 ) & 0xFF;
-            PORTA = ( PORTA & ~allocA ) | incomingA;
-        #endif
+            const PinField cleanPins{ sanitize( v ) };
 
-        #ifdef PORTB
-            const uint8_t allocB = ( _pins >> 8 ) & 0xFF;
-            const uint8_t incomingB = ( cleanPins >> 8 ) & 0xFF;
-            PORTB = ( PORTB & ~allocB ) | incomingB;
-        #endif
+            #ifdef PORTA
+                const uint8_t allocA = ( _pins >> 0 ) & 0xFF;
+                const uint8_t incomingA = ( cleanPins >> 0 ) & 0xFF;
+                PORTA = ( PORTA & ~allocA ) | incomingA;
+            #endif
 
-        #ifdef PORTC
-            const uint8_t allocC = ( _pins >> 16 ) & 0xFF;
-            const uint8_t incomingC = ( cleanPins >> 16 ) & 0xFF;
-            PORTC = ( PORTC & ~allocC ) | incomingC;
-        #endif
+            #ifdef PORTB
+                const uint8_t allocB = ( _pins >> 8 ) & 0xFF;
+                const uint8_t incomingB = ( cleanPins >> 8 ) & 0xFF;
+                PORTB = ( PORTB & ~allocB ) | incomingB;
+            #endif
 
-        #ifdef PORTD
-            const uint8_t allocD = ( _pins >> 24 ) & 0xFF;
-            const uint8_t incomingD = ( cleanPins >> 24 ) & 0xFF;
-            PORTD = ( PORTD & ~allocD ) | incomingD;
-        #endif
+            #ifdef PORTC
+                const uint8_t allocC = ( _pins >> 16 ) & 0xFF;
+                const uint8_t incomingC = ( cleanPins >> 16 ) & 0xFF;
+                PORTC = ( PORTC & ~allocC ) | incomingC;
+            #endif
+
+            #ifdef PORTD
+                const uint8_t allocD = ( _pins >> 24 ) & 0xFF;
+                const uint8_t incomingD = ( cleanPins >> 24 ) & 0xFF;
+                PORTD = ( PORTD & ~allocD ) | incomingD;
+            #endif
+        }
     }
 }
 

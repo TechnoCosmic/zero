@@ -42,8 +42,8 @@ int PinChangeDemo::main()
     }
 
     // set up input, with pull-ups enabled
-    listenPins.setAsInput();
-    listenPins.switchOn();
+    listenPins.setAsInput( PinControl::Locked );
+    listenPins.switchOn( PinControl::Locked );
 
     while ( true ) {
         listenSyn.wait();

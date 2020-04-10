@@ -21,4 +21,4 @@ private:
     void sendWriteCommand( const uint32_t addr ) const;
 
     const uint32_t _capacityBytes{ 0UL };
-    const Gpio* _chipSelectPin{ nullptr };
+    Gpio* _chipSelectPin{ nullptr };

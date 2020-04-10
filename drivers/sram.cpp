@@ -76,10 +76,10 @@ namespace {
 /// @param readySyn The Synapse to signal when a memory transfer is complete.
 SpiMemory::SpiMemory(
     const uint32_t capacityBytes,                       // how many bytes does the chip hold?
-    const Gpio& chipSelect,                             // Gpio object for the CS line
+    Gpio& chipSelect,                                   // Gpio object for the CS line
     const Synapse& readySyn )                           // Synapse to fire when ready to transfer
 :
-    _capacityBytes( capacityBytes )
+    _capacityBytes{ capacityBytes }
 {
     if ( !resource::obtain( resource::ResourceId::Spi ) ) {
         return;

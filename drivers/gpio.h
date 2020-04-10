@@ -98,6 +98,13 @@ namespace zero {
     const int ZERO_NUM_PORTS = ZERO_HIGH_PORT + 1;
 
 
+    /// @brief Determines whether future changes to the pins are permitted
+    enum class PinControl {
+        Free = 0,
+        Locked
+    };
+
+
     /// @brief Provides protected access to GPIO pins
     class Gpio {
     public:
@@ -110,7 +117,7 @@ namespace zero {
 
         Gpio(
             const PinField pins,                        // pins to which you want exclusive access
-            const Synapse& s );                         // Synapse to signal when input pins change state
+            const Synapse& syn );                       // Synapse to signal when input pins change state
 
         explicit operator bool() const;                 // validity checking
 
@@ -118,23 +125,46 @@ namespace zero {
         PinField getAllocatedPins() const;              // returns the pins owned by this Gpio
 
         // Control
-        void reset() const;                             // tristates all owned pins
+        void reset();                                   // tristates all owned pins
 
-        void setAsInput() const;                        // sets all owned pins to inputs
-        void setAsOutput() const;                       // sets all owned pins to outputs
-        void switchOn() const;                          // sets all owned pins to high
-        void switchOff() const;                         // sets all owned pins to low
+        void setAsInput(
+            const PinControl lock = PinControl::Free ); // sets all owned pins to inputs
+
+        void setAsOutput(
+            const PinControl lock = PinControl::Free ); // sets all owned pins to outputs
+
+        void switchOn(
+            const PinControl lock = PinControl::Free ); // sets all owned pins to high
+
+        void switchOff(
+            const PinControl lock = PinControl::Free ); // sets all owned pins to low
+
         void toggle() const;                            // toggles all owned pins
 
-        void setAsInput( const PinField pins ) const;   // sets a subset of owned pins to inputs
-        void setAsOutput( const PinField pins ) const;  // sets a subset of owned pins to outputs
-        void switchOn( const PinField pins ) const;     // sets a subset of owned pins to high
-        void switchOff( const PinField pins ) const;    // sets a subset of owned pins to low
+        void setAsInput(
+            const PinField pins,
+            const PinControl lock = PinControl::Free ); // sets a subset of owned pins to inputs
+
+        void setAsOutput(
+            const PinField pins,
+            const PinControl lock = PinControl::Free ); // sets a subset of owned pins to outputs
+
+        void switchOn(
+            const PinField pins,
+            const PinControl lock = PinControl::Free ); // sets a subset of owned pins to high
+
+        void switchOff(
+            const PinField pins,
+            const PinControl lock = PinControl::Free ); // sets a subset of owned pins to low
+
         void toggle( const PinField pins ) const;       // toggles a subset of owned pins
 
         uint32_t getInputState() const;                 // Returns the input state of all owned pins
         uint32_t getOutputState() const;                // Returns the output state of all owned pins
-        void setOutputState( const uint32_t v ) const;  // Sets the output state of all owned pins
+
+        void setOutputState(
+            const uint32_t v,
+            const PinControl lock = PinControl::Free ); // Sets the output states of all owned pins
 
         #include "gpio_private.h"
     };

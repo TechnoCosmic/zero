@@ -29,4 +29,4 @@ private:
 
     // GPIO and comms
     uint32_t _baud{ 0UL };
-    const Gpio* _gpio{ nullptr };
+    Gpio* _gpio{ nullptr };

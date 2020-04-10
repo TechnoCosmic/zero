@@ -66,7 +66,7 @@ int LedFlasher::main()
         return 20;
     }
 
-    led.setAsOutput();
+    led.setAsOutput( PinControl::Locked );
 
     while ( true ) {
         dog.pat();
