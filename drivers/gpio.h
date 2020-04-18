@@ -127,36 +127,16 @@ namespace zero {
         // Control
         void reset();                                   // tristates all owned pins
 
-        void setAsInput(
-            const PinControl lock = PinControl::Free ); // sets all owned pins to inputs
-
-        void setAsOutput(
-            const PinControl lock = PinControl::Free ); // sets all owned pins to outputs
-
-        void switchOn(
-            const PinControl lock = PinControl::Free ); // sets all owned pins to high
-
-        void switchOff(
-            const PinControl lock = PinControl::Free ); // sets all owned pins to low
-
+        void setAsInput();                              // sets all owned pins to inputs
+        void setAsOutput();                             // sets all owned pins to outputs
+        void switchOn();                                // sets all owned pins to high
+        void switchOff();                               // sets all owned pins to low
         void toggle() const;                            // toggles all owned pins
 
-        void setAsInput(
-            const PinField pins,
-            const PinControl lock = PinControl::Free ); // sets a subset of owned pins to inputs
-
-        void setAsOutput(
-            const PinField pins,
-            const PinControl lock = PinControl::Free ); // sets a subset of owned pins to outputs
-
-        void switchOn(
-            const PinField pins,
-            const PinControl lock = PinControl::Free ); // sets a subset of owned pins to high
-
-        void switchOff(
-            const PinField pins,
-            const PinControl lock = PinControl::Free ); // sets a subset of owned pins to low
-
+        void setAsInput( const PinField pins );         // sets a subset of owned pins to inputs
+        void setAsOutput( const PinField pins );        // sets a subset of owned pins to outputs
+        void switchOn( const PinField pins );           // sets a subset of owned pins to high
+        void switchOff( const PinField pins );          // sets a subset of owned pins to low
         void toggle( const PinField pins ) const;       // toggles a subset of owned pins
 
         uint32_t getInputState() const;                 // Returns the input state of all owned pins
@@ -165,6 +145,9 @@ namespace zero {
         void setOutputState(
             const uint32_t v,
             const PinControl lock = PinControl::Free ); // Sets the output states of all owned pins
+
+        void lockDirection();                           // prevents further changes to the directions of pins
+        void lockIo();                                  // prevents further changes to the IO states of pins
 
         #include "gpio_private.h"
     };

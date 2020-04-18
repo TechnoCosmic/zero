@@ -47,7 +47,8 @@ SuartTx::SuartTx(
             _baud = baud;
             _gpio = &pin;
 
-            _gpio->setAsOutput( PinControl::Locked );
+            _gpio->setAsOutput();
+            _gpio->lockDirection();
             _gpio->switchOn();
 
             power_timer2_enable();

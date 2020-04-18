@@ -36,5 +36,5 @@ private:
     const Synapse* _inputSynapse;                       // signalled when an input pin changes state
     const PinField _pins;                               // pins owned by this object
 
-    PinControl _directionControl;                        // Determines if changes to the direction are allowed
+    PinControl _directionControl;                       // Determines if changes to the direction are allowed
     PinControl _outputControl;                          // Determines if changes to the high/low state are allowed

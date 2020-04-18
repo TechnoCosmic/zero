@@ -279,42 +279,30 @@ void Gpio::reset()
 
 
 /// @brief Sets all of the owned pins to input
-/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
-/// changes to the direction of any/all pins represented by this Gpio object will be
-/// prohibited.
-void Gpio::setAsInput( const PinControl lock )
+void Gpio::setAsInput()
 {
-    setAsInput( _pins, lock );
+    setAsInput( _pins );
 }
 
 
 /// @brief Sets all of the owned pins to output
-/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
-/// changes to the direction of any/all pins represented by this Gpio object will be
-/// prohibited.
-void Gpio::setAsOutput( const PinControl lock )
+void Gpio::setAsOutput()
 {
-    setAsOutput( _pins, lock );
+    setAsOutput( _pins );
 }
 
 
 /// @brief Sets all owned pins to high/on
-/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
-/// changes to the high/low state of any/all pins represented by this Gpio object will be
-/// prohibited.
-void Gpio::switchOn( const PinControl lock )
+void Gpio::switchOn()
 {
-    switchOn( _pins, lock );
+    switchOn( _pins );
 }
 
 
 /// @brief Sets all owned pins to low/off
-/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
-/// changes to the high/low state of any/all pins represented by this Gpio object will be
-/// prohibited.
-void Gpio::switchOff( const PinControl lock )
+void Gpio::switchOff()
 {
-    switchOff( _pins, lock );
+    switchOff( _pins );
 }
 
 
@@ -327,15 +315,10 @@ void Gpio::toggle() const
 
 /// @brief Sets a given subset of owned pins to input
 /// @param pins A PinField specifing the subset of pins to set as inputs.
-/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
-/// changes to the direction of any/all pins represented by this Gpio object will be
-/// prohibited.
-void Gpio::setAsInput( const PinField pins, const PinControl lock )
+void Gpio::setAsInput( const PinField pins )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         if ( _directionControl  == PinControl::Free ) {
-            _directionControl = lock;
-
             const auto cleanPins{ ~sanitize( pins ) };
 
             #ifdef DDRA
@@ -363,15 +346,10 @@ void Gpio::setAsInput( const PinField pins, const PinControl lock )
 
 /// @brief Sets a given subset of owned pins to output
 /// @param pins A PinField specifing the subset of pins to set as outputs.
-/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
-/// changes to the direction of any/all pins represented by this Gpio object will be
-/// prohibited.
-void Gpio::setAsOutput( const PinField pins, const PinControl lock )
+void Gpio::setAsOutput( const PinField pins )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         if ( _directionControl == PinControl::Free ) {
-            _directionControl = lock;
-
             const auto cleanPins{ sanitize( pins ) };
 
             #ifdef DDRA
@@ -399,15 +377,10 @@ void Gpio::setAsOutput( const PinField pins, const PinControl lock )
 
 /// @brief Sets a given subset of owned pins to high/on
 /// @param pins A PinField specifing the subset of pins to switch on.
-/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
-/// changes to the high/low state of any/all pins represented by this Gpio object will be
-/// prohibited.
-void Gpio::switchOn( const PinField pins, const PinControl lock )
+void Gpio::switchOn( const PinField pins )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         if ( _outputControl == PinControl::Free ) {
-            _outputControl = lock;
-
             const auto cleanPins{ sanitize( pins ) };
 
             #ifdef PORTA
@@ -432,15 +405,10 @@ void Gpio::switchOn( const PinField pins, const PinControl lock )
 
 /// @brief Sets a given subset of owned pins to low/off
 /// @param pins A PinField specifing the subset of pins to switch off.
-/// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
-/// changes to the high/low state of any/all pins represented by this Gpio object will be
-/// prohibited.
-void Gpio::switchOff( const PinField pins, const PinControl lock )
+void Gpio::switchOff( const PinField pins )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
         if ( _outputControl == PinControl::Free ) {
-            _outputControl = lock;
-
             const auto cleanPins{ ~sanitize( pins ) };
 
             #ifdef PORTA
@@ -612,6 +580,20 @@ void Gpio::setOutputState( const uint32_t v, const PinControl lock )
             #endif
         }
     }
+}
+
+
+/// @brief Prevents futher changes to the directions of all owned pins
+void Gpio::lockDirection()
+{
+    _directionControl = PinControl::Locked;
+}
+
+
+/// @brief Prevents futher changes to the I/O states of all owned pins
+void Gpio::lockIo()
+{
+    _outputControl = PinControl::Locked;
 }
 
 
