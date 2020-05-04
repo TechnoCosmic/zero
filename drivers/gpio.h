@@ -109,8 +109,8 @@ namespace zero {
 
     /// @brief An attribute of GPIO
     enum GpioAspect {
-        Direction = (1 << 0 ),
-        Io = (1 << 1 ),
+        Direction = ( 1 << 0 ),
+        Io = ( 1 << 1 ),
     };
 
 
