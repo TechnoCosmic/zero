@@ -90,7 +90,7 @@ void debug::print( const char c )
 
 /// @brief Transmits a NULL-terminated character array via software TX
 /// @param s The null-terminated character array to transmit.
-/// @param fromFlash If ```true```, ```s``` points to an address in Flash memory instead of SRAM
+/// @param fromFlash If `true`, `s` points to an address in Flash memory instead of SRAM
 void debug::print( const char* s, const bool fromFlash )
 {
 #ifdef DEBUG_ENABLED
@@ -114,7 +114,7 @@ void debug::print( const char* s, const bool fromFlash )
 
 /// @brief Transmits the ASCII representation of a 16-bit integer via software TX
 /// @param n The unsigned number to transmit.
-/// @param base Optional. Default: ```10```. The base to convert the number to.
+/// @param base Optional. Default: `10`. The base to convert the number to.
 void debug::print( const uint16_t n, const int base )
 {
 #ifdef DEBUG_ENABLED
@@ -124,10 +124,10 @@ void debug::print( const uint16_t n, const int base )
 }
 
 
-/// @brief Tests a boolean condition and logs a message if ```false```.
+/// @brief Tests a boolean condition and logs a message if `false`.
 /// @param v The result of an expression to test.
 /// @param msg A null-terminated character array to transmit via software TX
-/// if ```v``` is ```false```.
+/// if `v` is `false`.
 /// @param lineNumber The source code line number on which the expression was evaluated.
 void debug::assert( const bool v, const char* const msg, const int lineNumber )
 {

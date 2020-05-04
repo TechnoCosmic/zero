@@ -66,15 +66,15 @@ void WEAK onOutOfMemory()
 
 /// @brief Allocates a chunk of SRAM.
 /// @param bytesReqd The minimum number of bytes required.
-/// @param allocatedBytes Optional. Default: ```nullptr```. A place to store the number
+/// @param allocatedBytes Optional. Default: `nullptr`. A place to store the number
 /// of bytes actually allocated.
 /// @param strategy Optional. Default: SearchStrategy::BottomUp. The method used to search
 /// the heap for free memory.
 /// @note Because zero uses a page-based memory allocator, the number of bytes actually
 /// allocated by any call to allocate() will always be a multiple of the page size
-/// (default is 16 bytes, adjustable in the ```makefile```, search for ```PAGE_BYTES```).
+/// (default is 16 bytes, adjustable in the `makefile`, search for `PAGE_BYTES`).
 /// If your program can make use of any 'extra' bytes assigned, you may pass a pointer to
-/// a ```uint16_t``` as the second argument to learn how many bytes you can actually use.
+/// a `uint16_t` as the second argument to learn how many bytes you can actually use.
 
 void* MALLOC memory::allocate(
     const uint16_t bytesReqd,

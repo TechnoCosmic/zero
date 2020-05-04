@@ -83,7 +83,7 @@ SuartTx::~SuartTx()
 
 
 /// @brief Determines if the SuartTx initialized correctly.
-/// @returns ```true``` if the SuartTx initialized correctly, ```false``` otherwise.
+/// @returns `true` if the SuartTx initialized correctly, `false` otherwise.
 SuartTx::operator bool() const
 {
     return ( _suartTx == this );
@@ -116,10 +116,10 @@ void SuartTx::stopTxTimer() const
 /// @brief Transmits a block of data
 /// @param buffer A pointer to a block of data to transmit.
 /// @param numBytes The number of bytes to send.
-/// @param allowBlock If ```true``` and the transmitter is currently busy, the calling
-/// Thread will block until the transmitter is ready to send again. If ```false``` and the
+/// @param allowBlock If `true` and the transmitter is currently busy, the calling
+/// Thread will block until the transmitter is ready to send again. If `false` and the
 /// transmitter is busy, the call will fail.
-/// @returns ```true``` if the transmission was successfully started, ```false```
+/// @returns `true` if the transmission was successfully started, `false`
 /// otherwise.
 bool SuartTx::transmit(
     const void* buffer,

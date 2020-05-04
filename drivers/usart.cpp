@@ -147,7 +147,7 @@ UsartTx::~UsartTx()
 
 
 /// @brief Determines if the UsartTx initialized correctly
-/// @returns ```true``` if the UsartTx initialized correctly, ```false``` otherwise.
+/// @returns `true` if the UsartTx initialized correctly, `false` otherwise.
 UsartTx::operator bool() const
 {
     return ( _usartTx[ _deviceNum ] == this );
@@ -157,10 +157,10 @@ UsartTx::operator bool() const
 /// @brief Begins the asynchronous transmission of a buffer of data
 /// @param buffer A pointer to the buffer to transmit.
 /// @param numBytes The number of bytes to transmit.
-/// @param allowBlock When this parameter is ```true``` and a previous transmission is
+/// @param allowBlock When this parameter is `true` and a previous transmission is
 /// still underway, the call will block until that transmission has completed. If this
-/// parameter is ```false``` when a previous transmission is underway, the call will fail.
-/// @returns ```true``` if the transmission began successfully, ```false``` otherwise.
+/// parameter is `false` when a previous transmission is underway, the call will fail.
+/// @returns `true` if the transmission began successfully, `false` otherwise.
 bool UsartTx::transmit(
     const void* buffer,
     const uint16_t numBytes,
@@ -251,7 +251,7 @@ UsartRx::~UsartRx()
 
 
 /// @brief Determines if the UsartRx initialized correctly
-/// @returns ```true``` if the UsartRx initialized correctly, ```false``` otherwise.
+/// @returns `true` if the UsartRx initialized correctly, `false` otherwise.
 UsartRx::operator bool() const
 {
     return ( _usartRx[ _deviceNum ] == this );
@@ -280,7 +280,7 @@ void UsartRx::setCommsParams( const uint32_t baud )
 /// @brief Enables the USART receiver hardware
 /// @param bufferSize The size of the buffer used to cache incoming data.
 /// @param rxSyn The Synapse to signal when new data has arrived.
-/// @param ovfSyn Optional. Default: ```nullptr```. The Synapse to signal when the receive
+/// @param ovfSyn Optional. Default: `nullptr`. The Synapse to signal when the receive
 /// buffer is full and bytes are being lost.
 bool UsartRx::enable( const uint16_t bufferSize, Synapse& rxSyn, Synapse* ovfSyn )
 {
@@ -332,9 +332,9 @@ void UsartRx::disable()
 
 
 /// @brief Gets the current receive buffer
-/// @param numBytes A reference to a ```uint16_t``` to store the number of valid bytes in
+/// @param numBytes A reference to a `uint16_t` to store the number of valid bytes in
 /// the buffer.
-/// @returns A pointer to the current receive buffer, or ```nullptr``` is the buffer is
+/// @returns A pointer to the current receive buffer, or `nullptr` is the buffer is
 /// currently empty.
 uint8_t* UsartRx::getCurrentBuffer( uint16_t& numBytes )
 {

@@ -376,14 +376,14 @@ void Thread::reanimate(
 /// code.
 /// @param name Name of the Thread (is a pointer into Flash memory, not SRAM).
 /// @param entry The Thread's entry point.
-/// @param termSyn Optional. Default: ```nullptr```. A pointer to the Synapse to signal
+/// @param termSyn Optional. Default: `nullptr`. A pointer to the Synapse to signal
 /// when the Thread terminates.
-/// @param exitCode Optional. Default: ```nullptr```. A pointer to a ```uint16_t```
+/// @param exitCode Optional. Default: `nullptr`. A pointer to a `uint16_t`
 /// to store the Thread's return code.
-/// @returns A pointer to the pool Thread, or ```nullptr``` if none are available.
-/// @note To change the number of pool threads available, search for ```NUM_POOL_THREADS```
-/// in the ```makefile```. The stack size for all pool threads is controlled
-/// by ```POOL_THREAD_STACK_BYTES``` in the same file.
+/// @returns A pointer to the pool Thread, or `nullptr` if none are available.
+/// @note To change the number of pool threads available, search for `NUM_POOL_THREADS`
+/// in the `makefile`. The stack size for all pool threads is controlled
+/// by `POOL_THREAD_STACK_BYTES` in the same file.
 Thread* Thread::fromPool(
     const char* const name,
     const ThreadEntry entry,
@@ -431,9 +431,9 @@ Thread* Thread::fromPool(
 /// @param name The name of the new Thread (is a pointer to Flash memory, not SRAM).
 /// @param stackSize The desired size of the stack, in bytes.
 /// @param entry The entry point for the Thread.
-/// @param flags Optional. Default: ```TF_READY```. Flags controlling the aspects of the Thread's behavior.
-/// @param termSyn Optional. Default: ```nullptr```. Synapse to signal when the Thread terminates.
-/// @param exitCode Optional. Default: ```nullptr```. A place to store the Thread's return code.
+/// @param flags Optional. Default: `TF_READY`. Flags controlling the aspects of the Thread's behavior.
+/// @param termSyn Optional. Default: `nullptr`. Synapse to signal when the Thread terminates.
+/// @param exitCode Optional. Default: `nullptr`. A place to store the Thread's return code.
 /// @see fromPool()
 Thread::Thread(
     const char* const name,
@@ -478,7 +478,7 @@ Thread::~Thread()
 
 
 /// @brief Determines if the Thread initialized correctly
-/// @returns ```true``` if the Thread initialized correctly, ```false``` otherwise.
+/// @returns `true` if the Thread initialized correctly, `false` otherwise.
 Thread::operator bool() const
 {
     return _stackBottom;
@@ -837,7 +837,7 @@ void Thread::freeSignals( const SignalBitField signals )
 
 
 /// @brief Gets the signals currently in use by the Thread
-/// @param userOnly If ```true```, do not return any reserved signals.
+/// @param userOnly If `true`, do not return any reserved signals.
 /// @returns A SignalBitField indicating the currently allocated signals.
 /// @see clearSignals(), getCurrentSignals()
 SignalBitField Thread::getAllocatedSignals( const bool userOnly ) const

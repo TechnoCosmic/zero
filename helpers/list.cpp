@@ -22,7 +22,7 @@ List<T>::List()
 
 
 /// @brief Gets the first item in the List
-/// @returns A pointer to the head of the List, or ```nullptr``` is the List is empty.
+/// @returns A pointer to the head of the List, or `nullptr` is the List is empty.
 template <class T>
 T* List<T>::getHead() const
 {
@@ -31,7 +31,7 @@ T* List<T>::getHead() const
 
 
 /// @brief Gets the last item in the List
-/// @returns A pointer to the end of the List, or ```nullptr``` is the List is empty.
+/// @returns A pointer to the end of the List, or `nullptr` is the List is empty.
 template <class T>
 T* List<T>::getTail() const
 {

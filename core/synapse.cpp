@@ -63,7 +63,7 @@ void Synapse::clearSignals() const
 
 
 /// @brief Waits for the signals to be set, blocking if necessary
-/// @param timeout Optional. Default: ```0_ms``` (no timeout). The maximum length of time
+/// @param timeout Optional. Default: `0_ms` (no timeout). The maximum length of time
 /// to wait to receive the signals.
 SignalBitField Synapse::wait( const Duration timeout ) const
 {

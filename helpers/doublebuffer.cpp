@@ -39,7 +39,7 @@ DoubleBuffer::~DoubleBuffer()
 
 
 /// @brief Determines if the DoubleBuffer initialized correctly
-/// @returns ```true``` if the DoubleBuffer initialized correctly, ```false``` otherwise.
+/// @returns `true` if the DoubleBuffer initialized correctly, `false` otherwise.
 DoubleBuffer::operator bool() const
 {
     return _buffer;
@@ -48,7 +48,7 @@ DoubleBuffer::operator bool() const
 
 /// @brief Writes a byte to the buffer
 /// @param d The byte to write to the buffer.
-/// @returns ```true``` if the byte was successfully written, ```false``` if the buffer is
+/// @returns `true` if the byte was successfully written, `false` if the buffer is
 /// full.
 bool DoubleBuffer::write( const uint8_t d )
 {
@@ -71,7 +71,7 @@ bool DoubleBuffer::write( const uint8_t d )
 
 /// @brief Returns the currently active half of the buffer
 /// @param numBytes A place to store the number of valid bytes in the buffer.
-/// @returns A pointer to the active half of the buffer, or ```nullptr``` if the buffer is
+/// @returns A pointer to the active half of the buffer, or `nullptr` if the buffer is
 /// empty.
 uint8_t* DoubleBuffer::getCurrentBuffer( uint16_t& numBytes )
 {

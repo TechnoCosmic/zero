@@ -246,7 +246,7 @@ Gpio::~Gpio()
 
 
 /// @brief Determines if the Gpio object initialized correctly
-/// @returns ```true``` if the object initialized correctly, ```false``` otherwise.
+/// @returns `true` if the object initialized correctly, `false` otherwise.
 Gpio::operator bool() const
 {
     return _pins;
@@ -460,7 +460,7 @@ void Gpio::toggle( const PinField pins ) const
 
 
 /// @brief Returns the input states of all owned pins
-/// @returns A ```uint32_t``` reflecting the input states of all owned pins.
+/// @returns A `uint32_t` reflecting the input states of all owned pins.
 /// @note Pins that are not owned by the Gpio will have their corresponding bits set to
 /// zero (0).
 uint32_t Gpio::getInputState() const
@@ -510,7 +510,7 @@ uint32_t Gpio::getInputState() const
 
 
 /// @brief Returns the output states of all owned pins
-/// @returns A ```uint32_t``` reflecting the output states of all owned pins.
+/// @returns A `uint32_t` reflecting the output states of all owned pins.
 /// @note Pins that are not owned by the Gpio will have their corresponding bits set to
 /// zero (0).
 uint32_t Gpio::getOutputState() const
@@ -540,7 +540,7 @@ uint32_t Gpio::getOutputState() const
 
 
 /// @brief Sets the output state of all owned pins
-/// @param v A ```uint32_t``` representing the desired output states of all owned pins.
+/// @param v A `uint32_t` representing the desired output states of all owned pins.
 /// @param lock Optional. Default: PinControl::Free. If set to PinControl::Locked, further
 /// changes to the high/low state of any/all pins represented by this Gpio object will be
 /// prohibited.

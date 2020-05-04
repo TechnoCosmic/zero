@@ -32,7 +32,7 @@ using namespace zero;
 
 /// @brief Determines if a given page is available for use
 /// @param pageNumber The page number to check.
-/// @returns ```true``` if the specified page is available, ```false``` otherwise.
+/// @returns `true` if the specified page is available, `false` otherwise.
 /// @see markAsFree(), markAsUsed()
 template <uint16_t PAGE_COUNT>
 bool PageManager<PAGE_COUNT>::isPageAvailable( const uint16_t pageNumber ) const

@@ -28,9 +28,9 @@ namespace zero {
     /// let it's Watchdog object go out of scope. If there are no active Watchdog objects
     /// anywhere in the system, the AVR's WDT is automatically disabled. As soon as a new
     /// Watchdog object is created, the AVR's WDT is re-enabled.
-    /// @details The timeout for the WDT is set in the ```makefile```, search
-    /// for ```WATCHDOG_TIMEOUT```. It can be any acceptable version of ```WDTO_``` for
-    /// your target MCU (see ```avr/wdt.h```).
+    /// @details The timeout for the WDT is set in the `makefile`, search
+    /// for `WATCHDOG_TIMEOUT`. It can be any acceptable version of `WDTO_` for
+    /// your target MCU (see `avr/wdt.h`).
     /// @details If you implement an onReset() handler in your project, you can
     /// check the supplied ResetFlags to see if the current power-up/reset event was
     /// triggered by a WDT timeout, and take action if necessary.

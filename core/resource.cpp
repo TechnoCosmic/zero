@@ -26,7 +26,7 @@ namespace {
 
 /// @brief Obtains exclusive access to a resource
 /// @param id The resource you wish to access.
-/// @returns ```true``` if the resource was able to be reserved, ```false``` otherwise.
+/// @returns `true` if the resource was able to be reserved, `false` otherwise.
 bool resource::obtain( const ResourceId id )
 {
     const uint16_t m{ 1U << (uint16_t) id };

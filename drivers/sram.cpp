@@ -138,7 +138,7 @@ SpiMemory::~SpiMemory()
 
 
 /// @brief Determines if the SpiMemory initialized correctly
-/// @returns ```true``` if the SpiMemory correctly initialized, ```false``` otherwise.
+/// @returns `true` if the SpiMemory correctly initialized, `false` otherwise.
 SpiMemory::operator bool() const
 {
     return _chipSelectPin;

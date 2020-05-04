@@ -58,7 +58,7 @@ Adc::~Adc()
 
 
 /// @brief Determines if the Adc initialized correctly
-/// @returns ```true``` if the Adc resource was successfully acquired, ```false``` otherwise.
+/// @returns `true` if the Adc resource was successfully acquired, `false` otherwise.
 Adc::operator bool() const
 {
     return _currentAdc == this;
@@ -113,7 +113,7 @@ void Adc::setLastConversion( const uint16_t v )
 
 
 /// @brief Gets the value of the last conversion
-/// @returns A ```uint16_t``` that holds the 10-bit value of the last conversion.
+/// @returns A `uint16_t` that holds the 10-bit value of the last conversion.
 uint16_t Adc::getLastConversion() const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {

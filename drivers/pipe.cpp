@@ -47,7 +47,7 @@ Pipe::~Pipe()
 
 
 /// @brief Determines if the Pipe initialized correctly
-/// @returns ```true``` if the Pipe initialized correctly, ```false``` otherwise.
+/// @returns `true` if the Pipe initialized correctly, `false` otherwise.
 Pipe::operator bool() const
 {
     return _buffer;
@@ -55,7 +55,7 @@ Pipe::operator bool() const
 
 
 /// @brief Determines if the Pipe is empty
-/// @returns ```true``` if the Pipe is empty, ```false``` otherwise.
+/// @returns `true` if the Pipe is empty, `false` otherwise.
 bool Pipe::isEmpty() const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -65,7 +65,7 @@ bool Pipe::isEmpty() const
 
 
 /// @brief Determines if the Pipe is full
-/// @returns ```true``` if the Pipe is full, ```false``` otherwise.
+/// @returns `true` if the Pipe is full, `false` otherwise.
 bool Pipe::isFull() const
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -76,8 +76,8 @@ bool Pipe::isFull() const
 
 /// @brief Reads a byte from the Pipe
 /// @param data A reference to the place to store the byte from the Pipe.
-/// @returns ```true``` if the data was successfully read (```data``` will be
-/// valid), ```false``` otherwise.
+/// @returns `true` if the data was successfully read (`data` will be
+/// valid), `false` otherwise.
 bool Pipe::read( uint8_t& data )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
@@ -119,7 +119,7 @@ bool Pipe::read( uint8_t& data )
 
 /// @brief Writes a byte to the Pipe
 /// @param data The byte to write to the Pipe.
-/// @returns ```true``` if the data was successfully written, ```false``` otherwise.
+/// @returns `true` if the data was successfully written, `false` otherwise.
 bool Pipe::write( const uint8_t data )
 {
     ATOMIC_BLOCK ( ATOMIC_RESTORESTATE ) {
