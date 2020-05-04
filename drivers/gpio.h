@@ -155,7 +155,7 @@ namespace zero {
             const uint32_t v,
             const PinControl lock = PinControl::Free ); // Sets the output states of all owned pins
 
-        void lock( const GpioAspect a );             // prevents further changes to some aspect of the Gpio
+        void lock( const GpioAspect a );                // prevents further changes to some aspect of the Gpio
 
         #include "gpio_private.h"
     };
