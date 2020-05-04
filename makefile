@@ -165,8 +165,6 @@ SRC := $(wildcard *.cpp)
 SRC += $(wildcard core/*.cpp)
 SRC += $(wildcard drivers/*.cpp)
 SRC += $(wildcard helpers/*.cpp)
-SRC += $(wildcard cli/*.cpp)
-SRC += $(wildcard examples/*.cpp)
 
 
 .PHONY: push fuses upload clean gettools
@@ -207,4 +205,4 @@ clean:
 
 
 gettools:
-	@sudo apt-get -y install gcc-avr binutils-avr gdb-avr avr-libc avrdude cloc clang-format doxygen graphviz code
+	@sudo apt-get -y install gcc-avr binutils-avr gdb-avr avr-libc avrdude cloc clang-format doxygen graphviz
