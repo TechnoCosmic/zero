@@ -33,6 +33,7 @@ namespace zero {
         return ( (uint32_t) port << 3 ) | ( (uint32_t) pin & 7 );
     }
 
+
     // clang-format off
     #ifdef PORTD
         const PinField ZERO_PIND0 = ( 1L << pinPort( 3, 0 ) );
@@ -95,6 +96,7 @@ namespace zero {
     #endif
     // clang-format on
 
+
     const int ZERO_NUM_PORTS = ZERO_HIGH_PORT + 1;
 
 
@@ -102,6 +104,13 @@ namespace zero {
     enum class PinControl {
         Free = 0,
         Locked
+    };
+
+
+    /// @brief An attribute of GPIO
+    enum GpioAspect {
+        Direction = (1 << 0 ),
+        Io = (1 << 1 ),
     };
 
 
@@ -146,8 +155,7 @@ namespace zero {
             const uint32_t v,
             const PinControl lock = PinControl::Free ); // Sets the output states of all owned pins
 
-        void lockDirection();                           // prevents further changes to the directions of pins
-        void lockIo();                                  // prevents further changes to the IO states of pins
+        void lock( const GpioAspect a );             // prevents further changes to some aspect of the Gpio
 
         #include "gpio_private.h"
     };

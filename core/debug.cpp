@@ -49,7 +49,7 @@ void debug::init()
 #ifdef DEBUG_ENABLED
     _debugPin = new Gpio{ DEBUG_PIN };
     _debugPin->setAsOutput();
-    _debugPin->lockDirection();
+    _debugPin->lock( GpioAspect::Direction );
     _debugPin->switchOn();
 #endif
 }

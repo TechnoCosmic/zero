@@ -583,17 +583,20 @@ void Gpio::setOutputState( const uint32_t v, const PinControl lock )
 }
 
 
-/// @brief Prevents futher changes to the directions of all owned pins
-void Gpio::lockDirection()
+/// @brief Locks one or more aspects of the Gpio object
+/// @param a The aspect(s) of the Gpio object to lock.
+/// @note This cannot be reversed - intentionally there is no `unlock()` function. This is
+/// designed so that you can set up a Gpio object as required and ensure that various
+/// aspects of it cannot be changed when passing it around to other functions.
+void Gpio::lock( const GpioAspect a )
 {
-    _directionControl = PinControl::Locked;
-}
+    if ( a & GpioAspect::Direction ) {
+        _directionControl = PinControl::Locked;
+    }
 
-
-/// @brief Prevents futher changes to the I/O states of all owned pins
-void Gpio::lockIo()
-{
-    _outputControl = PinControl::Locked;
+    if ( a & GpioAspect::Io ) {
+        _outputControl = PinControl::Locked;
+    }
 }
 
 

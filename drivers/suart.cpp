@@ -48,7 +48,7 @@ SuartTx::SuartTx(
             _gpio = &pin;
 
             _gpio->setAsOutput();
-            _gpio->lockDirection();
+            _gpio->lock( GpioAspect::Direction );
             _gpio->switchOn();
 
             power_timer2_enable();
