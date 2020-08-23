@@ -202,7 +202,7 @@ void Thread::globalThreadEntry(
     int* const exitCode )
 {
     // run the thread and get its exit code
-    int ec{ ( (ThreadEntry) entry )() };
+    const int ec{ ( (ThreadEntry) entry )() };
 
     // we don't want to be disturbed while cleaning up
     cli();
@@ -1045,7 +1045,7 @@ static void createPoolThreads()
 
 /// @private
 /// @brief Kickstart the system
-void CTOR preMain()
+static void CTOR preMain()
 {
     #ifdef ZERO_DRIVERS_GPIO
         // initialize the GPIO - make sure everything is tri-stated
@@ -1072,11 +1072,15 @@ void CTOR preMain()
         // claim the main timer before anyone else does
         resource::obtain( resource::ResourceId::Timer0 );
     }
+
+    // main() will now run, where the developer will set up the system, including
+    // the first Threads. main() is expected to exit. Following main(), postMain()
+    // runs, which is where zero finishes initialization and starts the system.
 }
 
 
 /// @private
-void DTOR postMain()
+static void DTOR postMain()
 {
     // start Timer0 (does not enable global ints)
     initTimer0();
