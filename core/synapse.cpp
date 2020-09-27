@@ -13,10 +13,12 @@ using namespace zero;
 
 
 /// @brief Creates a new Synapse
-Synapse::Synapse() :
+Synapse::Synapse()
+:
     _thread{ &me },
     _signals{ me.allocateSignal() }
 {
+    // empty
 }
 
 

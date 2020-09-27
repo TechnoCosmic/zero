@@ -120,6 +120,7 @@ void Gpio::init()
 ///
 ///     if ( ledPins ) {
 ///         // do things with the pins
+///         ledPins.setAsOutput();
 ///         ledPins.switchOn();
 ///     }
 /// }
@@ -148,14 +149,15 @@ Gpio::Gpio(
 ///
 /// int gpioDemo()
 /// {
-///     Gpio ledPins{ ZERO_PINC0 | ZERO_PINC1 };
+///     Gpio ledPins{ ZERO_PINC0, myPinChangeHandler };
 ///
 ///     if ( ledPins ) {
-///         ledPins.setAsInput( ZERO_PINC0 );           // set C0 as input
-///         ledPins.switchOn( ZERO_PINC0 );             // enable pull-up resistor
+///         ledPins.setAsInput();                       // set C0 as input
+///         ledPins.switchOn();                         // enable pull-up resistor
 ///
-///         // do things with the pins
-///         ledPins.switchOn( ZERO_PINC1 );
+///         while ( true ) {
+///             // empty
+///         }
 ///     }
 /// }
 /// @endcode
@@ -179,11 +181,11 @@ Gpio::Gpio(
 /// int gpioDemo()
 /// {
 ///     Synapse pinChangeSyn;
-///     Gpio ledPins{ ZERO_PINC0 | ZERO_PINC1, pinChangeSyn };
+///     Gpio buttonPins{ ZERO_PINC0, pinChangeSyn };
 ///
-///     if ( ledPins ) {
-///         ledPins.setAsInput( ZERO_PINC0 );           // set C0 as input
-///         ledPins.switchOn( ZERO_PINC0 );             // enable pull-up resistor
+///     if ( buttonPins ) {
+///         buttonPins.setAsInput();                    // set C0 as input
+///         buttonPins.switchOn();                      // enable pull-up resistor
 ///
 ///         while ( true ) {
 ///             const auto recdSignals{ pinChangeSyn.wait() };

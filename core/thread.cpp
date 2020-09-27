@@ -1026,13 +1026,13 @@ static void createPoolThreads()
     #endif
 
     for ( auto i = 0; i < NUM_POOL_THREADS; i++ ) {
-        Thread* poolGuy = new Thread{
+        Thread* const poolGuy{ new Thread{
             nullptr,                                    // no name yet
             POOL_THREAD_STACK_BYTES,                    // one stack size to rule them all
             nullptr,                                    // no entry point yet
             TF_POOL_THREAD,                             // flags
             nullptr,                                    // no termination Synapse yet
-            nullptr };                                  // no place to put exit code yet
+            nullptr } };                                // no place to put exit code yet
 
         dbg_assert( poolGuy, "Pool thread init fail" );
 
