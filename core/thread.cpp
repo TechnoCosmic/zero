@@ -481,7 +481,7 @@ Thread::~Thread()
 /// @returns `true` if the Thread initialized correctly, `false` otherwise.
 Thread::operator bool() const
 {
-    return _stackBottom;
+    return !!_stackBottom;
 }
 
 
@@ -503,14 +503,18 @@ const char* Thread::getName() const
 /// @brief Restarts the Thread.
 void Thread::restart()
 {
-    signal( SIG_START );
+    if ( _waitingSignals & SIG_START ) {
+        signal( SIG_START );
+    }
 }
 
 
 /// @brief Stops the Thread.
 void Thread::stop()
 {
-    signal( SIG_STOP );
+    if ( _waitingSignals & SIG_STOP ) {
+        signal( SIG_STOP );
+    }
 }
 
 
