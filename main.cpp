@@ -16,7 +16,7 @@ int myThreadMain()
 {
     // put your thread code here
 
-    while( true ) {
+    while ( true ) {
         // empty
     }
 
