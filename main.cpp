@@ -5,6 +5,7 @@
 // Catchpole Robotics                  Christian Catchpole    christian@catchpole.net
 //
 
+#include <avr/pgmspace.h>
 #include "thread.h"
 
 
